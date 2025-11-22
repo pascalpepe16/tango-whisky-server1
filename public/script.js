@@ -1,6 +1,3 @@
-// -----------------------------
-//  TW eQSL – FRONTEND
-// -----------------------------
 const API_URL = "https://tw-eqsl-server.onrender.com";
 
 // -----------------------------
@@ -9,6 +6,8 @@ const API_URL = "https://tw-eqsl-server.onrender.com";
 function showSection(id) {
     document.querySelectorAll(".section").forEach(s => s.classList.add("hidden"));
     document.getElementById(id).classList.remove("hidden");
+
+    if (id === "gallery") loadGallery();
 }
 
 let sectionToOpen = null;
@@ -41,7 +40,7 @@ async function loadGallery() {
         box.innerHTML = "";
         list.forEach(q => {
             const img = document.createElement("img");
-            img.src = q.thumb || q.url;
+            img.src = q.thumb;
             img.title = q.indicatif;
             box.appendChild(img);
         });
@@ -52,7 +51,7 @@ async function loadGallery() {
 loadGallery();
 
 // -----------------------------
-// UPLOAD + GENERATION
+// CREATION + UPLOAD
 // -----------------------------
 document.getElementById("genForm").onsubmit = async (e) => {
     e.preventDefault();
@@ -107,7 +106,7 @@ document.getElementById("btnSearch").onclick = async () => {
             const wrap = document.createElement("div");
 
             const img = document.createElement("img");
-            img.src = q.thumb || q.url;
+            img.src = q.thumb;
 
             const a = document.createElement("a");
             a.href = q.url;
