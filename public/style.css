@@ -2,7 +2,7 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   color: white;
-  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg") no-repeat center center fixed;
+  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763207495/u1thjumomnyjwwjwd74x.jpg") no-repeat center center fixed;
   background-size: cover;
 }
 
@@ -44,10 +44,6 @@ nav button {
   display: block;
 }
 
-.hidden {
-  display: none !important;
-}
-
 .box {
   background: rgba(0,0,0,0.8);
   padding: 20px;
@@ -57,8 +53,11 @@ nav button {
   border-radius: 8px;
 }
 
+.hidden { display: none; }
+
 .row {
   margin-bottom: 14px;
+  display: block;
 }
 
 .two {
