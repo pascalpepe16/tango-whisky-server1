@@ -32,7 +32,7 @@ async function loadGallery() {
     box.innerHTML = "Chargement…";
 
     try {
-        const res = await fetch(API_URL + "/qsl");
+        const res = await fetch(API_URL + "");
         const list = await res.json();
 
         if (!list.length) return box.innerHTML = "Aucune QSL pour l'instant";
@@ -123,3 +123,4 @@ document.getElementById("btnSearch").onclick = async () => {
         box.innerHTML = "Erreur réseau";
     }
 };
+
