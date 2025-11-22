@@ -2,7 +2,7 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   color: white;
-  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763207495/u1thjumomnyjwwjwd74x.jpg") no-repeat center center fixed;
+  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg") no-repeat center center fixed;
   background-size: cover;
 }
 
@@ -31,17 +31,13 @@ nav button {
 }
 
 .section {
-  display: none;
-  background: rgba(0,0,0,0.65);
-  margin: 20px auto;
-  padding: 20px;
-  width: 90%;
-  max-width: 900px;
-  border-radius: 10px;
+  display: block;     /* FIX PRINCIPAL */
+  opacity: 1;
+  transition: 0.3s;
 }
 
-.visible {
-  display: block;
+.hidden {
+  display: none !important;   /* ON MASQUE UNIQUEMENT AVEC hidden */
 }
 
 .box {
@@ -52,8 +48,6 @@ nav button {
   text-align: center;
   border-radius: 8px;
 }
-
-.hidden { display: none; }
 
 .row {
   margin-bottom: 14px;
