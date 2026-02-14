@@ -1,293 +1,201 @@
-// ===============================
-// CONFIG
-// ===============================
-const API_URL = location.origin;
-let importedLogs = [];
-window.isAuthenticated = false;
+// ----------------------
+// LOGIN
+// ----------------------
+function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
 
-// ===============================
-// INIT PRINCIPAL
-// ===============================
-window.addEventListener("DOMContentLoaded", () => {
-  initAuth();
-  initNavigation();
-  initForm();
-  initImport();
-  initDownload();
-  showTab("home");
-});
-
-// ===============================
-// AUTH
-// ===============================
-function initAuth() {
-  checkAuth();
-}
-
-async function checkAuth() {
-  try {
-    const res = await fetch("/check-auth", { credentials: "same-origin" });
-    const data = await res.json();
-
-    window.isAuthenticated = data.authenticated === true;
-
-    const loginBox = document.getElementById("loginBox");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const btnGallery = document.getElementById("btnGallery");
-    const btnCreate = document.getElementById("btnCreate");
-
-    if (loginBox) loginBox.style.display = window.isAuthenticated ? "none" : "block";
-    if (logoutBtn) logoutBtn.style.display = window.isAuthenticated ? "inline-block" : "none";
-    if (btnGallery) btnGallery.style.display = window.isAuthenticated ? "inline-block" : "none";
-    if (btnCreate) btnCreate.style.display = window.isAuthenticated ? "inline-block" : "none";
-
-  } catch (err) {
-    console.error("checkAuth error:", err);
-  }
-}
-
-async function login() {
-  const indicatif = document.getElementById("loginIndicatif")?.value.trim();
-  const password = document.getElementById("loginPassword")?.value;
-  const errBox = document.getElementById("loginError");
-
-  if (!indicatif || !password) {
-    if (errBox) errBox.innerText = "Champs manquants";
-    return;
-  }
-
-  try {
-    const res = await fetch("/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ indicatif, password })
-    });
-
-    if (!res.ok) {
-      if (errBox) errBox.innerText = "Identifiants incorrects";
-      return;
-    }
-
-    await checkAuth();
-    showTab("home");
-
-  } catch (err) {
-    if (errBox) errBox.innerText = "Erreur réseau";
-  }
-}
-
-function logout() {
-  window.location.href = "/logout";
-}
-
-// ===============================
-// NAVIGATION
-// ===============================
-function initNavigation() {
-  // rien à initialiser pour l’instant
-}
-
-function showTab(id) {
-  const protectedTabs = ["gallery", "create"];
-
-  if (protectedTabs.includes(id) && !window.isAuthenticated) {
-    id = "home";
-  }
-
-  document.querySelectorAll(".section").forEach(sec =>
-    sec.classList.add("hidden")
-  );
-
-  const el = document.getElementById(id);
-  if (el) el.classList.remove("hidden");
-
-  if (id === "gallery") loadGallery();
-}
-
-// ===============================
-// GALLERY
-// ===============================
-async function loadGallery() {
-  const box = document.getElementById("galleryContent");
-  if (!box) return;
-
-  box.innerHTML = "Chargement…";
-
-  try {
-    const res = await fetch(API_URL + "/qsl", {
-      credentials: "same-origin"
-    });
-
-    const list = await res.json();
-
-    if (!Array.isArray(list) || !list.length) {
-      box.innerHTML = "Aucune QSL";
-      return;
-    }
-
-    box.innerHTML = "";
-    list.forEach(q => {
-      const div = document.createElement("div");
-      div.className = "thumbWrap";
-      div.innerHTML = `<img src="${q.thumb}">`;
-      box.appendChild(div);
-    });
-
-  } catch (err) {
-    box.innerHTML = "Erreur réseau";
-  }
-}
-
-// ===============================
-// FORMULAIRE GENERATION QSL
-// ===============================
-function initForm() {
-  const form = document.getElementById("genForm");
-  if (!form) return;
-
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const preview = document.getElementById("genPreview");
-    if (preview) preview.innerHTML = "Génération…";
-
-    const formData = new FormData(form);
-
-    try {
-      const res = await fetch(API_URL + "/upload", {
+    fetch("/login", {
         method: "POST",
-        body: formData,
-        credentials: "same-origin"
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        if (preview) {
-          preview.innerHTML = `
-            <p>QSL générée :</p>
-            <img src="${data.qsl.thumb}">
-          `;
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: user, password: pass })
+    })
+    .then(res => {
+        if (res.ok) {
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("mainMenu").style.display = "block";
+        } else {
+            alert("Identifiants incorrects");
         }
-        form.reset();
-      } else {
-        if (preview) preview.innerHTML = "Erreur génération";
-      }
-
-    } catch (err) {
-      if (preview) preview.innerHTML = "Erreur réseau";
-    }
-  });
+    });
 }
 
-// ===============================
-// IMPORT CSV
-// ===============================
-function initImport() {
-  const validateBtn = document.getElementById("validateImportBtn");
-  if (validateBtn) {
-    validateBtn.onclick = validateImport;
-  }
+// ----------------------
+// NAVIGATION
+// ----------------------
+function showTab(tabId) {
+    const tabs = document.querySelectorAll(".tab");
+    tabs.forEach(tab => tab.style.display = "none");
+
+    const active = document.getElementById(tabId);
+    if (active) active.style.display = "block";
 }
 
-function processFile() {
-  const file = document.getElementById("importFile")?.files[0];
-  const status = document.getElementById("importStatus");
+// ----------------------
+// CREATION QSL CLASSIQUE
+// ----------------------
+function createClassicQSL() {
+    const callsign = document.getElementById("callsign").value;
+    const date = document.getElementById("date").value;
+    const mode = document.getElementById("mode").value;
+    const rst = document.getElementById("rst").value;
 
-  if (!file) {
-    if (status) status.innerHTML = "Choisissez un fichier";
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    const data = new Uint8Array(e.target.result);
-    const wb = XLSX.read(data, { type: "array" });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    importedLogs = XLSX.utils.sheet_to_json(ws);
-
-    if (status) status.innerHTML = importedLogs.length + " lignes chargées";
-    document.getElementById("validateImportBtn").style.display = "inline-block";
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-async function validateImport() {
-  const imageInput = document.getElementById("bulkImage");
-  const status = document.getElementById("importStatus");
-
-  let success = 0;
-
-  for (let row of importedLogs) {
-    const formData = new FormData();
-    formData.append("indicatif", row.Indicatif || "");
-    formData.append("date", row.Date || "");
-    formData.append("time", row.Heure || "");
-    formData.append("band", row.Bande || "");
-    formData.append("report", row.Report || "");
-    formData.append("mode", row.Mode || "");
-    formData.append("note", row.Note || "");
-    formData.append("qsl", imageInput.files[0]);
-
-    try {
-      const res = await fetch(API_URL + "/upload", {
+    fetch("/create-qsl", {
         method: "POST",
-        body: formData,
-        credentials: "same-origin"
-      });
-
-      const data = await res.json();
-      if (data.success) success++;
-
-    } catch {}
-  }
-
-  if (status) status.innerHTML = "✅ " + success + " QSL enregistrées";
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            type: "classic",
+            callsign,
+            date,
+            mode,
+            rst
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("QSL classique créée !");
+        loadGallery();
+    });
 }
 
-// ===============================
-// DOWNLOAD
-// ===============================
-function initDownload() {
-  const btn = document.getElementById("btnSearch");
-  if (!btn) return;
+// ----------------------
+// CREATION QSL PREMIUM
+// ----------------------
+function createPremiumQSL() {
+    const callsign = document.getElementById("callsignPremium").value;
+    const date = document.getElementById("datePremium").value;
+    const mode = document.getElementById("modePremium").value;
+    const rst = document.getElementById("rstPremium").value;
+    const background = document.getElementById("backgroundSelect").value;
 
-  btn.onclick = async () => {
-    const call = document.getElementById("dlCall")?.value.trim().toUpperCase();
-    const box = document.getElementById("dlPreview");
+    fetch("/create-qsl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            type: "premium",
+            callsign,
+            date,
+            mode,
+            rst,
+            background
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("QSL premium créée !");
+        loadGallery();
+    });
+}
 
-    if (!call) return;
+// ----------------------
+// PREVIEW LIVE PREMIUM
+// ----------------------
+function updatePreview() {
+    const callsign = document.getElementById("callsignPremium").value;
+    const date = document.getElementById("datePremium").value;
+    const mode = document.getElementById("modePremium").value;
+    const rst = document.getElementById("rstPremium").value;
+    const background = document.getElementById("backgroundSelect").value;
 
-    box.innerHTML = "Recherche…";
+    const preview = document.getElementById("previewCard");
+    if (!preview) return;
 
-    try {
-      const res = await fetch(API_URL + "/download/" + call);
-      const list = await res.json();
+    preview.style.backgroundImage = `url(${background})`;
+    preview.querySelector(".p_callsign").textContent = callsign;
+    preview.querySelector(".p_date").textContent = date;
+    preview.querySelector(".p_mode").textContent = mode;
+    preview.querySelector(".p_rst").textContent = rst;
+}
 
-      if (!list.length) {
-        box.innerHTML = "Aucune QSL trouvée";
+// ----------------------
+// GALERIE
+// ----------------------
+function loadGallery() {
+    fetch("/qsl-list")
+    .then(res => res.json())
+    .then(data => {
+        const gallery = document.getElementById("gallery");
+        if (!gallery) return;
+
+        gallery.innerHTML = "";
+
+        data.forEach(qsl => {
+            const img = document.createElement("img");
+            img.src = qsl.image;
+            img.style.width = "200px";
+            img.style.margin = "10px";
+            gallery.appendChild(img);
+        });
+    });
+}
+
+// ----------------------
+// IMPORT CSV AVEC BARRE DE PROGRESSION
+// ----------------------
+function importCSV() {
+    const fileInput = document.getElementById("csvFile");
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Sélectionne un fichier CSV");
         return;
-      }
-
-      box.innerHTML = "";
-      list.forEach(q => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <img src="${q.thumb}" style="max-width:250px;"><br>
-          <button onclick="downloadQSL('${q.public_id}')">Télécharger</button>
-        `;
-        box.appendChild(div);
-      });
-
-    } catch {
-      box.innerHTML = "Erreur réseau";
     }
-  };
+
+    const formData = new FormData();
+    formData.append("csv", file);
+
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+
+    progressBar.style.width = "0%";
+    progressText.textContent = "0%";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/import-csv", true);
+
+    xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            progressBar.style.width = percent + "%";
+            progressText.textContent = percent + "%";
+        }
+    };
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            progressBar.style.width = "100%";
+            progressText.textContent = "Import terminé";
+
+            const data = JSON.parse(xhr.responseText);
+            displayImportedLines(data);
+            loadGallery();
+        } else {
+            alert("Erreur lors de l’import");
+        }
+    };
+
+    xhr.send(formData);
 }
 
-function downloadQSL(pid) {
-  const a = document.createElement("a");
-  a.href = API_URL + "/file?pid=" + encodeURIComponent(pid);
-  a.click();
+// ----------------------
+// AFFICHAGE DES LIGNES IMPORTEES
+// ----------------------
+function displayImportedLines(lines) {
+    const table = document.getElementById("importTable");
+    if (!table) return;
+
+    table.innerHTML = "";
+
+    lines.forEach((line, index) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${line.callsign || ""}</td>
+            <td>${line.date || ""}</td>
+            <td>${line.mode || ""}</td>
+            <td>${line.rst || ""}</td>
+        `;
+
+        table.appendChild(tr);
+    });
 }
