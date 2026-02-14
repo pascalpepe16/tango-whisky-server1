@@ -1,4 +1,4 @@
-/* ===========================
+ /* ===========================
     GENERAL
 =========================== */
 
@@ -237,4 +237,46 @@ footer {
 .logo-hover:hover {
   transform: scale(1.1);
   box-shadow: 0 0 18px #1e90ff;
+}
+.box {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-bottom: 20px;
+  background: #f9f9f9;
+}
+
+.twoColumns {
+  display: flex;
+  gap: 20px;
+}
+
+.twoColumns > div {
+  flex: 1;
+}
+
+.previewCard {
+  width: 100%;
+  max-width: 400px;
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #000;
+  position: relative;
+  color: white;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.previewCard div {
+  position: absolute;
+  font-size: 18px;
+}
+
+.p_callsign { top: 20px; left: 20px; }
+.p_date { bottom: 20px; left: 20px; }
+.p_mode { bottom: 20px; right: 20px; }
+.p_rst { top: 20px; right: 20px; }
+
+.hidden {
+  display: none;
 }
