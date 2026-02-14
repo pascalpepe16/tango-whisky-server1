@@ -1,0 +1,240 @@
+/* ===========================
+    GENERAL
+=========================== */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg")
+    center/cover fixed no-repeat;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ===========================
+    HEADER
+=========================== */
+
+header {
+  text-align: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.logo {
+  width: 140px;
+  margin-bottom: 10px;
+}
+
+/* ===========================
+    NAVIGATION
+=========================== */
+
+nav {
+  text-align: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+nav button {
+  margin: 5px;
+  padding: 8px 14px;
+  cursor: pointer;
+  background: #1e90ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+nav button:hover {
+  opacity: 0.9;
+}
+
+/* ===========================
+    SECTIONS
+=========================== */
+
+.section {
+  display: block;
+  padding: 18px;
+  max-width: 980px;
+  margin: 20px auto;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
+}
+
+.section.hidden {
+  display: none;
+}
+
+/* ===========================
+    FORMS
+=========================== */
+
+.wideForm {
+  width: 95%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.twoColumns input,
+.twoColumns select,
+.twoColumns textarea {
+  width: 100%;
+  font-size: 18px;
+  margin-bottom: 12px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* ===========================
+    BUTTONS
+=========================== */
+
+.primary {
+  background: #1e90ff;
+  color: #fff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.primary:hover {
+  opacity: 0.9;
+}
+
+/* ===========================
+    POPUP MOT DE PASSE
+=========================== */
+
+#passwordBox {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 25px;
+  background: #ffffffee;
+  color: #000;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #0005;
+  z-index: 9999;
+  width: 280px;
+  text-align: center;
+}
+
+/* ===========================
+    GALLERY + THUMBNAILS
+=========================== */
+
+/* 🔹 CONTENEUR EN GRILLE */
+#galleryContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+  justify-items: center;
+}
+
+/* 🔹 CARTE QSL */
+.thumbWrap {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+  max-width: 220px;
+}
+
+/* 🔹 IMAGE */
+.thumbWrap img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #fff;
+}
+
+/* 🔹 INDICATIF */
+.thumbLabel {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* ===========================
+    DOWNLOAD LIST
+=========================== */
+
+.dlWrap {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.dlThumb {
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* ===========================
+    PREVIEW IMAGE
+=========================== */
+
+.preview img {
+  max-width: 100%;
+  border-radius: 6px;
+  border: 2px solid #fff;
+}
+
+/* ===========================
+    FOOTER
+=========================== */
+
+footer {
+  text-align: center;
+  padding: 12px;
+  margin-top: 25px;
+  background: rgba(0, 0, 0, 0.4);
+}
+.thumbMeta {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.badgeWarn {
+  margin-top: 6px;
+  padding: 4px 6px;
+  background: #ff4444;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 6px;
+}
+/* ===========================
+   LOGOS HOVER EFFECT
+=========================== */
+
+.logo-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.logo-hover:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 18px #1e90ff;
+}
