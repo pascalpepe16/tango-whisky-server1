@@ -1,4 +1,3 @@
-```javascript
 // ===============================
 // CONFIG
 // ===============================
@@ -7,8 +6,24 @@ let importedLogs = [];
 window.isAuthenticated = false;
 
 // ===============================
-// AUTH / SESSION
+// INIT PRINCIPAL
 // ===============================
+window.addEventListener("DOMContentLoaded", () => {
+  initAuth();
+  initNavigation();
+  initForm();
+  initImport();
+  initDownload();
+  showTab("home");
+});
+
+// ===============================
+// AUTH
+// ===============================
+function initAuth() {
+  checkAuth();
+}
+
 async function checkAuth() {
   try {
     const res = await fetch("/check-auth", { credentials: "same-origin" });
@@ -21,28 +36,25 @@ async function checkAuth() {
     const btnGallery = document.getElementById("btnGallery");
     const btnCreate = document.getElementById("btnCreate");
 
-    if (window.isAuthenticated) {
-      loginBox.style.display = "none";
-      logoutBtn.style.display = "inline-block";
-      btnGallery.style.display = "inline-block";
-      btnCreate.style.display = "inline-block";
-    } else {
-      loginBox.style.display = "block";
-      logoutBtn.style.display = "none";
-      btnGallery.style.display = "none";
-      btnCreate.style.display = "none";
-    }
+    if (loginBox) loginBox.style.display = window.isAuthenticated ? "none" : "block";
+    if (logoutBtn) logoutBtn.style.display = window.isAuthenticated ? "inline-block" : "none";
+    if (btnGallery) btnGallery.style.display = window.isAuthenticated ? "inline-block" : "none";
+    if (btnCreate) btnCreate.style.display = window.isAuthenticated ? "inline-block" : "none";
+
   } catch (err) {
-    console.error("checkAuth error", err);
+    console.error("checkAuth error:", err);
   }
 }
 
 async function login() {
-  const indicatif = document.getElementById("loginIndicatif").value.trim();
-  const password = document.getElementById("loginPassword").value;
+  const indicatif = document.getElementById("loginIndicatif")?.value.trim();
+  const password = document.getElementById("loginPassword")?.value;
   const errBox = document.getElementById("loginError");
 
-  errBox.innerText = "";
+  if (!indicatif || !password) {
+    if (errBox) errBox.innerText = "Champs manquants";
+    return;
+  }
 
   try {
     const res = await fetch("/login", {
@@ -53,14 +65,15 @@ async function login() {
     });
 
     if (!res.ok) {
-      errBox.innerText = "Identifiants incorrects";
+      if (errBox) errBox.innerText = "Identifiants incorrects";
       return;
     }
 
     await checkAuth();
     showTab("home");
+
   } catch (err) {
-    errBox.innerText = "Erreur réseau";
+    if (errBox) errBox.innerText = "Erreur réseau";
   }
 }
 
@@ -71,12 +84,15 @@ function logout() {
 // ===============================
 // NAVIGATION
 // ===============================
+function initNavigation() {
+  // rien à initialiser pour l’instant
+}
+
 function showTab(id) {
   const protectedTabs = ["gallery", "create"];
 
   if (protectedTabs.includes(id) && !window.isAuthenticated) {
-    showTab("home");
-    return;
+    id = "home";
   }
 
   document.querySelectorAll(".section").forEach(sec =>
@@ -94,6 +110,8 @@ function showTab(id) {
 // ===============================
 async function loadGallery() {
   const box = document.getElementById("galleryContent");
+  if (!box) return;
+
   box.innerHTML = "Chargement…";
 
   try {
@@ -115,122 +133,101 @@ async function loadGallery() {
       div.innerHTML = `<img src="${q.thumb}">`;
       box.appendChild(div);
     });
+
   } catch (err) {
     box.innerHTML = "Erreur réseau";
   }
 }
 
 // ===============================
-// GENERATION QSL (formulaire)
+// FORMULAIRE GENERATION QSL
 // ===============================
-document.getElementById("genForm").onsubmit = async function (e) {
-  e.preventDefault();
+function initForm() {
+  const form = document.getElementById("genForm");
+  if (!form) return;
 
-  const form = e.target;
-  const preview = document.getElementById("genPreview");
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-  const formData = new FormData(form);
+    const preview = document.getElementById("genPreview");
+    if (preview) preview.innerHTML = "Génération…";
 
-  preview.innerHTML = "Génération…";
+    const formData = new FormData(form);
 
-  try {
-    const res = await fetch(API_URL + "/upload", {
-      method: "POST",
-      body: formData,
-      credentials: "same-origin"
-    });
+    try {
+      const res = await fetch(API_URL + "/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin"
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.success) {
-      preview.innerHTML = `
-        <p>QSL générée :</p>
-        <img src="${data.qsl.thumb}">
-      `;
-      form.reset();
-    } else {
-      preview.innerHTML = "Erreur génération";
+      if (data.success) {
+        if (preview) {
+          preview.innerHTML = `
+            <p>QSL générée :</p>
+            <img src="${data.qsl.thumb}">
+          `;
+        }
+        form.reset();
+      } else {
+        if (preview) preview.innerHTML = "Erreur génération";
+      }
+
+    } catch (err) {
+      if (preview) preview.innerHTML = "Erreur réseau";
     }
-  } catch (err) {
-    preview.innerHTML = "Erreur réseau";
-  }
-};
+  });
+}
 
 // ===============================
-// IMPORT CSV / EXCEL
+// IMPORT CSV
 // ===============================
+function initImport() {
+  const validateBtn = document.getElementById("validateImportBtn");
+  if (validateBtn) {
+    validateBtn.onclick = validateImport;
+  }
+}
+
 function processFile() {
-  const file = document.getElementById("importFile").files[0];
+  const file = document.getElementById("importFile")?.files[0];
   const status = document.getElementById("importStatus");
-  const previewArea = document.getElementById("previewArea");
 
   if (!file) {
-    status.innerHTML = "Choisissez un fichier";
+    if (status) status.innerHTML = "Choisissez un fichier";
     return;
   }
-
-  const normalizeRow = row => ({
-    Indicatif: (row.indicatif || row.Indicatif || "").trim(),
-    Date: (row.date || row.Date || "").trim(),
-    Heure: (row.heure || row.Heure || "").trim(),
-    Bande: (row.bande || row.Bande || "").trim(),
-    Report: (row.report || row.Report || "").trim(),
-    Mode: (row.mode || row.Mode || "").trim(),
-    Note: (row.note || row.Note || "").trim()
-  });
-
-  const showPreview = () => {
-    previewArea.innerHTML = "";
-    importedLogs.slice(0, 10).forEach(row => {
-      const div = document.createElement("div");
-      div.innerHTML = `<strong>${row.Indicatif}</strong> ${row.Date} ${row.Heure}`;
-      previewArea.appendChild(div);
-    });
-  };
 
   const reader = new FileReader();
   reader.onload = e => {
     const data = new Uint8Array(e.target.result);
     const wb = XLSX.read(data, { type: "array" });
     const ws = wb.Sheets[wb.SheetNames[0]];
-    const raw = XLSX.utils.sheet_to_json(ws);
+    importedLogs = XLSX.utils.sheet_to_json(ws);
 
-    importedLogs = raw
-      .map(normalizeRow)
-      .filter(row => row.Indicatif !== "");
-
-    status.innerHTML = `${importedLogs.length} lignes valides chargées`;
-    showPreview();
+    if (status) status.innerHTML = importedLogs.length + " lignes chargées";
     document.getElementById("validateImportBtn").style.display = "inline-block";
   };
   reader.readAsArrayBuffer(file);
 }
 
-// ===============================
-// VALIDATION IMPORT
-// ===============================
-document.getElementById("validateImportBtn").onclick = async function () {
+async function validateImport() {
   const imageInput = document.getElementById("bulkImage");
   const status = document.getElementById("importStatus");
-  const progress = document.getElementById("progressContainer");
-  const bar = document.getElementById("progressBar");
-
-  progress.style.display = "block";
-  bar.style.width = "0%";
 
   let success = 0;
 
-  for (let i = 0; i < importedLogs.length; i++) {
-    const row = importedLogs[i];
+  for (let row of importedLogs) {
     const formData = new FormData();
-
-    formData.append("indicatif", row.Indicatif);
-    formData.append("date", row.Date);
-    formData.append("time", row.Heure);
-    formData.append("band", row.Bande);
-    formData.append("report", row.Report);
-    formData.append("mode", row.Mode);
-    formData.append("note", row.Note);
+    formData.append("indicatif", row.Indicatif || "");
+    formData.append("date", row.Date || "");
+    formData.append("time", row.Heure || "");
+    formData.append("band", row.Bande || "");
+    formData.append("report", row.Report || "");
+    formData.append("mode", row.Mode || "");
+    formData.append("note", row.Note || "");
     formData.append("qsl", imageInput.files[0]);
 
     try {
@@ -242,64 +239,55 @@ document.getElementById("validateImportBtn").onclick = async function () {
 
       const data = await res.json();
       if (data.success) success++;
-    } catch (err) {}
 
-    const percent = Math.round(((i + 1) / importedLogs.length) * 100);
-    bar.style.width = percent + "%";
-    status.innerHTML = `Traitement ${i + 1}/${importedLogs.length}`;
+    } catch {}
   }
 
-  status.innerHTML = `✅ ${success} QSL enregistrées`;
-};
+  if (status) status.innerHTML = "✅ " + success + " QSL enregistrées";
+}
 
 // ===============================
-// DOWNLOAD SEARCH
+// DOWNLOAD
 // ===============================
-document.getElementById("btnSearch").onclick = async () => {
-  const call = document.getElementById("dlCall").value.trim().toUpperCase();
-  const box = document.getElementById("dlPreview");
+function initDownload() {
+  const btn = document.getElementById("btnSearch");
+  if (!btn) return;
 
-  if (!call) {
-    alert("Entrer un indicatif");
-    return;
-  }
+  btn.onclick = async () => {
+    const call = document.getElementById("dlCall")?.value.trim().toUpperCase();
+    const box = document.getElementById("dlPreview");
 
-  box.innerHTML = "Recherche…";
+    if (!call) return;
 
-  try {
-    const res = await fetch(API_URL + "/download/" + call);
-    const list = await res.json();
+    box.innerHTML = "Recherche…";
 
-    if (!list.length) {
-      box.innerHTML = "Aucune QSL trouvée";
-      return;
+    try {
+      const res = await fetch(API_URL + "/download/" + call);
+      const list = await res.json();
+
+      if (!list.length) {
+        box.innerHTML = "Aucune QSL trouvée";
+        return;
+      }
+
+      box.innerHTML = "";
+      list.forEach(q => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <img src="${q.thumb}" style="max-width:250px;"><br>
+          <button onclick="downloadQSL('${q.public_id}')">Télécharger</button>
+        `;
+        box.appendChild(div);
+      });
+
+    } catch {
+      box.innerHTML = "Erreur réseau";
     }
-
-    box.innerHTML = "";
-    list.forEach(q => {
-      const div = document.createElement("div");
-      div.className = "dlWrap";
-      div.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb">
-        <button onclick="downloadQSL('${q.public_id}')">Télécharger</button>
-      `;
-      box.appendChild(div);
-    });
-  } catch (err) {
-    console.error(err);
-    box.innerHTML = "Erreur réseau";
-  }
-};
+  };
+}
 
 function downloadQSL(pid) {
   const a = document.createElement("a");
   a.href = API_URL + "/file?pid=" + encodeURIComponent(pid);
   a.click();
 }
-
-// ===============================
-// INIT
-// ===============================
-checkAuth();
-showTab("home");
-```
