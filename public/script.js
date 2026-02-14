@@ -1,3 +1,4 @@
+```javascript
 // ===============================
 // CONFIG
 // ===============================
@@ -71,7 +72,6 @@ function logout() {
 // NAVIGATION
 // ===============================
 function showTab(id) {
-
   const protectedTabs = ["gallery", "create"];
 
   if (protectedTabs.includes(id) && !window.isAuthenticated) {
@@ -119,6 +119,42 @@ async function loadGallery() {
     box.innerHTML = "Erreur réseau";
   }
 }
+
+// ===============================
+// GENERATION QSL (formulaire)
+// ===============================
+document.getElementById("genForm").onsubmit = async function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const preview = document.getElementById("genPreview");
+
+  const formData = new FormData(form);
+
+  preview.innerHTML = "Génération…";
+
+  try {
+    const res = await fetch(API_URL + "/upload", {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin"
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      preview.innerHTML = `
+        <p>QSL générée :</p>
+        <img src="${data.qsl.thumb}">
+      `;
+      form.reset();
+    } else {
+      preview.innerHTML = "Erreur génération";
+    }
+  } catch (err) {
+    preview.innerHTML = "Erreur réseau";
+  }
+};
 
 // ===============================
 // IMPORT CSV / EXCEL
@@ -171,10 +207,9 @@ function processFile() {
 }
 
 // ===============================
-// VALIDATION IMPORT + PROGRESSION
+// VALIDATION IMPORT
 // ===============================
 document.getElementById("validateImportBtn").onclick = async function () {
-
   const imageInput = document.getElementById("bulkImage");
   const status = document.getElementById("importStatus");
   const progress = document.getElementById("progressContainer");
@@ -186,7 +221,6 @@ document.getElementById("validateImportBtn").onclick = async function () {
   let success = 0;
 
   for (let i = 0; i < importedLogs.length; i++) {
-
     const row = importedLogs[i];
     const formData = new FormData();
 
@@ -217,6 +251,7 @@ document.getElementById("validateImportBtn").onclick = async function () {
 
   status.innerHTML = `✅ ${success} QSL enregistrées`;
 };
+
 // ===============================
 // DOWNLOAD SEARCH
 // ===============================
@@ -262,11 +297,9 @@ function downloadQSL(pid) {
   a.click();
 }
 
-
-
 // ===============================
 // INIT
 // ===============================
 checkAuth();
 showTab("home");
-
+```
