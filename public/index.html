@@ -63,7 +63,7 @@
   <h2>Créer / Générer une QSL</h2>
 
   <!-- IMPORT CSV -->
-  <div class="box">
+  <div style="margin-bottom:20px;border:1px solid #ccc;padding:10px;">
     <h3>Import CSV / Excel</h3>
 
     <input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
@@ -91,87 +91,42 @@
     </div>
   </div>
 
-  <!-- CREATION CLASSIQUE -->
-  <div class="box">
-    <h3>Création classique</h3>
-
-    <form id="genForm" enctype="multipart/form-data" class="wideForm">
-
-      <div class="twoColumns">
-        <div>
-          <label>Indicatif :</label>
-          <input type="text" name="indicatif" required>
-
-          <label>Date (UTC) :</label>
-          <input type="date" id="inputDate" name="date">
-
-          <label>Heure (UTC) :</label>
-          <input type="time" id="inputTime" name="time">
-
-          <label>Bande :</label>
-          <input type="text" name="band">
-
-          <label>Report :</label>
-          <input type="text" name="report">
-        </div>
-
-        <div>
-          <label>Mode :</label>
-          <input type="text" name="mode">
-
-          <label>Note :</label>
-          <textarea name="note"></textarea>
-
-          <label>Image QSL :</label>
-          <input type="file" name="qsl" accept="image/*" required>
-        </div>
-      </div>
-
-      <button class="primary" type="submit">Générer QSL</button>
-      <div id="genPreview" class="preview"></div>
-    </form>
-  </div>
-
-  <!-- CREATION PREMIUM -->
-  <div class="box">
-    <h3>Création premium (avec aperçu)</h3>
+  <!-- FORMULAIRE NORMAL -->
+  <form id="genForm" enctype="multipart/form-data" class="wideForm">
 
     <div class="twoColumns">
       <div>
         <label>Indicatif :</label>
-        <input type="text" id="callsignPremium" oninput="updatePreview()">
+        <input type="text" name="indicatif" required>
 
-        <label>Date :</label>
-        <input type="date" id="datePremium" oninput="updatePreview()">
+        <label>Date (UTC) :</label>
+        <input type="date" id="inputDate" name="date">
 
-        <label>Mode :</label>
-        <input type="text" id="modePremium" oninput="updatePreview()">
+        <label>Heure (UTC) :</label>
+        <input type="time" id="inputTime" name="time">
 
-        <label>RST :</label>
-        <input type="text" id="rstPremium" oninput="updatePreview()">
+        <label>Bande :</label>
+        <input type="text" name="band">
 
-        <label>Fond :</label>
-        <select id="backgroundSelect" onchange="updatePreview()">
-          <option value="bg1.jpg">Fond 1</option>
-          <option value="bg2.jpg">Fond 2</option>
-        </select>
-
-        <button class="primary" onclick="createPremiumQSL()">
-          Générer QSL Premium
-        </button>
+        <label>Report :</label>
+        <input type="text" name="report">
       </div>
 
-      <!-- PREVIEW -->
       <div>
-        <div id="previewCard" class="previewCard">
-          <div class="p_callsign">CALL</div>
-          <div class="p_date">DATE</div>
-          <div class="p_mode">MODE</div>
-          <div class="p_rst">RST</div>
-        </div>
+        <label>Mode :</label>
+        <input type="text" name="mode">
+
+        <label>Note :</label>
+        <textarea name="note"></textarea>
+
+        <label>Image QSL :</label>
+        <input type="file" name="qsl" accept="image/*" required>
       </div>
     </div>
-  </div>
+
+    <button class="primary" type="submit">Générer QSL</button>
+    <div id="genPreview" class="preview"></div>
+  </form>
 
 </section>
 
