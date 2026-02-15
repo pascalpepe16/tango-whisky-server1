@@ -199,7 +199,7 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= UPLOAD (IMAGE + TEXTE DYNAMIQUE + REDIM AUTO) =================
+// ================= UPLOAD (IMAGE + TEXTE DYNAMIQUE + MARGES OPTIMISÉES) =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl) 
@@ -215,11 +215,11 @@ app.post("/upload", requireAuth, async (req, res) => {
     let noteLines = wrapText(req.body.note || "", 32);
 
     const panelWidth = 350;
-    const headerHeight = 80;
-    const infoFontSize = 24;
-    const noteFontSize = 28; // 🟢 Texte plus grand et lisible
-    const footerHeight = 40;
-    const maxPanelHeight = 800;
+    const headerHeight = 100;   // plus d’espace pour le header
+    const infoFontSize = 26;     // texte infos plus grand
+    let noteFontSize = 32;       // texte notes bien visible
+    const footerHeight = 50;
+    const maxPanelHeight = 900;  // panneau suffisamment grand
 
     // --- Infos fixes ---
     const infoLines = [
@@ -229,7 +229,7 @@ app.post("/upload", requireAuth, async (req, res) => {
       `Mode : ${escapeXml(mode)}`,
       `Report : ${escapeXml(report)}`
     ];
-    const infoHeight = infoLines.length * infoFontSize + 10;
+    const infoHeight = infoLines.length * infoFontSize + 15; // + marge interne
     let noteHeight = noteLines.length * noteFontSize + 20;
     let panelHeight = headerHeight + infoHeight + noteHeight + footerHeight;
 
@@ -239,10 +239,10 @@ app.post("/upload", requireAuth, async (req, res) => {
     const imgHeight = meta.height;
 
     // --- Ajustement taille panneau si trop grand ---
-    while (panelHeight > maxPanelHeight && noteFontSize > 10) {
-      noteHeight = noteLines.length * (noteFontSize - 2) + 20;
-      panelHeight = headerHeight + infoHeight + noteHeight + footerHeight;
+    while (panelHeight > maxPanelHeight && noteFontSize > 12) {
       noteFontSize -= 2;
+      noteHeight = noteLines.length * noteFontSize + 20;
+      panelHeight = headerHeight + infoHeight + noteHeight + footerHeight;
     }
 
     const finalHeight = Math.max(imgHeight, panelHeight);
@@ -253,15 +253,15 @@ app.post("/upload", requireAuth, async (req, res) => {
       .toBuffer();
 
     // --- Création SVG dynamique ---
-    // Infos position dynamique
+    // Infos position dynamique avec marge plus grande
     let infoSVG = "";
     infoLines.forEach((line, i) => {
-      const y = headerHeight + 50 + i * infoFontSize;
+      const y = headerHeight + 50 + i * infoFontSize; // 50 = plus d’espace après le header
       infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
     });
 
-    // Notes position dynamique
-    const startNoteY = headerHeight + infoHeight + 40;
+    // Notes position dynamique avec plus de marge
+    const startNoteY = headerHeight + infoHeight + 40; // 40 = espace plus grand entre infos et notes
     const noteSVG = noteLines
       .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
       .join("");
@@ -277,17 +277,17 @@ app.post("/upload", requireAuth, async (req, res) => {
 
   <rect width="100%" height="100%" fill="url(#bg)"/>
   <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
-  <text x="20" y="55" font-size="42" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
+  <text x="20" y="60" font-size="48" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
 
   <line x1="20" y1="${headerHeight + 30}" x2="${panelWidth - 20}" y2="${headerHeight + 30}" stroke="#ccc"/>
   ${infoSVG}
-  <line x1="20" y1="${headerHeight + infoHeight + 5}" x2="${panelWidth - 20}" y2="${headerHeight + infoHeight + 5}" stroke="#ccc"/>
+  <line x1="20" y1="${headerHeight + infoHeight + 20}" x2="${panelWidth - 20}" y2="${headerHeight + infoHeight + 20}" stroke="#ccc"/>
 
   <text x="0" y="0" font-size="${noteFontSize}" fill="#000" xml:space="preserve">
     ${noteSVG}
   </text>
 
-  <text x="20" y="${finalHeight - 20}" font-size="14" fill="#555">TANGO WHISKY eQSL</text>
+  <text x="20" y="${finalHeight - 20}" font-size="16" fill="#555">TANGO WHISKY eQSL</text>
 </svg>
 `;
 
@@ -326,6 +326,7 @@ app.post("/upload", requireAuth, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 // ================= FILE DOWNLOAD + AUTO DELETE =================
 app.get("/file", async (req, res) => {
