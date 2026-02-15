@@ -220,7 +220,7 @@ app.post("/upload", requireAuth, async (req, res) => {
     const headerHeight = 80;
     const infoHeight = 6 * 35; // 6 lignes d’infos
     const footerHeight = 40;
-    let fontSize = 22; // taille initiale du texte note
+    let fontSize = 28; // taille initiale du texte note
 
     // Lire metadata de l'image
     const meta = await sharp(file.tempFilePath).metadata();
