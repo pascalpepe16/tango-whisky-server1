@@ -1,5 +1,5 @@
 // =============================================
-//  TANGO WHISKY — SERVER.JS (FINAL ABSOLU)
+//  TANGO WHISKY — SERVER.JS (FINAL AJUSTÉ)
 // =============================================
 
 import express from "express";
@@ -128,7 +128,6 @@ function wrapText(text = "", max = 32) {
   return lines; // ✅ TABLEAU
 }
 
-
 function parseContext(ctx) {
   if (!ctx || !ctx.custom || !ctx.custom.entry) return {};
   return ctx.custom.entry.split("|").reduce((acc, p) => {
@@ -214,33 +213,26 @@ app.post("/upload", requireAuth, async (req, res) => {
     const band = req.body.band || "";
     const mode = req.body.mode || "";
     const report = req.body.report || "";
-    const note = wrapText(req.body.note || "", 32);
+    const noteLines = wrapText(req.body.note || "", 32);
 
-    const input = sharp(file.tempFilePath).resize({
-      width: 1400,
-      height: 900,
-      fit: "inside",
-      withoutEnlargement: true
-    });
-
+    const input = sharp(file.tempFilePath);
     const meta = await input.metadata();
     const W = meta.width;
     const H = meta.height;
     const panelWidth = 350;
 
-    const userBuffer = await input
-      .resize(W, H, { fit: "contain", background: "#fff" })
+    // ✅ Ajustement de l'image sans déformation
+    const userBuffer = await sharp(file.tempFilePath)
+      .resize(W, H, { fit: "contain", background: "#fff", position: "center" })
       .toBuffer();
 
-   const noteLines = wrapText(req.body.note || "", 32);
+    const noteSVG = noteLines
+      .map((line, i) =>
+        `<tspan x="20" dy="${i === 0 ? 0 : 22}">${escapeXml(line)}</tspan>`
+      )
+      .join("");
 
-const noteSVG = noteLines
-  .map((line, i) =>
-    `<tspan x="20" dy="${i === 0 ? 0 : 22}">${escapeXml(line)}</tspan>`
-  )
-  .join("");
-
-const panelSVG = `
+    const panelSVG = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${panelWidth}" height="${H}">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
@@ -249,41 +241,26 @@ const panelSVG = `
     </linearGradient>
   </defs>
 
-  <!-- fond -->
   <rect width="100%" height="100%" fill="url(#bg)"/>
-
-  <!-- bande indicatif -->
   <rect x="0" y="0" width="100%" height="80" fill="#1f2937"/>
   <text x="20" y="55" font-size="42" fill="white" font-weight="bold">
     ${escapeXml(indicatif)}
   </text>
-
-  <!-- séparation -->
   <line x1="20" y1="110" x2="${panelWidth - 20}" y2="110" stroke="#ccc"/>
-
-  <!-- infos QSO -->
   <text x="20" y="150" font-size="24">Date : ${escapeXml(date)}</text>
   <text x="20" y="185" font-size="24">UTC : ${escapeXml(time)}</text>
   <text x="20" y="220" font-size="24">Bande : ${escapeXml(band)}</text>
   <text x="20" y="255" font-size="24">Mode : ${escapeXml(mode)}</text>
   <text x="20" y="290" font-size="24">Report : ${escapeXml(report)}</text>
-
-  <!-- note -->
   <line x1="20" y1="320" x2="${panelWidth - 20}" y2="320" stroke="#ccc"/>
   <text x="20" y="340" font-size="22">
-  ${noteSVG}
-</text>
-
-
-  <!-- signature -->
+    ${noteSVG}
+  </text>
   <text x="20" y="${H - 20}" font-size="14" fill="#555">
     TANGO WHISKY eQSL
   </text>
 </svg>
 `;
-
-
-
 
     const panelBuffer = await sharp(Buffer.from(panelSVG))
       .png()
@@ -309,7 +286,7 @@ const panelSVG = `
       {
         folder: "TW-eQSL",
         tags: [`indicatif_${indicatif}`],
-        context: { indicatif, date, time, band, mode, report, note }
+        context: { indicatif, date, time, band, mode, report, note: noteLines.join(" ") }
       },
       (err, result) => {
         if (err) {
@@ -333,7 +310,6 @@ const panelSVG = `
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
 
 // ================= FILE DOWNLOAD + AUTO DELETE =================
 app.get("/file", async (req, res) => {
@@ -392,9 +368,3 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () =>
   console.log("TW-eQSL server running on port", PORT)
 );
-
-
-
-
-
-
