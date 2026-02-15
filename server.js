@@ -199,7 +199,7 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= UPLOAD (PROTÉGÉ) =================
+// ================= UPLOAD (PROTÉGÉ + IMAGE AUTORESIZE) =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl) {
@@ -215,31 +215,37 @@ app.post("/upload", requireAuth, async (req, res) => {
     const report = req.body.report || "";
     let noteLines = wrapText(req.body.note || "", 32);
 
-    const input = sharp(file.tempFilePath);
-    const meta = await input.metadata();
-    const W = meta.width;
-    const H = meta.height;
     const panelWidth = 350;
-
-    const userBuffer = await sharp(file.tempFilePath).toBuffer();
-
-    // ================= Hauteur et police dynamiques =================
+    const maxPanelHeight = 600; // Hauteur max raisonnable du panneau texte
     const headerHeight = 80;
     const infoHeight = 6 * 35; // 6 lignes d’infos
     const footerHeight = 40;
-    const maxPanelHeight = 600; // hauteur max raisonnable
     let fontSize = 22; // taille initiale du texte note
-    let noteHeight = noteLines.length * fontSize + 20;
-    let panelHeight = Math.max(H, headerHeight + infoHeight + noteHeight + footerHeight);
 
-    // Si trop grand, réduire la taille de la police
+    // Lire metadata de l'image
+    const meta = await sharp(file.tempFilePath).metadata();
+    const originalWidth = meta.width;
+    const originalHeight = meta.height;
+
+    // Calcul initial du panneau
+    let noteHeight = noteLines.length * fontSize + 20;
+    let panelHeight = headerHeight + infoHeight + noteHeight + footerHeight;
+
+    // Réduction de police si panneau trop grand
     while (panelHeight > maxPanelHeight && fontSize > 10) {
       fontSize -= 2;
       noteHeight = noteLines.length * fontSize + 20;
-      panelHeight = Math.max(H, headerHeight + infoHeight + noteHeight + footerHeight);
+      panelHeight = headerHeight + infoHeight + noteHeight + footerHeight;
     }
 
-    // ================= Génération du SVG =================
+    const finalHeight = Math.max(originalHeight, panelHeight);
+
+    // Redimensionnement auto de l'image avec padding pour remplir la hauteur
+    const userBuffer = await sharp(file.tempFilePath)
+      .resize({ height: finalHeight, fit: "contain", background: "#fff" })
+      .toBuffer();
+
+    // Création du SVG du panneau texte
     const startY = headerHeight + infoHeight + 10;
     const noteSVG = noteLines
       .map((line, i) =>
@@ -248,7 +254,7 @@ app.post("/upload", requireAuth, async (req, res) => {
       .join("");
 
     const panelSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${panelWidth}" height="${panelHeight}">
+<svg xmlns="http://www.w3.org/2000/svg" width="${panelWidth}" height="${finalHeight}">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#f9f9f9"/>
@@ -258,9 +264,7 @@ app.post("/upload", requireAuth, async (req, res) => {
 
   <rect width="100%" height="100%" fill="url(#bg)"/>
   <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
-  <text x="20" y="55" font-size="42" fill="white" font-weight="bold">
-    ${escapeXml(indicatif)}
-  </text>
+  <text x="20" y="55" font-size="42" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
 
   <line x1="20" y1="${headerHeight + 30}" x2="${panelWidth - 20}" y2="${headerHeight + 30}" stroke="#ccc"/>
 
@@ -276,31 +280,32 @@ app.post("/upload", requireAuth, async (req, res) => {
     ${noteSVG}
   </text>
 
-  <text x="20" y="${panelHeight - 20}" font-size="14" fill="#555">
+  <text x="20" y="${finalHeight - 20}" font-size="14" fill="#555">
     TANGO WHISKY eQSL
   </text>
 </svg>
 `;
 
-    // ================= Rasterisation et composition =================
+    // Rasterisation du SVG
     const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
 
+    // Composition finale : image + panneau texte
     const finalBuffer = await sharp({
       create: {
-        width: W + panelWidth,
-        height: Math.max(H, panelHeight),
+        width: originalWidth + panelWidth,
+        height: finalHeight,
         channels: 3,
         background: "#fff"
       }
     })
       .composite([
         { input: userBuffer, top: 0, left: 0 },
-        { input: panelBuffer, top: 0, left: W }
+        { input: panelBuffer, top: 0, left: originalWidth }
       ])
       .jpeg({ quality: 92 })
       .toBuffer();
 
-    // ================= Upload Cloudinary =================
+    // Upload sur Cloudinary
     cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
@@ -329,6 +334,7 @@ app.post("/upload", requireAuth, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 
 // ================= FILE DOWNLOAD + AUTO DELETE =================
