@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
@@ -8,8 +9,11 @@
   <link rel="stylesheet" href="style.css">
 
   <!-- Librairies pour import Excel/CSV -->
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 </head>
 <body>
 
@@ -30,7 +34,7 @@
     Créer / Ajouter
   </button>
 
-  <button onclick="showTab('download')">Télécharger</button>
+<button onclick="showTab('download')">Télécharger</button>
 
   <button id="logoutBtn" onclick="logout()" style="display:none;">
     Déconnexion
@@ -63,69 +67,77 @@
   <h2>Créer / Générer une QSL</h2>
 
   <!-- IMPORT CSV -->
+
   <div style="margin-bottom:20px;border:1px solid #ccc;padding:10px;">
     <h3>Import CSV / Excel</h3>
 
-    <input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
+```
+<input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
 
-    <label>Image pour toutes les QSL importées :</label><br>
-    <input type="file" id="bulkImage" accept="image/*"><br><br>
+<label>Image pour toutes les QSL importées (format conseillé : 1024×683 minimum)</label><br>
+<input type="file" id="bulkImage" accept="image/*"><br><br>
 
-    <button onclick="processFile()">Importer</button>
-    <button id="validateImportBtn" style="display:none;">
-      Valider et enregistrer
-    </button>
+<button onclick="processFile()">Importer</button>
+<button id="validateImportBtn" style="display:none;">
+  Valider et enregistrer
+</button>
 
-    <div id="importStatus" style="margin-top:10px;"></div>
+<div id="importStatus" style="margin-top:10px;"></div>
 
-    <!-- Prévisualisation -->
-    <div id="previewArea" style="margin-top:10px;"></div>
+<!-- Prévisualisation -->
+<div id="previewArea" style="margin-top:10px;"></div>
 
-    <!-- Barre de progression -->
-    <div id="progressContainer" style="display:none;margin-top:10px;">
-      <div style="background:#ccc;height:20px;border-radius:10px;">
-        <div id="progressBar"
-             style="width:0%;height:100%;background:#28a745;border-radius:10px;">
-        </div>
-      </div>
+<!-- Barre de progression -->
+<div id="progressContainer" style="display:none;margin-top:10px;">
+  <div style="background:#ccc;height:20px;border-radius:10px;">
+    <div id="progressBar"
+         style="width:0%;height:100%;background:#28a745;border-radius:10px;">
     </div>
   </div>
+</div>
+```
 
-  <!-- FORMULAIRE NORMAL -->
+  </div>
+
+  <!-- FORMULAIRE QSL UNITAIRE -->
+
   <form id="genForm" enctype="multipart/form-data" class="wideForm">
 
-    <div class="twoColumns">
-      <div>
-        <label>Indicatif :</label>
-        <input type="text" name="indicatif" required>
+```
+<div class="twoColumns">
+  <div>
+    <label>Indicatif :</label>
+    <input type="text" name="indicatif" required>
 
-        <label>Date (UTC) :</label>
-        <input type="date" id="inputDate" name="date">
+    <label>Date (UTC) :</label>
+    <input type="date" name="date">
 
-        <label>Heure (UTC) :</label>
-        <input type="time" id="inputTime" name="time">
+    <label>Heure (UTC) :</label>
+    <input type="time" name="time">
 
-        <label>Bande :</label>
-        <input type="text" name="band">
+    <label>Bande :</label>
+    <input type="text" name="band">
 
-        <label>Report :</label>
-        <input type="text" name="report">
-      </div>
+    <label>Report :</label>
+    <input type="text" name="report">
+  </div>
 
-      <div>
-        <label>Mode :</label>
-        <input type="text" name="mode">
+  <div>
+    <label>Mode :</label>
+    <input type="text" name="mode">
 
-        <label>Note :</label>
-        <textarea name="note"></textarea>
+    <label>Note :</label>
+    <textarea name="note"></textarea>
 
-        <label>Image QSL :</label>
-        <input type="file" name="qsl" accept="image/*" required>
-      </div>
-    </div>
+    <label>Image QSL :</label>
+    <input type="file" name="qsl" accept="image/*" required>
+  </div>
+</div>
 
-    <button class="primary" type="submit">Générer QSL</button>
-    <div id="genPreview" class="preview"></div>
+<button class="primary" type="submit">Générer QSL</button>
+<div id="genPreview" class="preview"></div>
+```
+
   </form>
 
 </section>
@@ -146,5 +158,6 @@
 </footer>
 
 <script src="script.js"></script>
+
 </body>
 </html>
