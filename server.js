@@ -222,9 +222,9 @@ app.post("/upload", requireAuth, async (req, res) => {
     const panelWidth = 350;
 
     // ✅ Ajustement de l'image sans déformation
-    const userBuffer = await sharp(file.tempFilePath)
-      .resize(W, H, { fit: "contain", background: "#fff", position: "center" })
-      .toBuffer();
+   onst userBuffer = await sharp(file.tempFilePath)
+  .resize(W, H, { fit: "cover", position: "center" })
+  .toBuffer();
 
     const noteSVG = noteLines
       .map((line, i) =>
