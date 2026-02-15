@@ -124,7 +124,8 @@ async function loadGallery() {
 // IMPORT CSV / EXCEL
 // ===============================
 function processFile() {
-  const file = document.getElementById("importFile").files[0];
+  const fileInput = document.getElementById("importFile");
+  const file = fileInput.files[0];
   const status = document.getElementById("importStatus");
   const previewArea = document.getElementById("previewArea");
 
@@ -132,6 +133,8 @@ function processFile() {
     status.innerHTML = "Choisissez un fichier";
     return;
   }
+
+  const ext = file.name.split(".").pop().toLowerCase();
 
   const normalizeRow = row => ({
     Indicatif: (row.indicatif || row.Indicatif || "").trim(),
@@ -152,22 +155,43 @@ function processFile() {
     });
   };
 
-  const reader = new FileReader();
-  reader.onload = e => {
-    const data = new Uint8Array(e.target.result);
-    const wb = XLSX.read(data, { type: "array" });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const raw = XLSX.utils.sheet_to_json(ws);
+  if (ext === "csv") {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        importedLogs = results.data
+          .map(normalizeRow)
+          .filter(r => r.Indicatif !== "");
+        status.innerHTML = `${importedLogs.length} lignes valides chargées`;
+        showPreview();
+        document.getElementById("validateImportBtn").style.display = "inline-block";
+      },
+      error: function(err) {
+        console.error(err);
+        status.innerHTML = "Erreur lors de la lecture du CSV";
+      }
+    });
+  } else if (ext === "xlsx") {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws);
 
-    importedLogs = raw
-      .map(normalizeRow)
-      .filter(row => row.Indicatif !== "");
+      importedLogs = raw
+        .map(normalizeRow)
+        .filter(r => r.Indicatif !== "");
 
-    status.innerHTML = `${importedLogs.length} lignes valides chargées`;
-    showPreview();
-    document.getElementById("validateImportBtn").style.display = "inline-block";
-  };
-  reader.readAsArrayBuffer(file);
+      status.innerHTML = `${importedLogs.length} lignes valides chargées`;
+      showPreview();
+      document.getElementById("validateImportBtn").style.display = "inline-block";
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    status.innerHTML = "Format non supporté (CSV ou XLSX uniquement)";
+  }
 }
 
 // ===============================
@@ -217,6 +241,7 @@ document.getElementById("validateImportBtn").onclick = async function () {
 
   status.innerHTML = `✅ ${success} QSL enregistrées`;
 };
+
 // ===============================
 // DOWNLOAD SEARCH
 // ===============================
@@ -261,6 +286,7 @@ function downloadQSL(pid) {
   a.href = API_URL + "/file?pid=" + encodeURIComponent(pid);
   a.click();
 }
+
 // ===============================
 // GENERATION QSL UNITAIRE
 // ===============================
@@ -303,11 +329,8 @@ document.getElementById("genForm").addEventListener("submit", async e => {
   }
 });
 
-
-
 // ===============================
 // INIT
 // ===============================
 checkAuth();
 showTab("home");
-
