@@ -267,6 +267,11 @@ function downloadQSL(pid) {
 // ===============================
 // INIT
 // ===============================
+// ===============================
+// GENERATION QSL FORMULAIRE NORMAL
+// ===============================
+document.getElementById("genForm").addEventListener("submit", async function (e)
+
 checkAuth();
 showTab("home");
 
