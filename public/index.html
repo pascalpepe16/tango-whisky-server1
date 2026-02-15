@@ -8,6 +8,8 @@
 
   <link rel="stylesheet" href="style.css">
 
+  <!-- Librairies pour import Excel/CSV -->
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -23,10 +25,20 @@
 
 <nav>
   <button onclick="showTab('home')">Accueil</button>
-  <button id="btnGallery" style="display:none;" onclick="showTab('gallery')">Galerie</button>
-  <button id="btnCreate" style="display:none;" onclick="showTab('create')">Créer / Ajouter</button>
-  <button onclick="showTab('download')">Télécharger</button>
-  <button id="logoutBtn" onclick="logout()" style="display:none;">Déconnexion</button>
+
+  <button id="btnGallery" style="display:none;" onclick="showTab('gallery')">
+    Galerie
+  </button>
+
+  <button id="btnCreate" style="display:none;" onclick="showTab('create')">
+    Créer / Ajouter
+  </button>
+
+<button onclick="showTab('download')">Télécharger</button>
+
+  <button id="logoutBtn" onclick="logout()" style="display:none;">
+    Déconnexion
+  </button>
 </nav>
 
 <div id="loginBox" class="box">
@@ -54,6 +66,46 @@
 <section id="create" class="section hidden">
   <h2>Créer / Générer une QSL</h2>
 
+  <!-- IMPORT CSV -->
+
+  <div style="margin-bottom:20px;border:1px solid #ccc;padding:10px;">
+    <h3>Import CSV / Excel</h3>
+
+```
+<input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
+
+<label>Image pour toutes les QSL importées (format conseillé : 1024×683 minimum)</label><br>
+<input type="file" id="bulkImage" accept="image/*"><br><br>
+
+<button onclick="processFile()">Importer</button>
+<button id="validateImportBtn" style="display:none;">
+  Valider et enregistrer
+</button>
+
+<div id="importStatus" style="margin-top:10px;"></div>
+
+<!-- Prévisualisation -->
+<div id="previewArea" style="margin-top:10px;"></div>
+
+<!-- Barre de progression -->
+<div id="progressContainer" style="display:none;margin-top:10px;">
+  <div style="background:#ccc;height:20px;border-radius:10px;">
+    <div id="progressBar"
+         style="width:0%;height:100%;background:#28a745;border-radius:10px;">
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- FORMULAIRE QSL UNITAIRE -->
+<label>Modèle :</label>
+<select name="template">
+  <option value="classic">Classique</option>
+  <option value="modern">Moderne</option>
+</select>
+
   <form id="genForm" enctype="multipart/form-data" class="wideForm">
 
 ```
@@ -71,7 +123,7 @@
     <label>Bande :</label>
     <input type="text" name="band">
 
-    <label>RST :</label>
+    <label>Report :</label>
     <input type="text" name="report">
   </div>
 
@@ -81,12 +133,6 @@
 
     <label>Note :</label>
     <textarea name="note"></textarea>
-
-    <label>Modèle :</label>
-    <select name="template">
-      <option value="classic">Classique</option>
-      <option value="modern">Moderne</option>
-    </select>
 
     <label>Image QSL :</label>
     <input type="file" name="qsl" accept="image/*" required>
