@@ -1,5 +1,5 @@
 // =============================================
-//  TANGO WHISKY — SERVER.JS (FINAL PRO)
+//  TANGO WHISKY — SERVER.JS (VERSION PRO)
 // =============================================
 
 import express from "express";
@@ -14,8 +14,8 @@ import session from "express-session";
 import fs from "fs";
 
 // ================= CONFIG =================
-const MAX_DOWNLOADS = 2; // téléchargements max
-const MAX_DAYS = 30;      // durée de vie en jours
+const MAX_DOWNLOADS = 2;
+const MAX_DAYS = 30;
 
 // ================= INIT =================
 const __filename = fileURLToPath(import.meta.url);
@@ -57,8 +57,7 @@ function saveDownloads(data) {
 }
 
 function isExpired(entry) {
-  const ageMs = Date.now() - entry.createdAt;
-  return ageMs >= MAX_DAYS * 24 * 60 * 60 * 1000;
+  return Date.now() - entry.createdAt >= MAX_DAYS * 24 * 60 * 60 * 1000;
 }
 
 // ================= AUTH =================
@@ -130,7 +129,7 @@ function parseContext(ctx) {
   }, {});
 }
 
-// ================= GALERIE (PROTÉGÉE) =================
+// ================= GALERIE =================
 app.get("/qsl", requireAuth, async (req, res) => {
   try {
     const result = await cloudinary.search
@@ -151,7 +150,7 @@ app.get("/qsl", requireAuth, async (req, res) => {
   }
 });
 
-// ================= RECHERCHE + INFOS RESTANTES =================
+// ================= DOWNLOAD INFO =================
 app.get("/download/:call", async (req, res) => {
   try {
     const call = req.params.call.toUpperCase();
@@ -164,15 +163,8 @@ app.get("/download/:call", async (req, res) => {
 
     const list = result.resources.map(r => {
       const entry = downloads[r.public_id];
-
-      const remainingDownloads = entry
-        ? Math.max(0, MAX_DOWNLOADS - entry.count)
-        : MAX_DOWNLOADS;
-
-      const remainingDays = entry
-        ? Math.max(0, MAX_DAYS - Math.floor((Date.now() - entry.createdAt) / 86400000))
-        : MAX_DAYS;
-
+      const remainingDownloads = entry ? Math.max(0, MAX_DOWNLOADS - entry.count) : MAX_DOWNLOADS;
+      const remainingDays = entry ? Math.max(0, MAX_DAYS - Math.floor((Date.now() - entry.createdAt) / 86400000)) : MAX_DAYS;
       return {
         public_id: r.public_id,
         url: r.secure_url,
@@ -189,108 +181,104 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= UPLOAD / GENERIQUE =================
+// ================= GENERIC QSL UPLOAD =================
+async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
+  const PANEL_WIDTH = 350;
+  const IMG_WIDTH = 470;
+  const IMG_HEIGHT = 410;
+  const TOTAL_WIDTH = IMG_WIDTH + PANEL_WIDTH;
+  const TOTAL_HEIGHT = IMG_HEIGHT;
+  const headerHeight = 100;
+  const infoFontSize = 22;
+  const noteFontSize = 28;
+
+  let noteLines = wrapText(note || "", 32);
+  const infoLines = [
+    `Date : ${escapeXml(date)}`,
+    `UTC : ${escapeXml(time)}`,
+    `Bande : ${escapeXml(band)}`,
+    `Mode : ${escapeXml(mode)}`,
+    `Report : ${escapeXml(report)}`
+  ];
+
+  // Image fill cover
+  const userBuffer = await sharp(filePath)
+    .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "cover", position: "center" })
+    .toBuffer();
+
+  // Info SVG
+  let infoSVG = "";
+  infoLines.forEach((line, i) => {
+    const y = headerHeight + 30 + i * infoFontSize;
+    infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
+  });
+
+  // Note SVG
+  const startNoteY = headerHeight + infoLines.length * infoFontSize + 60;
+  const noteSVG = noteLines
+    .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
+    .join("");
+
+  const panelSVG = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#f9f9f9"/>
+    <stop offset="100%" stop-color="#eeeeee"/>
+  </linearGradient></defs>
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
+  <text x="20" y="60" font-size="40" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
+  <line x1="20" y1="${headerHeight + 20}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + 20}" stroke="#ccc"/>
+  ${infoSVG}
+  <line x1="20" y1="${headerHeight + infoLines.length * infoFontSize + 40}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + infoLines.length * infoFontSize + 40}" stroke="#ccc"/>
+  <text x="0" y="0" font-size="${noteFontSize}" fill="#000" xml:space="preserve">${noteSVG}</text>
+  <text x="20" y="${TOTAL_HEIGHT - 20}" font-size="14" fill="#555">TANGO WHISKY eQSL</text>
+</svg>`;
+
+  const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
+
+  const finalBuffer = await sharp({
+    create: { width: TOTAL_WIDTH, height: TOTAL_HEIGHT, channels: 3, background: "#fff" }
+  })
+    .composite([
+      { input: userBuffer, top: 0, left: 0 },
+      { input: panelBuffer, top: 0, left: IMG_WIDTH }
+    ])
+    .jpeg({ quality: 92 })
+    .toBuffer();
+
+  return finalBuffer;
+}
+
+// ================= UPLOAD =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
       return res.status(400).json({ success: false, error: "Aucune image reçue" });
 
     const file = req.files.qsl;
-    const indicatif = (req.body.indicatif || "").toUpperCase();
-    const date = req.body.date || "";
-    const time = req.body.time || "";
-    const band = req.body.band || "";
-    const mode = req.body.mode || "";
-    const report = req.body.report || "";
-    let noteLines = wrapText(req.body.note || "", 32);
-
-    // ---------------- CONFIG ----------------
-    const PANEL_WIDTH = 350;
-    const IMG_WIDTH = 470;
-    const IMG_HEIGHT = 410;
-    const TOTAL_WIDTH = IMG_WIDTH + PANEL_WIDTH;
-    const TOTAL_HEIGHT = IMG_HEIGHT;
-    const headerHeight = 100;
-    const infoFontSize = 22;
-    const noteFontSize = 28;
-    const infoLines = [
-      `Date : ${escapeXml(date)}`,
-      `UTC : ${escapeXml(time)}`,
-      `Bande : ${escapeXml(band)}`,
-      `Mode : ${escapeXml(mode)}`,
-      `Report : ${escapeXml(report)}`
-    ];
-
-    // ---------------- REDIMENSION IMAGE ----------------
-    const userBuffer = await sharp(file.tempFilePath)
-      .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "contain", background: "#fff" })
-      .toBuffer();
-
-    // ---------------- TEXTE FIXE ----------------
-    let infoSVG = "";
-    infoLines.forEach((line, i) => {
-      const y = headerHeight + 30 + i * infoFontSize;
-      infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
+    const buffer = await generateQSLBuffer({
+      filePath: file.tempFilePath,
+      indicatif: (req.body.indicatif || "").toUpperCase(),
+      date: req.body.date,
+      time: req.body.time,
+      band: req.body.band,
+      mode: req.body.mode,
+      report: req.body.report,
+      note: req.body.note
     });
 
-    const startNoteY = headerHeight + infoLines.length * infoFontSize + 60;
-    const noteSVG = noteLines
-      .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
-      .join("");
-
-    const panelSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f9f9f9"/>
-      <stop offset="100%" stop-color="#eeeeee"/>
-    </linearGradient>
-  </defs>
-
-  <rect width="100%" height="100%" fill="url(#bg)"/>
-  <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
-  <text x="20" y="60" font-size="40" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
-
-  <line x1="20" y1="${headerHeight + 20}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + 20}" stroke="#ccc"/>
-  ${infoSVG}
-  <line x1="20" y1="${headerHeight + infoLines.length * infoFontSize + 40}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + infoLines.length * infoFontSize + 40}" stroke="#ccc"/>
-
-  <text x="0" y="0" font-size="${noteFontSize}" fill="#000" xml:space="preserve">
-    ${noteSVG}
-  </text>
-
-  <text x="20" y="${TOTAL_HEIGHT - 20}" font-size="14" fill="#555">TANGO WHISKY eQSL</text>
-</svg>
-`;
-
-    // ---------------- COMPOSITE ----------------
-    const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
-
-    const finalBuffer = await sharp({
-      create: { width: TOTAL_WIDTH, height: TOTAL_HEIGHT, channels: 3, background: "#fff" }
-    })
-      .composite([
-        { input: userBuffer, top: 0, left: 0 },
-        { input: panelBuffer, top: 0, left: IMG_WIDTH }
-      ])
-      .jpeg({ quality: 92 })
-      .toBuffer();
-
-    // ---------------- UPLOAD ----------------
     cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
-        tags: [`indicatif_${indicatif}`],
-        context: { indicatif, date, time, band, mode, report, note: noteLines.join(" ") }
+        tags: [`indicatif_${(req.body.indicatif || "").toUpperCase()}`],
+        context: { indicatif: req.body.indicatif, date: req.body.date, time: req.body.time, band: req.body.band, mode: req.body.mode, report: req.body.report, note: req.body.note }
       },
       (err, result) => {
         if (err) return res.status(500).json({ success: false, error: err.message });
-        res.json({
-          success: true,
-          qsl: { public_id: result.public_id, url: result.secure_url, thumb: result.secure_url.replace("/upload/", "/upload/w_300/") }
-        });
+        res.json({ success: true, qsl: { public_id: result.public_id, url: result.secure_url, thumb: result.secure_url.replace("/upload/", "/upload/w_300/") } });
       }
-    ).end(finalBuffer);
+    ).end(buffer);
 
   } catch (err) {
     console.error("UPLOAD ERROR:", err);
@@ -305,117 +293,42 @@ app.post("/upload-single-qsl", requireAuth, async (req, res) => {
       return res.status(400).json({ success: false, error: "Aucune image reçue" });
 
     const file = req.files.qsl;
-    const indicatif = (req.body.indicatif || "").toUpperCase();
-    const date = req.body.date || "";
-    const time = req.body.time || "";
-    const band = req.body.band || "";
-    const mode = req.body.mode || "";
-    const report = req.body.report || "";
-    let noteLines = wrapText(req.body.note || "", 32);
-
-    // ---------------- CONFIG ----------------
-    const PANEL_WIDTH = 350;
-    const IMG_WIDTH = 470;
-    const IMG_HEIGHT = 410;
-    const TOTAL_WIDTH = IMG_WIDTH + PANEL_WIDTH;
-    const TOTAL_HEIGHT = IMG_HEIGHT;
-    const headerHeight = 100;
-    const infoFontSize = 22;
-    const noteFontSize = 28;
-
-    const infoLines = [
-      `Date : ${escapeXml(date)}`,
-      `UTC : ${escapeXml(time)}`,
-      `Bande : ${escapeXml(band)}`,
-      `Mode : ${escapeXml(mode)}`,
-      `Report : ${escapeXml(report)}`
-    ];
-
-    // ---------------- REDIMENSION IMAGE ----------------
-    const userBuffer = await sharp(file.tempFilePath)
-      .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "contain", background: "#fff" })
-      .toBuffer();
-
-    // ---------------- TEXTE ----------------
-    let infoSVG = "";
-    infoLines.forEach((line, i) => {
-      const y = headerHeight + 30 + i * infoFontSize;
-      infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
+    const buffer = await generateQSLBuffer({
+      filePath: file.tempFilePath,
+      indicatif: (req.body.indicatif || "").toUpperCase(),
+      date: req.body.date,
+      time: req.body.time,
+      band: req.body.band,
+      mode: req.body.mode,
+      report: req.body.report,
+      note: req.body.note
     });
 
-    const startNoteY = headerHeight + infoLines.length * infoFontSize + 60;
-    const noteSVG = noteLines
-      .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
-      .join("");
-
-    const panelSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f9f9f9"/>
-      <stop offset="100%" stop-color="#eeeeee"/>
-    </linearGradient>
-  </defs>
-
-  <rect width="100%" height="100%" fill="url(#bg)"/>
-  <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
-  <text x="20" y="60" font-size="40" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
-
-  <line x1="20" y1="${headerHeight + 20}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + 20}" stroke="#ccc"/>
-  ${infoSVG}
-  <line x1="20" y1="${headerHeight + infoLines.length * infoFontSize + 40}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + infoLines.length * infoFontSize + 40}" stroke="#ccc"/>
-
-  <text x="0" y="0" font-size="${noteFontSize}" fill="#000" xml:space="preserve">
-    ${noteSVG}
-  </text>
-
-  <text x="20" y="${TOTAL_HEIGHT - 20}" font-size="14" fill="#555">TANGO WHISKY eQSL</text>
-</svg>
-`;
-
-    // ---------------- COMPOSITE FINAL ----------------
-    const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
-
-    const finalBuffer = await sharp({
-      create: { width: TOTAL_WIDTH, height: TOTAL_HEIGHT, channels: 3, background: "#fff" }
-    })
-      .composite([
-        { input: userBuffer, top: 0, left: 0 },
-        { input: panelBuffer, top: 0, left: IMG_WIDTH }
-      ])
-      .jpeg({ quality: 92 })
-      .toBuffer();
-
-    // ---------------- UPLOAD ----------------
     cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
-        tags: [`indicatif_${indicatif}`],
-        context: { indicatif, date, time, band, mode, report, note: noteLines.join(" ") }
+        tags: [`indicatif_${(req.body.indicatif || "").toUpperCase()}`],
+        context: { indicatif: req.body.indicatif, date: req.body.date, time: req.body.time, band: req.body.band, mode: req.body.mode, report: req.body.report, note: req.body.note }
       },
       (err, result) => {
         if (err) return res.status(500).json({ success: false, error: err.message });
-        res.json({
-          success: true,
-          qsl: { public_id: result.public_id, url: result.secure_url, thumb: result.secure_url.replace("/upload/", "/upload/w_300/") }
-        });
+        res.json({ success: true, qsl: { public_id: result.public_id, url: result.secure_url, thumb: result.secure_url.replace("/upload/", "/upload/w_300/") } });
       }
-    ).end(finalBuffer);
+    ).end(buffer);
 
   } catch (err) {
-    console.error("UPLOAD SINGLE QSL ERROR:", err);
+    console.error("UPLOAD SINGLE ERROR:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// ================= FILE DOWNLOAD + AUTO DELETE =================
+// ================= FILE DOWNLOAD =================
 app.get("/file", async (req, res) => {
   try {
     const pid = req.query.pid;
     if (!pid) return res.status(400).send("missing pid");
 
     const downloads = readDownloads();
-
     if (!downloads[pid]) downloads[pid] = { count: 0, createdAt: Date.now() };
     const entry = downloads[pid];
 
@@ -430,20 +343,16 @@ app.get("/file", async (req, res) => {
 
     const info = await cloudinary.api.resource(pid);
     const ctx = parseContext(info.context);
-
     const file = await axios.get(info.secure_url, { responseType: "arraybuffer" });
+
     res.setHeader("Content-Type", `image/${info.format}`);
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${ctx.indicatif || "QSL"}_${ctx.date}.${info.format}"`
-    );
+    res.setHeader("Content-Disposition", `attachment; filename="${ctx.indicatif || "QSL"}_${ctx.date}.${info.format}"`);
     res.send(Buffer.from(file.data));
 
     if (entry.count >= MAX_DOWNLOADS) {
       await cloudinary.uploader.destroy(pid);
       delete downloads[pid];
     }
-
     saveDownloads(downloads);
 
   } catch (err) {
