@@ -271,6 +271,44 @@ function downloadQSL(pid) {
 // GENERATION QSL FORMULAIRE NORMAL
 // ===============================
 document.getElementById("genForm").addEventListener("submit", async function (e)
+// ===============================
+// GENERATION QSL FORMULAIRE NORMAL
+// ===============================
+const genForm = document.getElementById("genForm");
+
+if (genForm) {
+  genForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const preview = document.getElementById("genPreview");
+    preview.innerHTML = "Génération en cours…";
+
+    const formData = new FormData(genForm);
+
+    try {
+      const res = await fetch(API_URL + "/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin"
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        preview.innerHTML = `
+          <img src="${data.thumb}" style="max-width:100%;">
+          <p>✅ QSL générée</p>
+        `;
+      } else {
+        preview.innerHTML = "❌ Erreur génération";
+      }
+
+    } catch (err) {
+      console.error(err);
+      preview.innerHTML = "❌ Erreur réseau";
+    }
+  });
+}
 
 checkAuth();
 showTab("home");
