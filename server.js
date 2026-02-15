@@ -222,7 +222,7 @@ app.post("/upload", requireAuth, async (req, res) => {
     const panelWidth = 350;
 
     // ✅ Ajustement de l'image sans déformation
-   onst userBuffer = await sharp(file.tempFilePath)
+   const userBuffer = await sharp(file.tempFilePath)
   .resize(W, H, { fit: "cover", position: "center" })
   .toBuffer();
 
