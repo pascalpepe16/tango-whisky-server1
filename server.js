@@ -274,7 +274,7 @@ app.post("/upload", requireAuth, async (req, res) => {
   <text x="20" y="${headerHeight + 175}" font-size="24">Mode : ${escapeXml(mode)}</text>
   <text x="20" y="${headerHeight + 210}" font-size="24">Report : ${escapeXml(report)}</text>
 
-  <line x1="20" y1="${headerHeight + 245}" x2="${panelWidth - 20}" y2="${headerHeight + 245}" stroke="#ccc"/>
+  <line x1="20" y1="${headerHeight + 260}" x2="${panelWidth - 20}" y2="${headerHeight + 260}" stroke="#ccc"/>
 
   <text x="20" font-size="${fontSize}">
     ${noteSVG}
