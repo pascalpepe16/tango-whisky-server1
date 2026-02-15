@@ -261,6 +261,47 @@ function downloadQSL(pid) {
   a.href = API_URL + "/file?pid=" + encodeURIComponent(pid);
   a.click();
 }
+// ===============================
+// GENERATION QSL UNITAIRE
+// ===============================
+document.getElementById("genForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const form = e.target;
+  const preview = document.getElementById("genPreview");
+  preview.innerHTML = "Génération…";
+
+  const formData = new FormData(form);
+
+  try {
+    const res = await fetch(API_URL + "/upload-single-qsl", {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin"
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      preview.innerHTML = "Erreur : " + (data.error || "inconnue");
+      return;
+    }
+
+    preview.innerHTML = `
+      <div class="thumbWrap">
+        <img src="${data.qsl.thumb}">
+        <br>
+        <a href="${data.qsl.url}" target="_blank">Voir en grand</a>
+      </div>
+    `;
+
+    form.reset();
+
+  } catch (err) {
+    preview.innerHTML = "Erreur réseau";
+    console.error(err);
+  }
+});
 
 
 
