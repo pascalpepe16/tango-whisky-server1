@@ -221,19 +221,25 @@ app.post("/upload", requireAuth, async (req, res) => {
     const H = meta.height;
     const panelWidth = 350;
 
-    // ✅ Ajustement de l'image sans déformation
-   const userBuffer = await sharp(file.tempFilePath)
-  .resize(W, H, { fit: "cover", position: "center" })
-  .toBuffer();
+    // ✅ Image utilisateur inchangée (pas de resize)
+    const userBuffer = await sharp(file.tempFilePath)
+      .toBuffer();
+
+    // Calcul dynamique de la hauteur du panneau
+    const headerHeight = 80;
+    const infoHeight = 6 * 35; // 6 lignes d'infos: date, time, band, mode, report, ligne
+    const noteHeight = noteLines.length * 22 + 20; // 22px par ligne + marge
+    const footerHeight = 40;
+    const panelHeight = Math.max(H, headerHeight + infoHeight + noteHeight + footerHeight);
 
     const noteSVG = noteLines
       .map((line, i) =>
-        `<tspan x="20" dy="${i === 0 ? 0 : 22}">${escapeXml(line)}</tspan>`
+        `<tspan x="20" dy="${i === 0 ? headerHeight + infoHeight : 22}">${escapeXml(line)}</tspan>`
       )
       .join("");
 
     const panelSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${panelWidth}" height="${H}">
+<svg xmlns="http://www.w3.org/2000/svg" width="${panelWidth}" height="${panelHeight}">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#f9f9f9"/>
@@ -256,21 +262,19 @@ app.post("/upload", requireAuth, async (req, res) => {
   <text x="20" y="340" font-size="22">
     ${noteSVG}
   </text>
-  <text x="20" y="${H - 20}" font-size="14" fill="#555">
+  <text x="20" y="${panelHeight - 20}" font-size="14" fill="#555">
     TANGO WHISKY eQSL
   </text>
 </svg>
 `;
 
-    const panelBuffer = await sharp(Buffer.from(panelSVG))
-      .png()
-      .resize(panelWidth, H)
-      .toBuffer();
+    const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
 
+    // Composer l'image finale
     const finalBuffer = await sharp({
       create: {
         width: W + panelWidth,
-        height: H,
+        height: Math.max(H, panelHeight),
         channels: 3,
         background: "#fff"
       }
@@ -310,6 +314,7 @@ app.post("/upload", requireAuth, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 // ================= FILE DOWNLOAD + AUTO DELETE =================
 app.get("/file", async (req, res) => {
