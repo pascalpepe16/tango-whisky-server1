@@ -200,6 +200,7 @@ app.get("/download/:call", async (req, res) => {
 });
 
 // ================= UPLOAD (PROTÉGÉ) =================
+// ================= UPLOAD (PROTÉGÉ) =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl) {
@@ -213,7 +214,7 @@ app.post("/upload", requireAuth, async (req, res) => {
     const band = req.body.band || "";
     const mode = req.body.mode || "";
     const report = req.body.report || "";
-    const noteLines = wrapText(req.body.note || "", 32);
+    let noteLines = wrapText(req.body.note || "", 32);
 
     const input = sharp(file.tempFilePath);
     const meta = await input.metadata();
@@ -221,20 +222,29 @@ app.post("/upload", requireAuth, async (req, res) => {
     const H = meta.height;
     const panelWidth = 350;
 
-    // ✅ Image utilisateur inchangée (pas de resize)
-    const userBuffer = await sharp(file.tempFilePath)
-      .toBuffer();
+    const userBuffer = await sharp(file.tempFilePath).toBuffer();
 
-    // Calcul dynamique de la hauteur du panneau
+    // ================= Hauteur et police dynamiques =================
     const headerHeight = 80;
-    const infoHeight = 6 * 35; // 6 lignes d'infos: date, time, band, mode, report, ligne
-    const noteHeight = noteLines.length * 22 + 20; // 22px par ligne + marge
+    const infoHeight = 6 * 35; // 6 lignes d’infos
     const footerHeight = 40;
-    const panelHeight = Math.max(H, headerHeight + infoHeight + noteHeight + footerHeight);
+    const maxPanelHeight = 600; // hauteur max raisonnable
+    let fontSize = 22; // taille initiale du texte note
+    let noteHeight = noteLines.length * fontSize + 20;
+    let panelHeight = Math.max(H, headerHeight + infoHeight + noteHeight + footerHeight);
 
+    // Si trop grand, réduire la taille de la police
+    while (panelHeight > maxPanelHeight && fontSize > 10) {
+      fontSize -= 2;
+      noteHeight = noteLines.length * fontSize + 20;
+      panelHeight = Math.max(H, headerHeight + infoHeight + noteHeight + footerHeight);
+    }
+
+    // ================= Génération du SVG =================
+    const startY = headerHeight + infoHeight + 10;
     const noteSVG = noteLines
       .map((line, i) =>
-        `<tspan x="20" dy="${i === 0 ? headerHeight + infoHeight : 22}">${escapeXml(line)}</tspan>`
+        `<tspan x="20" ${i === 0 ? `y="${startY}"` : `dy="${fontSize}"`}>${escapeXml(line)}</tspan>`
       )
       .join("");
 
@@ -248,29 +258,34 @@ app.post("/upload", requireAuth, async (req, res) => {
   </defs>
 
   <rect width="100%" height="100%" fill="url(#bg)"/>
-  <rect x="0" y="0" width="100%" height="80" fill="#1f2937"/>
+  <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
   <text x="20" y="55" font-size="42" fill="white" font-weight="bold">
     ${escapeXml(indicatif)}
   </text>
-  <line x1="20" y1="110" x2="${panelWidth - 20}" y2="110" stroke="#ccc"/>
-  <text x="20" y="150" font-size="24">Date : ${escapeXml(date)}</text>
-  <text x="20" y="185" font-size="24">UTC : ${escapeXml(time)}</text>
-  <text x="20" y="220" font-size="24">Bande : ${escapeXml(band)}</text>
-  <text x="20" y="255" font-size="24">Mode : ${escapeXml(mode)}</text>
-  <text x="20" y="290" font-size="24">Report : ${escapeXml(report)}</text>
-  <line x1="20" y1="320" x2="${panelWidth - 20}" y2="320" stroke="#ccc"/>
-  <text x="20" y="340" font-size="22">
+
+  <line x1="20" y1="${headerHeight + 30}" x2="${panelWidth - 20}" y2="${headerHeight + 30}" stroke="#ccc"/>
+
+  <text x="20" y="${headerHeight + 70}" font-size="24">Date : ${escapeXml(date)}</text>
+  <text x="20" y="${headerHeight + 105}" font-size="24">UTC : ${escapeXml(time)}</text>
+  <text x="20" y="${headerHeight + 140}" font-size="24">Bande : ${escapeXml(band)}</text>
+  <text x="20" y="${headerHeight + 175}" font-size="24">Mode : ${escapeXml(mode)}</text>
+  <text x="20" y="${headerHeight + 210}" font-size="24">Report : ${escapeXml(report)}</text>
+
+  <line x1="20" y1="${headerHeight + 245}" x2="${panelWidth - 20}" y2="${headerHeight + 245}" stroke="#ccc"/>
+
+  <text x="20" font-size="${fontSize}">
     ${noteSVG}
   </text>
+
   <text x="20" y="${panelHeight - 20}" font-size="14" fill="#555">
     TANGO WHISKY eQSL
   </text>
 </svg>
 `;
 
+    // ================= Rasterisation et composition =================
     const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
 
-    // Composer l'image finale
     const finalBuffer = await sharp({
       create: {
         width: W + panelWidth,
@@ -286,6 +301,7 @@ app.post("/upload", requireAuth, async (req, res) => {
       .jpeg({ quality: 92 })
       .toBuffer();
 
+    // ================= Upload Cloudinary =================
     cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
@@ -314,6 +330,7 @@ app.post("/upload", requireAuth, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 
 // ================= FILE DOWNLOAD + AUTO DELETE =================
