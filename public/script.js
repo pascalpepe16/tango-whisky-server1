@@ -217,57 +217,9 @@ document.getElementById("validateImportBtn").onclick = async function () {
 
   status.innerHTML = `✅ ${success} QSL enregistrées`;
 };
-// ===============================
-// DOWNLOAD SEARCH
-// ===============================
-document.getElementById("btnSearch").onclick = async () => {
-  const call = document.getElementById("dlCall").value.trim().toUpperCase();
-  const box = document.getElementById("dlPreview");
-
-  if (!call) {
-    alert("Entrer un indicatif");
-    return;
-  }
-
-  box.innerHTML = "Recherche…";
-
-  try {
-    const res = await fetch(API_URL + "/download/" + call);
-    const list = await res.json();
-
-    if (!list.length) {
-      box.innerHTML = "Aucune QSL trouvée";
-      return;
-    }
-
-    box.innerHTML = "";
-    list.forEach(q => {
-      const div = document.createElement("div");
-      div.className = "dlWrap";
-      div.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb">
-        <button onclick="downloadQSL('${q.public_id}')">Télécharger</button>
-      `;
-      box.appendChild(div);
-    });
-  } catch (err) {
-    console.error(err);
-    box.innerHTML = "Erreur réseau";
-  }
-};
-
-function downloadQSL(pid) {
-  const a = document.createElement("a");
-  a.href = API_URL + "/file?pid=" + encodeURIComponent(pid);
-  a.click();
-}
-
-
 
 // ===============================
 // INIT
 // ===============================
 checkAuth();
 showTab("home");
-
- 
