@@ -291,3 +291,4 @@ function downloadQSL(pid) {
   a.href = API_URL + "/file?pid=" + encodeURIComponent(pid);
   a.click();
 }
+ 
