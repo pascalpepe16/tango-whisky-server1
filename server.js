@@ -200,7 +200,6 @@ app.get("/download/:call", async (req, res) => {
 });
 
 // ================= UPLOAD (PROTÉGÉ) =================
-// ================= UPLOAD (PROTÉGÉ) =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl) {
@@ -330,7 +329,6 @@ app.post("/upload", requireAuth, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
 
 
 // ================= FILE DOWNLOAD + AUTO DELETE =================
