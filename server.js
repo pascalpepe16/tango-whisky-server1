@@ -261,35 +261,16 @@ const panelSVG = `
   <!-- séparation -->
   <line x1="20" y1="110" x2="${panelWidth - 20}" y2="110" stroke="#ccc"/>
 
-<!-- infos QSO -->
-<text x="40" y="170" font-size="28" font-weight="bold">
-  Date : ${escapeXml(date)}
-</text>
-
-<text x="40" y="210" font-size="28" font-weight="bold">
-  UTC : ${escapeXml(time)}
-</text>
-
-<text x="40" y="250" font-size="28" font-weight="bold">
-  Bande : ${escapeXml(band)}
-</text>
-
-<text x="40" y="290" font-size="28" font-weight="bold">
-  Mode : ${escapeXml(mode)}
-</text>
-
-<text x="40" y="330" font-size="28" font-weight="bold">
-  Report : ${escapeXml(report)}
-</text>
-
-
+  <!-- infos QSO -->
+  <text x="20" y="150" font-size="24">Date : ${escapeXml(date)}</text>
+  <text x="20" y="185" font-size="24">UTC : ${escapeXml(time)}</text>
+  <text x="20" y="220" font-size="24">Bande : ${escapeXml(band)}</text>
+  <text x="20" y="255" font-size="24">Mode : ${escapeXml(mode)}</text>
+  <text x="20" y="290" font-size="24">Report : ${escapeXml(report)}</text>
 
   <!-- note -->
   <line x1="20" y1="320" x2="${panelWidth - 20}" y2="320" stroke="#ccc"/>
-<text x="40" y="380" font-size="24">
-  ${escapeXml(note || "")}
-</text>
-
+  <text x="20" y="340" font-size="22">
   ${noteSVG}
 </text>
 
