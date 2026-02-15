@@ -1,5 +1,5 @@
 // =============================================
-//  TANGO WHISKY — SERVER.JS (FINAL AJUSTÉ)
+//  TANGO WHISKY — SERVER.JS (FINAL PRO)
 // =============================================
 
 import express from "express";
@@ -14,8 +14,8 @@ import session from "express-session";
 import fs from "fs";
 
 // ================= CONFIG =================
-const MAX_DOWNLOADS = 2; // ⬅️ téléchargements max
-const MAX_DAYS = 30;      // ⬅️ durée de vie en jours
+const MAX_DOWNLOADS = 2; // téléchargements max
+const MAX_DAYS = 30;      // durée de vie en jours
 
 // ================= INIT =================
 const __filename = fileURLToPath(import.meta.url);
@@ -35,10 +35,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "tw-whisky-secret",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      sameSite: "lax"
-    }
+    cookie: { httpOnly: true, sameSite: "lax" }
   })
 );
 
@@ -72,13 +69,11 @@ function requireAuth(req, res, next) {
 
 app.post("/login", (req, res) => {
   const { indicatif, password } = req.body || {};
-
   if (USERS[indicatif] && USERS[indicatif] === password) {
     req.session.authenticated = true;
     req.session.indicatif = indicatif;
     return res.json({ success: true });
   }
-
   res.status(401).json({ success: false });
 });
 
@@ -114,7 +109,6 @@ function wrapText(text = "", max = 32) {
   const words = text.split(/\s+/);
   const lines = [];
   let line = "";
-
   for (const w of words) {
     if ((line + " " + w).trim().length > max) {
       if (line) lines.push(line);
@@ -123,9 +117,8 @@ function wrapText(text = "", max = 32) {
       line = (line + " " + w).trim();
     }
   }
-
   if (line) lines.push(line);
-  return lines; // ✅ TABLEAU
+  return lines;
 }
 
 function parseContext(ctx) {
@@ -177,10 +170,7 @@ app.get("/download/:call", async (req, res) => {
         : MAX_DOWNLOADS;
 
       const remainingDays = entry
-        ? Math.max(
-            0,
-            MAX_DAYS - Math.floor((Date.now() - entry.createdAt) / 86400000)
-          )
+        ? Math.max(0, MAX_DAYS - Math.floor((Date.now() - entry.createdAt) / 86400000))
         : MAX_DAYS;
 
       return {
@@ -199,7 +189,7 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= UPLOAD – QSL UNIFORME / TEXTE FIXE / IMAGE REDIMENSIONNÉE =================
+// ================= UPLOAD / GENERIQUE =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
@@ -214,14 +204,15 @@ app.post("/upload", requireAuth, async (req, res) => {
     const report = req.body.report || "";
     let noteLines = wrapText(req.body.note || "", 32);
 
-    // ---------------- CONFIGURATION FIXE ----------------
+    // ---------------- CONFIG ----------------
     const PANEL_WIDTH = 350;
-    const TOTAL_WIDTH = 1400;      // Largeur totale du panneau + image
-    const TOTAL_HEIGHT = 600;      // Hauteur fixe
-    const headerHeight = 100;      // Bandeau indicatif
-    const infoFontSize = 26;
-    const noteFontSize = 32;       // Texte notes lisible
-    const footerHeight = 50;
+    const IMG_WIDTH = 470;
+    const IMG_HEIGHT = 410;
+    const TOTAL_WIDTH = IMG_WIDTH + PANEL_WIDTH;
+    const TOTAL_HEIGHT = IMG_HEIGHT;
+    const headerHeight = 100;
+    const infoFontSize = 22;
+    const noteFontSize = 28;
     const infoLines = [
       `Date : ${escapeXml(date)}`,
       `UTC : ${escapeXml(time)}`,
@@ -231,31 +222,24 @@ app.post("/upload", requireAuth, async (req, res) => {
     ];
 
     // ---------------- REDIMENSION IMAGE ----------------
-    const meta = await sharp(file.tempFilePath).metadata();
-    const imgWidth = TOTAL_WIDTH - PANEL_WIDTH;
-
-    // Redimension image pour remplir la hauteur totale, sans déformation
     const userBuffer = await sharp(file.tempFilePath)
-      .resize({ width: imgWidth, height: TOTAL_HEIGHT, fit: "contain", background: "#fff" })
+      .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "contain", background: "#fff" })
       .toBuffer();
 
-    // ---------------- POSITION FIXE DES BLOCS TEXTE ----------------
-    // Infos position fixe
+    // ---------------- TEXTE FIXE ----------------
     let infoSVG = "";
     infoLines.forEach((line, i) => {
-      const y = headerHeight + 40 + i * infoFontSize; // marge après header
+      const y = headerHeight + 30 + i * infoFontSize;
       infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
     });
 
-    // Notes position fixe
-    const startNoteY = headerHeight + infoLines.length * infoFontSize + 80; // marge entre infos et notes
+    const startNoteY = headerHeight + infoLines.length * infoFontSize + 60;
     const noteSVG = noteLines
       .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
       .join("");
 
-    // ---------------- CREATION SVG ----------------
     const panelSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}" xml:space="preserve">
+<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#f9f9f9"/>
@@ -265,17 +249,127 @@ app.post("/upload", requireAuth, async (req, res) => {
 
   <rect width="100%" height="100%" fill="url(#bg)"/>
   <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
-  <text x="20" y="60" font-size="48" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
+  <text x="20" y="60" font-size="40" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
 
-  <line x1="20" y1="${headerHeight + 30}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + 30}" stroke="#ccc"/>
+  <line x1="20" y1="${headerHeight + 20}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + 20}" stroke="#ccc"/>
   ${infoSVG}
-  <line x1="20" y1="${headerHeight + infoLines.length * infoFontSize + 60}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + infoLines.length * infoFontSize + 60}" stroke="#ccc"/>
+  <line x1="20" y1="${headerHeight + infoLines.length * infoFontSize + 40}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + infoLines.length * infoFontSize + 40}" stroke="#ccc"/>
 
   <text x="0" y="0" font-size="${noteFontSize}" fill="#000" xml:space="preserve">
     ${noteSVG}
   </text>
 
-  <text x="20" y="${TOTAL_HEIGHT - 20}" font-size="16" fill="#555">TANGO WHISKY eQSL</text>
+  <text x="20" y="${TOTAL_HEIGHT - 20}" font-size="14" fill="#555">TANGO WHISKY eQSL</text>
+</svg>
+`;
+
+    // ---------------- COMPOSITE ----------------
+    const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
+
+    const finalBuffer = await sharp({
+      create: { width: TOTAL_WIDTH, height: TOTAL_HEIGHT, channels: 3, background: "#fff" }
+    })
+      .composite([
+        { input: userBuffer, top: 0, left: 0 },
+        { input: panelBuffer, top: 0, left: IMG_WIDTH }
+      ])
+      .jpeg({ quality: 92 })
+      .toBuffer();
+
+    // ---------------- UPLOAD ----------------
+    cloudinary.uploader.upload_stream(
+      {
+        folder: "TW-eQSL",
+        tags: [`indicatif_${indicatif}`],
+        context: { indicatif, date, time, band, mode, report, note: noteLines.join(" ") }
+      },
+      (err, result) => {
+        if (err) return res.status(500).json({ success: false, error: err.message });
+        res.json({
+          success: true,
+          qsl: { public_id: result.public_id, url: result.secure_url, thumb: result.secure_url.replace("/upload/", "/upload/w_300/") }
+        });
+      }
+    ).end(finalBuffer);
+
+  } catch (err) {
+    console.error("UPLOAD ERROR:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ================= UPLOAD SINGLE QSL =================
+app.post("/upload-single-qsl", requireAuth, async (req, res) => {
+  try {
+    if (!req.files || !req.files.qsl)
+      return res.status(400).json({ success: false, error: "Aucune image reçue" });
+
+    const file = req.files.qsl;
+    const indicatif = (req.body.indicatif || "").toUpperCase();
+    const date = req.body.date || "";
+    const time = req.body.time || "";
+    const band = req.body.band || "";
+    const mode = req.body.mode || "";
+    const report = req.body.report || "";
+    let noteLines = wrapText(req.body.note || "", 32);
+
+    // ---------------- CONFIG ----------------
+    const PANEL_WIDTH = 350;
+    const IMG_WIDTH = 470;
+    const IMG_HEIGHT = 410;
+    const TOTAL_WIDTH = IMG_WIDTH + PANEL_WIDTH;
+    const TOTAL_HEIGHT = IMG_HEIGHT;
+    const headerHeight = 100;
+    const infoFontSize = 22;
+    const noteFontSize = 28;
+
+    const infoLines = [
+      `Date : ${escapeXml(date)}`,
+      `UTC : ${escapeXml(time)}`,
+      `Bande : ${escapeXml(band)}`,
+      `Mode : ${escapeXml(mode)}`,
+      `Report : ${escapeXml(report)}`
+    ];
+
+    // ---------------- REDIMENSION IMAGE ----------------
+    const userBuffer = await sharp(file.tempFilePath)
+      .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "contain", background: "#fff" })
+      .toBuffer();
+
+    // ---------------- TEXTE ----------------
+    let infoSVG = "";
+    infoLines.forEach((line, i) => {
+      const y = headerHeight + 30 + i * infoFontSize;
+      infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
+    });
+
+    const startNoteY = headerHeight + infoLines.length * infoFontSize + 60;
+    const noteSVG = noteLines
+      .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
+      .join("");
+
+    const panelSVG = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f9f9f9"/>
+      <stop offset="100%" stop-color="#eeeeee"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
+  <text x="20" y="60" font-size="40" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
+
+  <line x1="20" y1="${headerHeight + 20}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + 20}" stroke="#ccc"/>
+  ${infoSVG}
+  <line x1="20" y1="${headerHeight + infoLines.length * infoFontSize + 40}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + infoLines.length * infoFontSize + 40}" stroke="#ccc"/>
+
+  <text x="0" y="0" font-size="${noteFontSize}" fill="#000" xml:space="preserve">
+    ${noteSVG}
+  </text>
+
+  <text x="20" y="${TOTAL_HEIGHT - 20}" font-size="14" fill="#555">TANGO WHISKY eQSL</text>
 </svg>
 `;
 
@@ -287,12 +381,12 @@ app.post("/upload", requireAuth, async (req, res) => {
     })
       .composite([
         { input: userBuffer, top: 0, left: 0 },
-        { input: panelBuffer, top: 0, left: imgWidth }
+        { input: panelBuffer, top: 0, left: IMG_WIDTH }
       ])
       .jpeg({ quality: 92 })
       .toBuffer();
 
-    // ---------------- UPLOAD CLOUDINARY ----------------
+    // ---------------- UPLOAD ----------------
     cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
@@ -300,7 +394,7 @@ app.post("/upload", requireAuth, async (req, res) => {
         context: { indicatif, date, time, band, mode, report, note: noteLines.join(" ") }
       },
       (err, result) => {
-        if (err) return res.status(500).json({ success: false });
+        if (err) return res.status(500).json({ success: false, error: err.message });
         res.json({
           success: true,
           qsl: { public_id: result.public_id, url: result.secure_url, thumb: result.secure_url.replace("/upload/", "/upload/w_300/") }
@@ -309,11 +403,10 @@ app.post("/upload", requireAuth, async (req, res) => {
     ).end(finalBuffer);
 
   } catch (err) {
-    console.error("UPLOAD FATAL:", err);
+    console.error("UPLOAD SINGLE QSL ERROR:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
 
 // ================= FILE DOWNLOAD + AUTO DELETE =================
 app.get("/file", async (req, res) => {
@@ -323,10 +416,7 @@ app.get("/file", async (req, res) => {
 
     const downloads = readDownloads();
 
-    if (!downloads[pid]) {
-      downloads[pid] = { count: 0, createdAt: Date.now() };
-    }
-
+    if (!downloads[pid]) downloads[pid] = { count: 0, createdAt: Date.now() };
     const entry = downloads[pid];
 
     if (isExpired(entry) || entry.count >= MAX_DOWNLOADS) {
@@ -369,6 +459,4 @@ app.get("*", (req, res) => {
 
 // ================= START =================
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () =>
-  console.log("TW-eQSL server running on port", PORT)
-);
+app.listen(PORT, () => console.log("TW-eQSL server running on port", PORT));
