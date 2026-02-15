@@ -256,12 +256,12 @@ app.post("/upload", requireAuth, async (req, res) => {
     // Infos position dynamique
     let infoSVG = "";
     infoLines.forEach((line, i) => {
-      const y = headerHeight + 35 + i * infoFontSize;
+      const y = headerHeight + 50 + i * infoFontSize;
       infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
     });
 
     // Notes position dynamique
-    const startNoteY = headerHeight + infoHeight + 20;
+    const startNoteY = headerHeight + infoHeight + 40;
     const noteSVG = noteLines
       .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
       .join("");
