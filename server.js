@@ -1,5 +1,5 @@
 // =============================================
-//  TANGO WHISKY — SERVER.JS (VERSION PRO)
+//  TANGO WHISKY — SERVER.JS (VERSION FINALE PRO)
 // =============================================
 
 import express from "express";
@@ -181,7 +181,7 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= GENERIC QSL UPLOAD =================
+// ================= GENERATE QSL BUFFER =================
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
   const PANEL_WIDTH = 350;
   const IMG_WIDTH = 470;
@@ -192,7 +192,7 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
   const infoFontSize = 22;
   const noteFontSize = 28;
 
-  let noteLines = wrapText(note || "", 32);
+  const noteLines = wrapText(note || "", 32);
   const infoLines = [
     `Date : ${escapeXml(date)}`,
     `UTC : ${escapeXml(time)}`,
@@ -201,19 +201,16 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
     `Report : ${escapeXml(report)}`
   ];
 
-  // Image fill cover
   const userBuffer = await sharp(filePath)
     .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "cover", position: "center" })
     .toBuffer();
 
-  // Info SVG
   let infoSVG = "";
   infoLines.forEach((line, i) => {
     const y = headerHeight + 30 + i * infoFontSize;
     infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
   });
 
-  // Note SVG
   const startNoteY = headerHeight + infoLines.length * infoFontSize + 60;
   const noteSVG = noteLines
     .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
@@ -237,7 +234,7 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
 
   const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
 
-  const finalBuffer = await sharp({
+  return await sharp({
     create: { width: TOTAL_WIDTH, height: TOTAL_HEIGHT, channels: 3, background: "#fff" }
   })
     .composite([
@@ -246,20 +243,20 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
     ])
     .jpeg({ quality: 92 })
     .toBuffer();
-
-  return finalBuffer;
 }
 
-// ================= UPLOAD =================
-app.post("/upload", requireAuth, async (req, res) => {
+// ================= UPLOAD (GENERIC) =================
+async function handleUpload(req, res) {
   try {
     if (!req.files || !req.files.qsl)
       return res.status(400).json({ success: false, error: "Aucune image reçue" });
 
     const file = req.files.qsl;
+    const indicatif = (req.body.indicatif || "").toUpperCase();
+
     const buffer = await generateQSLBuffer({
       filePath: file.tempFilePath,
-      indicatif: (req.body.indicatif || "").toUpperCase(),
+      indicatif,
       date: req.body.date,
       time: req.body.time,
       band: req.body.band,
@@ -268,59 +265,43 @@ app.post("/upload", requireAuth, async (req, res) => {
       note: req.body.note
     });
 
-    cloudinary.uploader.upload_stream(
+    const stream = cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
-        tags: [`indicatif_${(req.body.indicatif || "").toUpperCase()}`],
-        context: { indicatif: req.body.indicatif, date: req.body.date, time: req.body.time, band: req.body.band, mode: req.body.mode, report: req.body.report, note: req.body.note }
+        tags: [`indicatif_${indicatif}`],
+        context: {
+          indicatif: indicatif,
+          date: req.body.date,
+          time: req.body.time,
+          band: req.body.band,
+          mode: req.body.mode,
+          report: req.body.report,
+          note: req.body.note
+        }
       },
       (err, result) => {
         if (err) return res.status(500).json({ success: false, error: err.message });
-        res.json({ success: true, qsl: { public_id: result.public_id, url: result.secure_url, thumb: result.secure_url.replace("/upload/", "/upload/w_300/") } });
+        res.json({
+          success: true,
+          qsl: {
+            public_id: result.public_id,
+            url: result.secure_url,
+            thumb: result.secure_url.replace("/upload/", "/upload/w_300/")
+          }
+        });
       }
-    ).end(buffer);
+    );
+
+    stream.end(buffer);
 
   } catch (err) {
     console.error("UPLOAD ERROR:", err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}
 
-// ================= UPLOAD SINGLE QSL =================
-app.post("/upload-single-qsl", requireAuth, async (req, res) => {
-  try {
-    if (!req.files || !req.files.qsl)
-      return res.status(400).json({ success: false, error: "Aucune image reçue" });
-
-    const file = req.files.qsl;
-    const buffer = await generateQSLBuffer({
-      filePath: file.tempFilePath,
-      indicatif: (req.body.indicatif || "").toUpperCase(),
-      date: req.body.date,
-      time: req.body.time,
-      band: req.body.band,
-      mode: req.body.mode,
-      report: req.body.report,
-      note: req.body.note
-    });
-
-    cloudinary.uploader.upload_stream(
-      {
-        folder: "TW-eQSL",
-        tags: [`indicatif_${(req.body.indicatif || "").toUpperCase()}`],
-        context: { indicatif: req.body.indicatif, date: req.body.date, time: req.body.time, band: req.body.band, mode: req.body.mode, report: req.body.report, note: req.body.note }
-      },
-      (err, result) => {
-        if (err) return res.status(500).json({ success: false, error: err.message });
-        res.json({ success: true, qsl: { public_id: result.public_id, url: result.secure_url, thumb: result.secure_url.replace("/upload/", "/upload/w_300/") } });
-      }
-    ).end(buffer);
-
-  } catch (err) {
-    console.error("UPLOAD SINGLE ERROR:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+app.post("/upload", requireAuth, handleUpload);
+app.post("/upload-single-qsl", requireAuth, handleUpload);
 
 // ================= FILE DOWNLOAD =================
 app.get("/file", async (req, res) => {
