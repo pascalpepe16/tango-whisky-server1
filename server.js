@@ -199,10 +199,10 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= UPLOAD (IMAGE + TEXTE DYNAMIQUE + MARGES OPTIMISÉES) =================
+// ================= UPLOAD – QSL UNIFORME / TEXTE FIXE / IMAGE REDIMENSIONNÉE =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
-    if (!req.files || !req.files.qsl) 
+    if (!req.files || !req.files.qsl)
       return res.status(400).json({ success: false, error: "Aucune image reçue" });
 
     const file = req.files.qsl;
@@ -214,14 +214,14 @@ app.post("/upload", requireAuth, async (req, res) => {
     const report = req.body.report || "";
     let noteLines = wrapText(req.body.note || "", 32);
 
-    const panelWidth = 350;
-    const headerHeight = 100;   // plus d’espace pour le header
-    const infoFontSize = 26;     // texte infos plus grand
-    let noteFontSize = 32;       // texte notes bien visible
+    // ---------------- CONFIGURATION FIXE ----------------
+    const PANEL_WIDTH = 350;
+    const TOTAL_WIDTH = 1400;      // Largeur totale du panneau + image
+    const TOTAL_HEIGHT = 600;      // Hauteur fixe
+    const headerHeight = 100;      // Bandeau indicatif
+    const infoFontSize = 26;
+    const noteFontSize = 32;       // Texte notes lisible
     const footerHeight = 50;
-    const maxPanelHeight = 900;  // panneau suffisamment grand
-
-    // --- Infos fixes ---
     const infoLines = [
       `Date : ${escapeXml(date)}`,
       `UTC : ${escapeXml(time)}`,
@@ -229,45 +229,33 @@ app.post("/upload", requireAuth, async (req, res) => {
       `Mode : ${escapeXml(mode)}`,
       `Report : ${escapeXml(report)}`
     ];
-    const infoHeight = infoLines.length * infoFontSize + 15; // + marge interne
-    let noteHeight = noteLines.length * noteFontSize + 20;
-    let panelHeight = headerHeight + infoHeight + noteHeight + footerHeight;
 
-    // --- Metadata image ---
+    // ---------------- REDIMENSION IMAGE ----------------
     const meta = await sharp(file.tempFilePath).metadata();
-    const imgWidth = meta.width;
-    const imgHeight = meta.height;
+    const imgWidth = TOTAL_WIDTH - PANEL_WIDTH;
 
-    // --- Ajustement taille panneau si trop grand ---
-    while (panelHeight > maxPanelHeight && noteFontSize > 12) {
-      noteFontSize -= 2;
-      noteHeight = noteLines.length * noteFontSize + 20;
-      panelHeight = headerHeight + infoHeight + noteHeight + footerHeight;
-    }
-
-    const finalHeight = Math.max(imgHeight, panelHeight);
-
-    // --- Redimension image pour remplir la hauteur ---
+    // Redimension image pour remplir la hauteur totale, sans déformation
     const userBuffer = await sharp(file.tempFilePath)
-      .resize({ height: finalHeight, fit: "contain", background: "#fff" })
+      .resize({ width: imgWidth, height: TOTAL_HEIGHT, fit: "contain", background: "#fff" })
       .toBuffer();
 
-    // --- Création SVG dynamique ---
-    // Infos position dynamique avec marge plus grande
+    // ---------------- POSITION FIXE DES BLOCS TEXTE ----------------
+    // Infos position fixe
     let infoSVG = "";
     infoLines.forEach((line, i) => {
-      const y = headerHeight + 50 + i * infoFontSize; // 50 = plus d’espace après le header
+      const y = headerHeight + 40 + i * infoFontSize; // marge après header
       infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
     });
 
-    // Notes position dynamique avec plus de marge
-    const startNoteY = headerHeight + infoHeight + 40; // 40 = espace plus grand entre infos et notes
+    // Notes position fixe
+    const startNoteY = headerHeight + infoLines.length * infoFontSize + 80; // marge entre infos et notes
     const noteSVG = noteLines
       .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
       .join("");
 
+    // ---------------- CREATION SVG ----------------
     const panelSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${panelWidth}" height="${finalHeight}" xml:space="preserve">
+<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}" xml:space="preserve">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#f9f9f9"/>
@@ -279,24 +267,23 @@ app.post("/upload", requireAuth, async (req, res) => {
   <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
   <text x="20" y="60" font-size="48" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
 
-  <line x1="20" y1="${headerHeight + 30}" x2="${panelWidth - 20}" y2="${headerHeight + 30}" stroke="#ccc"/>
+  <line x1="20" y1="${headerHeight + 30}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + 30}" stroke="#ccc"/>
   ${infoSVG}
-  <line x1="20" y1="${headerHeight + infoHeight + 20}" x2="${panelWidth - 20}" y2="${headerHeight + infoHeight + 20}" stroke="#ccc"/>
+  <line x1="20" y1="${headerHeight + infoLines.length * infoFontSize + 60}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + infoLines.length * infoFontSize + 60}" stroke="#ccc"/>
 
   <text x="0" y="0" font-size="${noteFontSize}" fill="#000" xml:space="preserve">
     ${noteSVG}
   </text>
 
-  <text x="20" y="${finalHeight - 20}" font-size="16" fill="#555">TANGO WHISKY eQSL</text>
+  <text x="20" y="${TOTAL_HEIGHT - 20}" font-size="16" fill="#555">TANGO WHISKY eQSL</text>
 </svg>
 `;
 
-    // --- Rasterisation SVG ---
+    // ---------------- COMPOSITE FINAL ----------------
     const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
 
-    // --- Composition finale ---
     const finalBuffer = await sharp({
-      create: { width: imgWidth + panelWidth, height: finalHeight, channels: 3, background: "#fff" }
+      create: { width: TOTAL_WIDTH, height: TOTAL_HEIGHT, channels: 3, background: "#fff" }
     })
       .composite([
         { input: userBuffer, top: 0, left: 0 },
@@ -305,7 +292,7 @@ app.post("/upload", requireAuth, async (req, res) => {
       .jpeg({ quality: 92 })
       .toBuffer();
 
-    // --- Upload Cloudinary ---
+    // ---------------- UPLOAD CLOUDINARY ----------------
     cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
