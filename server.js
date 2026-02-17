@@ -1,5 +1,5 @@
 // =============================================
-//  TANGO WHISKY — SERVER.JS (VERSION FINALE PRO)
+//  TANGO WHISKY — SERVER.JS (MULTI UTILISATEUR)
 // =============================================
 
 import express from "express";
@@ -120,21 +120,11 @@ function wrapText(text = "", max = 32) {
   return lines;
 }
 
-function parseContext(ctx) {
-  if (!ctx || !ctx.custom || !ctx.custom.entry) return {};
-  return ctx.custom.entry.split("|").reduce((acc, p) => {
-    const [k, ...rest] = p.split("=");
-    acc[k] = decodeURIComponent(rest.join("="));
-    return acc;
-  }, {});
-}
-
 // ================= GALERIE =================
 app.get("/qsl", requireAuth, async (req, res) => {
   try {
     const result = await cloudinary.search
       .expression("folder:TW-eQSL")
-      .with_field("context")
       .sort_by("created_at", "desc")
       .max_results(200)
       .execute();
@@ -150,14 +140,14 @@ app.get("/qsl", requireAuth, async (req, res) => {
   }
 });
 
-// ================= DOWNLOAD INFO =================
+// ================= DOWNLOAD PAR INDICATIF =================
 app.get("/download/:call", async (req, res) => {
   try {
     const call = req.params.call.toUpperCase();
     const downloads = readDownloads();
 
     const result = await cloudinary.search
-      .expression(`folder:TW-eQSL AND tags=indicatif_${call}`)
+      .expression(`folder:TW-eQSL AND tags=to_${call}`)
       .max_results(100)
       .execute();
 
@@ -181,58 +171,31 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= GENERATE QSL BUFFER =================
+// ================= GENERATE QSL =================
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
   const PANEL_WIDTH = 350;
   const IMG_WIDTH = 470;
   const IMG_HEIGHT = 410;
   const TOTAL_WIDTH = IMG_WIDTH + PANEL_WIDTH;
   const TOTAL_HEIGHT = IMG_HEIGHT;
-  const headerHeight = 100;
-  const infoFontSize = 22;
-  const noteFontSize = 28;
-
-  const noteLines = wrapText(note || "", 32);
-  const infoLines = [
-    `Date : ${escapeXml(date)}`,
-    `UTC : ${escapeXml(time)}`,
-    `Bande : ${escapeXml(band)}`,
-    `Mode : ${escapeXml(mode)}`,
-    `Report : ${escapeXml(report)}`
-  ];
 
   const userBuffer = await sharp(filePath)
-    .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "cover", position: "center" })
+    .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "cover" })
     .toBuffer();
 
-  let infoSVG = "";
-  infoLines.forEach((line, i) => {
-    const y = headerHeight + 30 + i * infoFontSize;
-    infoSVG += `<text x="20" y="${y}" font-size="${infoFontSize}">${line}</text>`;
-  });
-
-  const startNoteY = headerHeight + infoLines.length * infoFontSize + 60;
-  const noteSVG = noteLines
-    .map((line, i) => `<tspan x="20" ${i === 0 ? `y="${startNoteY}"` : `dy="${noteFontSize}"`}>${escapeXml(line)}</tspan>`)
-    .join("");
-
-  const panelSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}">
-  <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#f9f9f9"/>
-    <stop offset="100%" stop-color="#eeeeee"/>
-  </linearGradient></defs>
-  <rect width="100%" height="100%" fill="url(#bg)"/>
-  <rect x="0" y="0" width="100%" height="${headerHeight}" fill="#1f2937"/>
-  <text x="20" y="60" font-size="40" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
-  <line x1="20" y1="${headerHeight + 20}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + 20}" stroke="#ccc"/>
-  ${infoSVG}
-  <line x1="20" y1="${headerHeight + infoLines.length * infoFontSize + 40}" x2="${PANEL_WIDTH - 20}" y2="${headerHeight + infoLines.length * infoFontSize + 40}" stroke="#ccc"/>
-  <text x="0" y="0" font-size="${noteFontSize}" fill="#000" xml:space="preserve">${noteSVG}</text>
-  <text x="20" y="${TOTAL_HEIGHT - 20}" font-size="14" fill="#555">TANGO WHISKY eQSL</text>
+  const svg = `
+<svg width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#f3f4f6"/>
+  <text x="20" y="60" font-size="40" fill="#111">${escapeXml(indicatif)}</text>
+  <text x="20" y="120" font-size="20">Date: ${escapeXml(date)}</text>
+  <text x="20" y="150" font-size="20">UTC: ${escapeXml(time)}</text>
+  <text x="20" y="180" font-size="20">Bande: ${escapeXml(band)}</text>
+  <text x="20" y="210" font-size="20">Mode: ${escapeXml(mode)}</text>
+  <text x="20" y="240" font-size="20">Report: ${escapeXml(report)}</text>
+  <text x="20" y="300" font-size="18">${escapeXml(note)}</text>
 </svg>`;
 
-  const panelBuffer = await sharp(Buffer.from(panelSVG)).png().toBuffer();
+  const panelBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
 
   return await sharp({
     create: { width: TOTAL_WIDTH, height: TOTAL_HEIGHT, channels: 3, background: "#fff" }
@@ -245,18 +208,20 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
     .toBuffer();
 }
 
-// ================= UPLOAD (GENERIC) =================
+// ================= UPLOAD =================
 async function handleUpload(req, res) {
   try {
     if (!req.files || !req.files.qsl)
-      return res.status(400).json({ success: false, error: "Aucune image reçue" });
+      return res.status(400).json({ success: false });
 
     const file = req.files.qsl;
-    const indicatif = (req.body.indicatif || "").toUpperCase();
+
+    const toCall = (req.body.indicatif || "").toUpperCase();
+    const fromCall = (req.session.indicatif || "").toUpperCase();
 
     const buffer = await generateQSLBuffer({
       filePath: file.tempFilePath,
-      indicatif,
+      indicatif: toCall,
       date: req.body.date,
       time: req.body.time,
       band: req.body.band,
@@ -268,19 +233,10 @@ async function handleUpload(req, res) {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
-        tags: [`indicatif_${indicatif}`],
-        context: {
-          indicatif: indicatif,
-          date: req.body.date,
-          time: req.body.time,
-          band: req.body.band,
-          mode: req.body.mode,
-          report: req.body.report,
-          note: req.body.note
-        }
+        tags: [`to_${toCall}`, `from_${fromCall}`]
       },
       (err, result) => {
-        if (err) return res.status(500).json({ success: false, error: err.message });
+        if (err) return res.status(500).json({ success: false });
         res.json({
           success: true,
           qsl: {
@@ -295,59 +251,14 @@ async function handleUpload(req, res) {
     stream.end(buffer);
 
   } catch (err) {
-    console.error("UPLOAD ERROR:", err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 }
 
 app.post("/upload", requireAuth, handleUpload);
 app.post("/upload-single-qsl", requireAuth, handleUpload);
 
-// ================= FILE DOWNLOAD =================
-app.get("/file", async (req, res) => {
-  try {
-    const pid = req.query.pid;
-    if (!pid) return res.status(400).send("missing pid");
-
-    const downloads = readDownloads();
-    if (!downloads[pid]) downloads[pid] = { count: 0, createdAt: Date.now() };
-    const entry = downloads[pid];
-
-    if (isExpired(entry) || entry.count >= MAX_DOWNLOADS) {
-      await cloudinary.uploader.destroy(pid);
-      delete downloads[pid];
-      saveDownloads(downloads);
-      return res.status(410).send("QSL expirée");
-    }
-
-    entry.count += 1;
-
-    const info = await cloudinary.api.resource(pid);
-    const ctx = parseContext(info.context);
-    const file = await axios.get(info.secure_url, { responseType: "arraybuffer" });
-
-    res.setHeader("Content-Type", `image/${info.format}`);
-    res.setHeader("Content-Disposition", `attachment; filename="${ctx.indicatif || "QSL"}_${ctx.date}.${info.format}"`);
-    res.send(Buffer.from(file.data));
-
-    if (entry.count >= MAX_DOWNLOADS) {
-      await cloudinary.uploader.destroy(pid);
-      delete downloads[pid];
-    }
-    saveDownloads(downloads);
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Erreur téléchargement");
-  }
-});
-
-// ================= SPA FALLBACK =================
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
-
 // ================= START =================
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log("TW-eQSL server running on port", PORT));
- 
+app.listen(PORT, () => console.log("Server running on port", PORT));
