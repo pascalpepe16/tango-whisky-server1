@@ -1,7 +1,3 @@
-// =============================================
-//  TANGO WHISKY — SERVER.JS (VERSION STABLE)
-// =============================================
-
 import express from "express";
 import cors from "cors";
 import fileUpload from "express-fileupload";
@@ -13,22 +9,17 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import fs from "fs";
 
-// ================= CONFIG =================
-const MAX_DOWNLOADS = 2;
-const MAX_DAYS = 30;
-
-// ================= INIT =================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ================= SESSION =================
 app.use(
   session({
     name: "tw-session",
@@ -39,28 +30,12 @@ app.use(
   })
 );
 
-// ================= USERS =================
+// USERS
 const USERS = JSON.parse(
   fs.readFileSync(path.join(__dirname, "users.json"), "utf8")
 );
 
-// ================= DOWNLOAD TRACKING =================
-const DOWNLOADS_PATH = path.join(__dirname, "downloads.json");
-
-function readDownloads() {
-  if (!fs.existsSync(DOWNLOADS_PATH)) return {};
-  return JSON.parse(fs.readFileSync(DOWNLOADS_PATH, "utf8"));
-}
-
-function saveDownloads(data) {
-  fs.writeFileSync(DOWNLOADS_PATH, JSON.stringify(data, null, 2));
-}
-
-function isExpired(entry) {
-  return Date.now() - entry.createdAt >= MAX_DAYS * 86400000;
-}
-
-// ================= AUTH =================
+// AUTH
 function requireAuth(req, res, next) {
   if (req.session?.authenticated) return next();
   res.status(401).json({ error: "Non autorisé" });
@@ -87,24 +62,14 @@ app.get("/check-auth", (req, res) => {
   });
 });
 
-// ================= CLOUDINARY =================
+// CLOUDINARY
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ================= HELPERS =================
-function escapeXml(str = "") {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
-// ================= GALERIE =================
+// GALLERY
 app.get("/qsl", requireAuth, async (req, res) => {
   try {
     const result = await cloudinary.search
@@ -124,7 +89,7 @@ app.get("/qsl", requireAuth, async (req, res) => {
   }
 });
 
-// ================= DOWNLOAD LIST =================
+// DOWNLOAD LIST
 app.get("/download/:call", async (req, res) => {
   try {
     const call = req.params.call.toUpperCase();
@@ -147,9 +112,8 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= GENERATE QSL =================
+// GENERATE QSL
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
-
   const base = await sharp(filePath)
     .resize({ width: 800, height: 450, fit: "cover" })
     .jpeg({ quality: 90 })
@@ -158,13 +122,13 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
   const svg = `
   <svg width="800" height="450">
     <rect x="0" y="0" width="800" height="450" fill="rgba(0,0,0,0.4)"/>
-    <text x="30" y="60" font-size="42" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
-    <text x="30" y="120" font-size="26" fill="white">Date: ${escapeXml(date)}</text>
-    <text x="30" y="160" font-size="26" fill="white">UTC: ${escapeXml(time)}</text>
-    <text x="30" y="200" font-size="26" fill="white">Bande: ${escapeXml(band)}</text>
-    <text x="30" y="240" font-size="26" fill="white">Mode: ${escapeXml(mode)}</text>
-    <text x="30" y="280" font-size="26" fill="white">Report: ${escapeXml(report)}</text>
-    <text x="30" y="340" font-size="28" fill="white">${escapeXml(note)}</text>
+    <text x="30" y="60" font-size="42" fill="white" font-weight="bold">${indicatif}</text>
+    <text x="30" y="120" font-size="26" fill="white">Date: ${date}</text>
+    <text x="30" y="160" font-size="26" fill="white">UTC: ${time}</text>
+    <text x="30" y="200" font-size="26" fill="white">Bande: ${band}</text>
+    <text x="30" y="240" font-size="26" fill="white">Mode: ${mode}</text>
+    <text x="30" y="280" font-size="26" fill="white">Report: ${report}</text>
+    <text x="30" y="340" font-size="28" fill="white">${note}</text>
   </svg>`;
 
   return await sharp(base)
@@ -173,7 +137,7 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
     .toBuffer();
 }
 
-// ================= UPLOAD =================
+// UPLOAD
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
@@ -199,4 +163,49 @@ app.post("/upload", requireAuth, async (req, res) => {
         tags: [`indicatif_${indicatif}`]
       },
       (err, result) => {
-        if (err) return res
+        if (err) return res.status(500).json({ success: false });
+        res.json({
+          success: true,
+          qsl: {
+            public_id: result.public_id,
+            url: result.secure_url,
+            thumb: result.secure_url.replace("/upload/", "/upload/w_300/")
+          }
+        });
+      }
+    );
+
+    stream.end(buffer);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});
+
+// FILE DOWNLOAD
+app.get("/file", async (req, res) => {
+  try {
+    const pid = req.query.pid;
+    if (!pid) return res.status(400).send("missing pid");
+
+    const info = await cloudinary.api.resource(pid);
+    const file = await axios.get(info.secure_url, { responseType: "arraybuffer" });
+
+    res.setHeader("Content-Type", `image/${info.format}`);
+    res.setHeader("Content-Disposition", `attachment; filename="QSL.${info.format}"`);
+    res.send(Buffer.from(file.data));
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erreur téléchargement");
+  }
+});
+
+// SPA FALLBACK (TOUJOURS EN DERNIER)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log("TW-eQSL server running on port", PORT));
