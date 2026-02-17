@@ -1,5 +1,5 @@
 // =============================================
-//  TANGO WHISKY — SERVER.JS (MULTI UTILISATEUR)
+//  TANGO WHISKY — SERVER.JS (VERSION STABLE)
 // =============================================
 
 import express from "express";
@@ -32,7 +32,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
     name: "tw-session",
-    secret: process.env.SESSION_SECRET || "tw-whisky-secret",
+    secret: process.env.SESSION_SECRET || "tw-secret",
     resave: false,
     saveUninitialized: false,
     cookie: { httpOnly: true, sameSite: "lax" }
@@ -57,7 +57,7 @@ function saveDownloads(data) {
 }
 
 function isExpired(entry) {
-  return Date.now() - entry.createdAt >= MAX_DAYS * 24 * 60 * 60 * 1000;
+  return Date.now() - entry.createdAt >= MAX_DAYS * 86400000;
 }
 
 // ================= AUTH =================
@@ -104,22 +104,6 @@ function escapeXml(str = "") {
     .replace(/'/g, "&apos;");
 }
 
-function wrapText(text = "", max = 32) {
-  const words = text.split(/\s+/);
-  const lines = [];
-  let line = "";
-  for (const w of words) {
-    if ((line + " " + w).trim().length > max) {
-      if (line) lines.push(line);
-      line = w;
-    } else {
-      line = (line + " " + w).trim();
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
 // ================= GALERIE =================
 app.get("/qsl", requireAuth, async (req, res) => {
   try {
@@ -140,29 +124,21 @@ app.get("/qsl", requireAuth, async (req, res) => {
   }
 });
 
-// ================= DOWNLOAD PAR INDICATIF =================
+// ================= DOWNLOAD LIST =================
 app.get("/download/:call", async (req, res) => {
   try {
     const call = req.params.call.toUpperCase();
-    const downloads = readDownloads();
 
     const result = await cloudinary.search
-      .expression(`folder:TW-eQSL AND tags=to_${call}`)
+      .expression(`folder:TW-eQSL AND tags=indicatif_${call}`)
       .max_results(100)
       .execute();
 
-    const list = result.resources.map(r => {
-      const entry = downloads[r.public_id];
-      const remainingDownloads = entry ? Math.max(0, MAX_DOWNLOADS - entry.count) : MAX_DOWNLOADS;
-      const remainingDays = entry ? Math.max(0, MAX_DAYS - Math.floor((Date.now() - entry.createdAt) / 86400000)) : MAX_DAYS;
-      return {
-        public_id: r.public_id,
-        url: r.secure_url,
-        thumb: r.secure_url.replace("/upload/", "/upload/w_300/"),
-        remainingDownloads,
-        remainingDays
-      };
-    });
+    const list = result.resources.map(r => ({
+      public_id: r.public_id,
+      url: r.secure_url,
+      thumb: r.secure_url.replace("/upload/", "/upload/w_300/")
+    }));
 
     res.json(list);
   } catch (err) {
@@ -173,55 +149,42 @@ app.get("/download/:call", async (req, res) => {
 
 // ================= GENERATE QSL =================
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
-  const PANEL_WIDTH = 350;
-  const IMG_WIDTH = 470;
-  const IMG_HEIGHT = 410;
-  const TOTAL_WIDTH = IMG_WIDTH + PANEL_WIDTH;
-  const TOTAL_HEIGHT = IMG_HEIGHT;
 
-  const userBuffer = await sharp(filePath)
-    .resize({ width: IMG_WIDTH, height: IMG_HEIGHT, fit: "cover" })
+  const base = await sharp(filePath)
+    .resize({ width: 800, height: 450, fit: "cover" })
+    .jpeg({ quality: 90 })
     .toBuffer();
 
   const svg = `
-<svg width="${PANEL_WIDTH}" height="${TOTAL_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="#f3f4f6"/>
-  <text x="20" y="60" font-size="40" fill="#111">${escapeXml(indicatif)}</text>
-  <text x="20" y="120" font-size="20">Date: ${escapeXml(date)}</text>
-  <text x="20" y="150" font-size="20">UTC: ${escapeXml(time)}</text>
-  <text x="20" y="180" font-size="20">Bande: ${escapeXml(band)}</text>
-  <text x="20" y="210" font-size="20">Mode: ${escapeXml(mode)}</text>
-  <text x="20" y="240" font-size="20">Report: ${escapeXml(report)}</text>
-  <text x="20" y="300" font-size="18">${escapeXml(note)}</text>
-</svg>`;
+  <svg width="800" height="450">
+    <rect x="0" y="0" width="800" height="450" fill="rgba(0,0,0,0.4)"/>
+    <text x="30" y="60" font-size="42" fill="white" font-weight="bold">${escapeXml(indicatif)}</text>
+    <text x="30" y="120" font-size="26" fill="white">Date: ${escapeXml(date)}</text>
+    <text x="30" y="160" font-size="26" fill="white">UTC: ${escapeXml(time)}</text>
+    <text x="30" y="200" font-size="26" fill="white">Bande: ${escapeXml(band)}</text>
+    <text x="30" y="240" font-size="26" fill="white">Mode: ${escapeXml(mode)}</text>
+    <text x="30" y="280" font-size="26" fill="white">Report: ${escapeXml(report)}</text>
+    <text x="30" y="340" font-size="28" fill="white">${escapeXml(note)}</text>
+  </svg>`;
 
-  const panelBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
-
-  return await sharp({
-    create: { width: TOTAL_WIDTH, height: TOTAL_HEIGHT, channels: 3, background: "#fff" }
-  })
-    .composite([
-      { input: userBuffer, top: 0, left: 0 },
-      { input: panelBuffer, top: 0, left: IMG_WIDTH }
-    ])
+  return await sharp(base)
+    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
     .jpeg({ quality: 92 })
     .toBuffer();
 }
 
 // ================= UPLOAD =================
-async function handleUpload(req, res) {
+app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
       return res.status(400).json({ success: false });
 
     const file = req.files.qsl;
-
-    const toCall = (req.body.indicatif || "").toUpperCase();
-    const fromCall = (req.session.indicatif || "").toUpperCase();
+    const indicatif = (req.body.indicatif || "").toUpperCase();
 
     const buffer = await generateQSLBuffer({
       filePath: file.tempFilePath,
-      indicatif: toCall,
+      indicatif,
       date: req.body.date,
       time: req.body.time,
       band: req.body.band,
@@ -233,32 +196,7 @@ async function handleUpload(req, res) {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
-        tags: [`to_${toCall}`, `from_${fromCall}`]
+        tags: [`indicatif_${indicatif}`]
       },
       (err, result) => {
-        if (err) return res.status(500).json({ success: false });
-        res.json({
-          success: true,
-          qsl: {
-            public_id: result.public_id,
-            url: result.secure_url,
-            thumb: result.secure_url.replace("/upload/", "/upload/w_300/")
-          }
-        });
-      }
-    );
-
-    stream.end(buffer);
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
-  }
-}
-
-app.post("/upload", requireAuth, handleUpload);
-app.post("/upload-single-qsl", requireAuth, handleUpload);
-
-// ================= START =================
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log("Server running on port", PORT));
+        if (err) return res
