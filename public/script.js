@@ -328,42 +328,6 @@ document.getElementById("genForm").addEventListener("submit", async e => {
     console.error(err);
   }
 });
-// ===============================
-// NOTIFICATION QSL
-// ===============================
-let lastQslCount = 0;
-
-async function checkNewQsl() {
-  if (!window.isAuthenticated) return;
-
-  try {
-    const res = await fetch("/qsl-count", {
-      credentials: "same-origin"
-    });
-
-    const data = await res.json();
-    const badge = document.getElementById("notifBadge");
-
-    if (!badge) return;
-
-    if (data.count > lastQslCount) {
-      badge.innerText = " (Nouveau)";
-    } else {
-      badge.innerText = "";
-    }
-
-    lastQslCount = data.count;
-
-  } catch (err) {
-    console.error("notif error", err);
-  }
-}
-
-// Vérifie toutes les 30 secondes
-setInterval(checkNewQsl, 30000);
-
-// Vérifie après login
-setTimeout(checkNewQsl, 2000);
 
 // ===============================
 // INIT
