@@ -1,4 +1,4 @@
-import express from "express";
+ import express from "express";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import sharp from "sharp";
@@ -114,6 +114,7 @@ app.get("/download/:call", async (req, res) => {
 
 // GENERATE QSL
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
+
   const base = await sharp(filePath)
     .resize({ width: 800, height: 450, fit: "cover" })
     .jpeg({ quality: 90 })
@@ -121,14 +122,41 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
 
   const svg = `
   <svg width="800" height="450">
-    <rect x="0" y="0" width="800" height="450" fill="rgba(0,0,0,0.4)"/>
-    <text x="30" y="60" font-size="42" fill="white" font-weight="bold">${indicatif}</text>
-    <text x="30" y="120" font-size="26" fill="white">Date: ${date}</text>
-    <text x="30" y="160" font-size="26" fill="white">UTC: ${time}</text>
-    <text x="30" y="200" font-size="26" fill="white">Bande: ${band}</text>
-    <text x="30" y="240" font-size="26" fill="white">Mode: ${mode}</text>
-    <text x="30" y="280" font-size="26" fill="white">Report: ${report}</text>
-    <text x="30" y="340" font-size="28" fill="white">${note}</text>
+    <!-- panneau blanc à droite -->
+    <rect x="520" y="0" width="280" height="450" fill="white"/>
+
+    <!-- indicatif -->
+    <text x="540" y="60" font-size="28" fill="#333" font-weight="bold">
+      ${indicatif}
+    </text>
+
+    <!-- ligne -->
+    <line x1="540" y1="80" x2="780" y2="80" stroke="#ccc"/>
+
+    <!-- infos QSO -->
+    <text x="540" y="120" font-size="20" fill="#333">
+      Date: ${date}
+    </text>
+
+    <text x="540" y="160" font-size="20" fill="#333">
+      UTC: ${time}
+    </text>
+
+    <text x="540" y="200" font-size="20" fill="#333">
+      Bande: ${band}
+    </text>
+
+    <text x="540" y="240" font-size="20" fill="#333">
+      Mode: ${mode}
+    </text>
+
+    <text x="540" y="280" font-size="20" fill="#333">
+      Report: ${report}
+    </text>
+
+    <text x="540" y="340" font-size="18" fill="#666">
+      ${note || ""}
+    </text>
   </svg>`;
 
   return await sharp(base)
@@ -136,6 +164,7 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
     .jpeg({ quality: 92 })
     .toBuffer();
 }
+
 
 // UPLOAD
 app.post("/upload", requireAuth, async (req, res) => {
