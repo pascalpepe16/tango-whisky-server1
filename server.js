@@ -67,12 +67,20 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ===== GENERATE QSL BUFFER FLEXIBLE =====
-async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
-  const baseImg = await sharp(filePath);
-  const metadata = await baseImg.metadata();
-  const imgWidth = metadata.width;
-  const imgHeight = metadata.height;
+// ===== GENERATE QSL BUFFER 1024x683 =====
+async function generateQSLBuffer({
+  filePath, indicatif, date, time, band, mode, report, note
+}) {
+  const targetWidth = 1024;
+  const targetHeight = 683;
+  const panelWidth = 300; // texte à droite
+  const padding = 20;
+  const lineHeight = 35;
+
+  const base = await sharp(filePath)
+    .resize({ width: targetWidth, height: targetHeight, fit: "cover" })
+    .jpeg({ quality: 90 })
+    .toBuffer();
 
   const texts = [
     { label: "", value: indicatif, fontSize: 28 },
@@ -84,31 +92,26 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
     { label: "", value: note || "", fontSize: 18 }
   ];
 
-  const panelWidth = 300; // largeur fixe
-  const padding = 20;
-  const lineHeight = 35; // espace entre lignes pour lisibilité
-
-  // créer le SVG avec texte + retour à la ligne
   let textSvg = "";
   texts.forEach((t, i) => {
     const y = padding + i * lineHeight;
-    const content = t.label + t.value;
-    textSvg += `<text x="${imgWidth + padding}" y="${y}" font-size="${t.fontSize}" fill="#222">${content}</text>`;
+    textSvg += `<text x="${padding}" y="${y}" font-size="${t.fontSize}" fill="#222" font-family="Arial">${t.label}${t.value}</text>`;
   });
 
   const svg = `
-  <svg width="${imgWidth + panelWidth}" height="${imgHeight}">
-    <defs>
-      <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#f0f0f0"/>
-        <stop offset="100%" stop-color="#ffffff"/>
-      </linearGradient>
-    </defs>
-    <rect x="${imgWidth}" y="0" width="${panelWidth}" height="${imgHeight}" fill="url(#grad)" rx="10" ry="10"/>
-    ${textSvg}
-  </svg>`;
+    <svg width="${targetWidth + panelWidth}" height="${targetHeight}">
+      <defs>
+        <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#f0f0f0"/>
+          <stop offset="100%" stop-color="#ffffff"/>
+        </linearGradient>
+      </defs>
+      <rect x="${targetWidth}" y="0" width="${panelWidth}" height="${targetHeight}" fill="url(#grad)" rx="10" ry="10"/>
+      ${textSvg}
+    </svg>
+  `;
 
-  return await baseImg
+  return await sharp(base)
     .extend({ top: 0, bottom: 0, left: 0, right: panelWidth, background: "white" })
     .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
     .jpeg({ quality: 92 })
@@ -231,9 +234,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// ===== SPA fallback =====
+// ===== SPA fallback avec onglet Facebook =====
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
+  const indexPath = path.join(__dirname, "public/index.html");
+  let html = fs.readFileSync(indexPath, "utf8");
+
+  // Injecter petit onglet FB en bas à droite
+  const fbTab = `
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #1877f2;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    z-index: 9999;
+  " onclick="window.open('https://www.facebook.com/groups/1114993245182627','_blank')">
+    Facebook
+  </div>
+  `;
+
+  html = html.replace("</body>", fbTab + "\n</body>");
+  res.send(html);
 });
 
 // ===== START SERVER =====
