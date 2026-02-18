@@ -1,66 +1,42 @@
- // ===============================
-// CONFIG
-// ===============================
-const API_URL = location.origin;
-let importedLogs = [];
-window.isAuthenticated = false;
+const API_URL = window.location.origin;
+
+let lastQslCount = 0;
+let currentIndicatif = null;
 
 // ===============================
-// AUTH / SESSION
+// AUTH
 // ===============================
 async function checkAuth() {
-  try {
-    const res = await fetch("/check-auth", { credentials: "same-origin" });
-    const data = await res.json();
+  const res = await fetch(API_URL + "/check-auth");
+  const data = await res.json();
 
-    window.isAuthenticated = data.authenticated === true;
-
-    const loginBox = document.getElementById("loginBox");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const btnGallery = document.getElementById("btnGallery");
-    const btnCreate = document.getElementById("btnCreate");
-
-    if (window.isAuthenticated) {
-      loginBox.style.display = "none";
-      logoutBtn.style.display = "inline-block";
-      btnGallery.style.display = "inline-block";
-      btnCreate.style.display = "inline-block";
-    } else {
-      loginBox.style.display = "block";
-      logoutBtn.style.display = "none";
-      btnGallery.style.display = "none";
-      btnCreate.style.display = "none";
-    }
-  } catch (err) {
-    console.error("checkAuth error", err);
+  if (data.authenticated) {
+    currentIndicatif = data.indicatif;
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("appBox").style.display = "block";
+    checkNewQSL();
+  } else {
+    document.getElementById("loginBox").style.display = "block";
+    document.getElementById("appBox").style.display = "none";
   }
 }
 
 async function login() {
-  const indicatif = document.getElementById("loginIndicatif").value.trim();
+  const indicatif = document.getElementById("loginIndicatif").value;
   const password = document.getElementById("loginPassword").value;
-  const errBox = document.getElementById("loginError");
 
-  errBox.innerText = "";
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ indicatif, password })
+  });
 
-  try {
-    const res = await fetch("/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ indicatif, password })
-    });
-
-    if (!res.ok) {
-      errBox.innerText = "Identifiants incorrects";
-      return;
-    }
-
-    await checkAuth();
-    showTab("home");
-  } catch (err) {
-    errBox.innerText = "Erreur réseau";
+  if (!res.ok) {
+    alert("Identifiants incorrects");
+    return;
   }
+
+  checkAuth();
 }
 
 function logout() {
@@ -68,269 +44,67 @@ function logout() {
 }
 
 // ===============================
-// NAVIGATION
+// GENERATION QSL
 // ===============================
-function showTab(id) {
+document.getElementById("genForm")?.addEventListener("submit", async (e) => {
 
-  const protectedTabs = ["gallery", "create"];
-
-  if (protectedTabs.includes(id) && !window.isAuthenticated) {
-    showTab("home");
-    return;
-  }
-
-  document.querySelectorAll(".section").forEach(sec =>
-    sec.classList.add("hidden")
-  );
-
-  const el = document.getElementById(id);
-  if (el) el.classList.remove("hidden");
-
-  if (id === "gallery") loadGallery();
-}
-
-// ===============================
-// GALLERY
-// ===============================
-async function loadGallery() {
-  const box = document.getElementById("galleryContent");
-  box.innerHTML = "Chargement…";
-
-  try {
-    const res = await fetch(API_URL + "/qsl", {
-      credentials: "same-origin"
-    });
-
-    const list = await res.json();
-
-    if (!Array.isArray(list) || !list.length) {
-      box.innerHTML = "Aucune QSL";
-      return;
-    }
-
-    box.innerHTML = "";
-    list.forEach(q => {
-      const div = document.createElement("div");
-      div.className = "thumbWrap";
-      div.innerHTML = `<img src="${q.thumb}">`;
-      box.appendChild(div);
-    });
-  } catch (err) {
-    box.innerHTML = "Erreur réseau";
-  }
-}
-
-// ===============================
-// IMPORT CSV / EXCEL
-// ===============================
-function processFile() {
-  const fileInput = document.getElementById("importFile");
-  const file = fileInput.files[0];
-  const status = document.getElementById("importStatus");
-  const previewArea = document.getElementById("previewArea");
-
-  if (!file) {
-    status.innerHTML = "Choisissez un fichier";
-    return;
-  }
-
-  const ext = file.name.split(".").pop().toLowerCase();
-
-  const normalizeRow = row => ({
-    Indicatif: (row.indicatif || row.Indicatif || "").trim(),
-    Date: (row.date || row.Date || "").trim(),
-    Heure: (row.heure || row.Heure || "").trim(),
-    Bande: (row.bande || row.Bande || "").trim(),
-    Report: (row.report || row.Report || "").trim(),
-    Mode: (row.mode || row.Mode || "").trim(),
-    Note: (row.note || row.Note || "").trim()
-  });
-
-  const showPreview = () => {
-    previewArea.innerHTML = "";
-    importedLogs.slice(0, 10).forEach(row => {
-      const div = document.createElement("div");
-      div.innerHTML = `<strong>${row.Indicatif}</strong> ${row.Date} ${row.Heure}`;
-      previewArea.appendChild(div);
-    });
-  };
-
-  if (ext === "csv") {
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: function(results) {
-        importedLogs = results.data
-          .map(normalizeRow)
-          .filter(r => r.Indicatif !== "");
-        status.innerHTML = `${importedLogs.length} lignes valides chargées`;
-        showPreview();
-        document.getElementById("validateImportBtn").style.display = "inline-block";
-      },
-      error: function(err) {
-        console.error(err);
-        status.innerHTML = "Erreur lors de la lecture du CSV";
-      }
-    });
-  } else if (ext === "xlsx") {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(ws);
-
-      importedLogs = raw
-        .map(normalizeRow)
-        .filter(r => r.Indicatif !== "");
-
-      status.innerHTML = `${importedLogs.length} lignes valides chargées`;
-      showPreview();
-      document.getElementById("validateImportBtn").style.display = "inline-block";
-    };
-    reader.readAsArrayBuffer(file);
-  } else {
-    status.innerHTML = "Format non supporté (CSV ou XLSX uniquement)";
-  }
-}
-
-// ===============================
-// VALIDATION IMPORT + PROGRESSION
-// ===============================
-document.getElementById("validateImportBtn").onclick = async function () {
-
-  const imageInput = document.getElementById("bulkImage");
-  const status = document.getElementById("importStatus");
-  const progress = document.getElementById("progressContainer");
-  const bar = document.getElementById("progressBar");
-
-  progress.style.display = "block";
-  bar.style.width = "0%";
-
-  let success = 0;
-
-  for (let i = 0; i < importedLogs.length; i++) {
-
-    const row = importedLogs[i];
-    const formData = new FormData();
-
-    formData.append("indicatif", row.Indicatif);
-    formData.append("date", row.Date);
-    formData.append("time", row.Heure);
-    formData.append("band", row.Bande);
-    formData.append("report", row.Report);
-    formData.append("mode", row.Mode);
-    formData.append("note", row.Note);
-    formData.append("qsl", imageInput.files[0]);
-
-    try {
-      const res = await fetch(API_URL + "/upload", {
-        method: "POST",
-        body: formData,
-        credentials: "same-origin"
-      });
-
-      const data = await res.json();
-      if (data.success) success++;
-    } catch (err) {}
-
-    const percent = Math.round(((i + 1) / importedLogs.length) * 100);
-    bar.style.width = percent + "%";
-    status.innerHTML = `Traitement ${i + 1}/${importedLogs.length}`;
-  }
-
-  status.innerHTML = `✅ ${success} QSL enregistrées`;
-};
-
-// ===============================
-// DOWNLOAD SEARCH
-// ===============================
-document.getElementById("btnSearch").onclick = async () => {
-  const call = document.getElementById("dlCall").value.trim().toUpperCase();
-  const box = document.getElementById("dlPreview");
-
-  if (!call) {
-    alert("Entrer un indicatif");
-    return;
-  }
-
-  box.innerHTML = "Recherche…";
-
-  try {
-    const res = await fetch(API_URL + "/download/" + call);
-    const list = await res.json();
-
-    if (!list.length) {
-      box.innerHTML = "Aucune QSL trouvée";
-      return;
-    }
-
-    box.innerHTML = "";
-    list.forEach(q => {
-      const div = document.createElement("div");
-      div.className = "dlWrap";
-      div.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb">
-        <button onclick="downloadQSL('${q.public_id}')">Télécharger</button>
-      `;
-      box.appendChild(div);
-    });
-  } catch (err) {
-    console.error(err);
-    box.innerHTML = "Erreur réseau";
-  }
-};
-
-function downloadQSL(pid) {
-  const a = document.createElement("a");
-  a.href = API_URL + "/file?pid=" + encodeURIComponent(pid);
-  a.click();
-}
-
-// ===============================
-// GENERATION QSL UNITAIRE
-// ===============================
-document.getElementById("genForm").addEventListener("submit", async e => {
   e.preventDefault();
 
-  const form = e.target;
   const preview = document.getElementById("genPreview");
-  preview.innerHTML = "Génération…";
+  preview.innerHTML = "Génération...";
 
-  const formData = new FormData(form);
+  const formData = new FormData(e.target);
 
   try {
-    const res = await fetch(API_URL + "/upload-single-qsl", {
+    const res = await fetch("/upload-single-qsl", {
       method: "POST",
-      body: formData,
-      credentials: "same-origin"
+      body: formData
     });
+
+    if (!res.ok) {
+      preview.innerHTML = "Erreur serveur";
+      return;
+    }
 
     const data = await res.json();
 
-    if (!data.success) {
-      preview.innerHTML = "Erreur : " + (data.error || "inconnue");
-      return;
-    }
-
     preview.innerHTML = `
-      <div class="thumbWrap">
-        <img src="${data.qsl.thumb}">
-        <br>
-        <a href="${data.qsl.url}" target="_blank">Voir en grand</a>
-      </div>
+      <img src="${data.qsl.url}" style="max-width:300px;">
+      <p>QSL générée avec succès</p>
     `;
-
-    form.reset();
 
   } catch (err) {
     preview.innerHTML = "Erreur réseau";
-    console.error(err);
   }
 });
 
 // ===============================
-// INIT
+// NOTIFICATION
 // ===============================
-checkAuth();
-showTab("home");
+async function checkNewQSL() {
+
+  if (!currentIndicatif) return;
+
+  try {
+    const res = await fetch("/download/" + currentIndicatif);
+    const list = await res.json();
+
+    if (lastQslCount === 0) {
+      lastQslCount = list.length;
+      return;
+    }
+
+    if (list.length > lastQslCount) {
+      alert("📩 Vous avez une nouvelle QSL !");
+      lastQslCount = list.length;
+    }
+
+  } catch (err) {
+    console.error("Notification error", err);
+  }
+}
+
+setInterval(checkNewQSL, 30000);
+
+// ===============================
+document.addEventListener("DOMContentLoaded", checkAuth);
