@@ -1,4 +1,4 @@
- // ===============================
+// ===============================
 // CONFIG
 // ===============================
 const API_URL = location.origin;
@@ -10,7 +10,7 @@ window.isAuthenticated = false;
 // ===============================
 async function checkAuth() {
   try {
-    const res = await fetch("/check-auth", { credentials: "same-origin" });
+    const res = await fetch(API_URL + "/check-auth", { credentials: "same-origin" });
     const data = await res.json();
 
     window.isAuthenticated = data.authenticated === true;
@@ -44,7 +44,7 @@ async function login() {
   errBox.innerText = "";
 
   try {
-    const res = await fetch("/login", {
+    const res = await fetch(API_URL + "/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
@@ -64,14 +64,13 @@ async function login() {
 }
 
 function logout() {
-  window.location.href = "/logout";
+  window.location.href = API_URL + "/logout";
 }
 
 // ===============================
 // NAVIGATION
 // ===============================
 function showTab(id) {
-
   const protectedTabs = ["gallery", "create"];
 
   if (protectedTabs.includes(id) && !window.isAuthenticated) {
@@ -97,10 +96,7 @@ async function loadGallery() {
   box.innerHTML = "Chargement…";
 
   try {
-    const res = await fetch(API_URL + "/qsl", {
-      credentials: "same-origin"
-    });
-
+    const res = await fetch(API_URL + "/qsl", { credentials: "same-origin" });
     const list = await res.json();
 
     if (!Array.isArray(list) || !list.length) {
@@ -121,7 +117,7 @@ async function loadGallery() {
 }
 
 // ===============================
-// IMPORT CSV / EXCEL
+// IMPORT CSV / XLSX
 // ===============================
 function processFile() {
   const fileInput = document.getElementById("importFile");
@@ -195,10 +191,9 @@ function processFile() {
 }
 
 // ===============================
-// VALIDATION IMPORT + PROGRESSION
+// BULK UPLOAD
 // ===============================
 document.getElementById("validateImportBtn").onclick = async function () {
-
   const imageInput = document.getElementById("bulkImage");
   const status = document.getElementById("importStatus");
   const progress = document.getElementById("progressContainer");
@@ -210,7 +205,6 @@ document.getElementById("validateImportBtn").onclick = async function () {
   let success = 0;
 
   for (let i = 0; i < importedLogs.length; i++) {
-
     const row = importedLogs[i];
     const formData = new FormData();
 
@@ -300,7 +294,8 @@ document.getElementById("genForm").addEventListener("submit", async e => {
   const formData = new FormData(form);
 
   try {
-    const res = await fetch(API_URL + "/upload-single-qsl", {
+    // ✅ CORRECTION : route serveur est /upload
+    const res = await fetch(API_URL + "/upload", {
       method: "POST",
       body: formData,
       credentials: "same-origin"
