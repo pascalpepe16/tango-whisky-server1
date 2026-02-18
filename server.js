@@ -69,40 +69,56 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ======= GENERATE QSL BUFFER (AUTO-ADAPT) =======
+// ======= GENERATE QSL BUFFER (AUTO-ADAPT + QRZ STYLE) =======
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
   const metadata = await sharp(filePath).metadata();
   const imgWidth = metadata.width;
   const imgHeight = metadata.height;
 
-  const panelWidth = Math.round(imgWidth * 0.35);
+  const texts = [
+    { value: indicatif, maxFont: 28 },
+    { value: `Date: ${date}`, maxFont: 20 },
+    { value: `UTC: ${time}`, maxFont: 20 },
+    { value: `Bande: ${band}`, maxFont: 20 },
+    { value: `Mode: ${mode}`, maxFont: 20 },
+    { value: `Report: ${report}`, maxFont: 20 },
+    { value: note || "", maxFont: 18 }
+  ];
+
   const panelPadding = 20;
 
-  // Fonction pour réduire la taille de police si nécessaire
-  function fitText(text, maxWidth, maxFontSize) {
-    let fontSize = maxFontSize;
-    const avgCharWidth = 0.6;
-    while (fontSize * text.length * avgCharWidth > maxWidth && fontSize > 8) fontSize -= 1;
+  // Estimer la largeur nécessaire pour le texte
+  let panelWidth = 0;
+  const computedFonts = texts.map(t => {
+    let fontSize = t.maxFont;
+    const approxWidth = () => t.value.length * fontSize * 0.6;
+    while (approxWidth() + panelPadding * 2 > panelWidth && fontSize > 8) fontSize -= 1;
+    panelWidth = Math.max(panelWidth, approxWidth());
     return fontSize;
-  }
+  });
 
-  const fontIndicatif = fitText(indicatif, panelWidth - panelPadding * 2, 28);
-  const fontNormal = fitText(date, panelWidth - panelPadding * 2, 20);
-  const fontNote = fitText(note || "", panelWidth - panelPadding * 2, 18);
+  panelWidth = Math.ceil(panelWidth + panelPadding * 2);
 
   const base = await sharp(filePath).jpeg({ quality: 90 }).toBuffer();
 
+  // SVG avec fond QRZ pro (dégradé léger)
   const svg = `
   <svg width="${imgWidth + panelWidth}" height="${imgHeight}">
-    <rect x="${imgWidth}" y="0" width="${panelWidth}" height="${imgHeight}" fill="white"/>
-    <text x="${imgWidth + panelPadding}" y="60" font-size="${fontIndicatif}" fill="#333" font-weight="bold">${indicatif}</text>
-    <line x1="${imgWidth + panelPadding}" y1="80" x2="${imgWidth + panelWidth - panelPadding}" y2="80" stroke="#ccc"/>
-    <text x="${imgWidth + panelPadding}" y="120" font-size="${fontNormal}" fill="#333">Date: ${date}</text>
-    <text x="${imgWidth + panelPadding}" y="160" font-size="${fontNormal}" fill="#333">UTC: ${time}</text>
-    <text x="${imgWidth + panelPadding}" y="200" font-size="${fontNormal}" fill="#333">Bande: ${band}</text>
-    <text x="${imgWidth + panelPadding}" y="240" font-size="${fontNormal}" fill="#333">Mode: ${mode}</text>
-    <text x="${imgWidth + panelPadding}" y="280" font-size="${fontNormal}" fill="#333">Report: ${report}</text>
-    <text x="${imgWidth + panelPadding}" y="340" font-size="${fontNote}" fill="#666">${note || ""}</text>
+    <defs>
+      <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#f0f0f0" />
+        <stop offset="100%" stop-color="#ffffff" />
+      </linearGradient>
+    </defs>
+    <rect x="${imgWidth}" y="0" width="${panelWidth}" height="${imgHeight}" fill="url(#grad)"/>
+    <text x="${imgWidth + panelPadding}" y="60" font-size="${computedFonts[0]}" fill="#222" font-weight="bold">${indicatif}</text>
+    <line x1="${imgWidth + panelPadding}" y1="80" x2="${imgWidth + panelWidth - panelPadding}" y2="80" stroke="#aaa"/>
+    <text x="${imgWidth + panelPadding}" y="120" font-size="${computedFonts[1]}" fill="#333">Date: ${date}</text>
+    <text x="${imgWidth + panelPadding}" y="160" font-size="${computedFonts[2]}" fill="#333">UTC: ${time}</text>
+    <text x="${imgWidth + panelPadding}" y="200" font-size="${computedFonts[3]}" fill="#333">Bande: ${band}</text>
+    <text x="${imgWidth + panelPadding}" y="240" font-size="${computedFonts[4]}" fill="#333">Mode: ${mode}</text>
+    <text x="${imgWidth + panelPadding}" y="280" font-size="${computedFonts[5]}" fill="#333">Report: ${report}</text>
+    <text x="${imgWidth + panelPadding}" y="340" font-size="${computedFonts[6]}" fill="#666">${note || ""}</text>
   </svg>`;
 
   return await sharp(base)
@@ -135,10 +151,7 @@ app.post("/upload", requireAuth, async (req, res) => {
     });
 
     const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: "TW-eQSL",
-        tags: [`indicatif_${indicatif}`]
-      },
+      { folder: "TW-eQSL", tags: [`indicatif_${indicatif}`] },
       (err, result) => {
         if (err) return res.status(500).json({ error: "Cloudinary upload failed" });
         res.json({
