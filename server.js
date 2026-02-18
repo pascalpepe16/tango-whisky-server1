@@ -1,4 +1,4 @@
- import express from "express";
+  import express from "express";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import sharp from "sharp";
@@ -238,3 +238,11 @@ app.get("*", (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log("TW-eQSL server running on port", PORT));
+app.use((req, res, next) => {
+  // si c'est une route API non définie
+  if (req.path.startsWith("/upload") || req.path.startsWith("/qsl") || req.path.startsWith("/download") || req.path.startsWith("/file")) {
+    return res.status(404).json({ error: "Route not found" });
+  }
+  // sinon SPA fallback
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
