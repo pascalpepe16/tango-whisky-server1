@@ -1,4 +1,4 @@
-import express from "express";
+ import express from "express";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import sharp from "sharp";
@@ -37,9 +37,9 @@ app.use(
 
 // ================= USERS EN MEMOIRE =================
 const USERS = {
-  F4ABC: "1234",
-  F1XYZ: "1234",
-  F5TEST: "1234"
+  14tw670": "123456",
+ "14tw207": "radio",
+  "14tw101": "qsl"
 };
 
 // ================= AUTH =================
