@@ -1,57 +1,165 @@
-<!DOCTYPE html>
+ <!doctype html>
+
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>TW-eQSL</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TANGO WHISKY eQSL</title>
+
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Librairies pour import Excel/CSV -->
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 </head>
 <body>
 
 <header>
-  <img src="logo.png" class="logo logo-hover">
-  <h1>TW-eQSL</h1>
+  <img src="https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763588704/akyt1anm1inwmygj3vfz.png"
+       class="logo" alt="TW">
+  <h1>TANGO WHISKY eQSL</h1>
 </header>
 
 <nav>
-  <button id="btnHome" onclick="showTab('home')">Accueil</button>
-  <button id="btnGallery" onclick="showTab('gallery')">Galerie</button>
-  <button id="btnCreate" onclick="showTab('create')">Créer QSL</button>
-  <button id="logoutBtn" onclick="logout()">Déconnexion</button>
+  <button onclick="showTab('home')">Accueil</button>
+
+  <button id="btnGallery" style="display:none;" onclick="showTab('gallery')">
+    Galerie
+  </button>
+
+  <button id="btnCreate" style="display:none;" onclick="showTab('create')">
+    Créer / Ajouter
+  </button>
+
+<button onclick="showTab('download')">Télécharger</button>
+
+
+
+  <button id="logoutBtn" onclick="logout()" style="display:none;">
+    Déconnexion
+  </button>
 </nav>
 
-<div id="home" class="section">
-  <h2>Bienvenue sur TW-eQSL</h2>
+<div id="loginBox" class="box">
+  <h3>Connexion</h3>
+  <input type="text" id="loginIndicatif" placeholder="Indicatif (ex: 14tw101)">
+  <input type="password" id="loginPassword" placeholder="Mot de passe">
+  <div class="btns">
+    <button class="primary" onclick="login()">Connexion</button>
+  </div>
+  <p id="loginError" style="color:red;"></p>
 </div>
 
-<div id="gallery" class="section hidden">
-  <div id="galleryContent"></div>
+<main>
+
+<section id="home" class="section">
+  <h2>Bienvenue</h2>
+  <p>Portail eQSL TANGO WHISKY – 73' de l'équipe</p>
+</section>
+
+<section id="gallery" class="section hidden">
+  <h2>Galerie</h2>
+  <div id="galleryContent">Chargement…</div>
+</section>
+
+<section id="create" class="section hidden">
+  <h2>Créer / Générer une QSL</h2>
+
+  <!-- IMPORT CSV -->
+
+  <div style="margin-bottom:20px;border:1px solid #ccc;padding:10px;">
+    <h3>Import CSV / Excel</h3>
+
+```
+<input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
+
+<label>Image pour toutes les QSL importées (format conseillé : 1024×683 minimum)</label><br>
+<input type="file" id="bulkImage" accept="image/*"><br><br>
+
+<button onclick="processFile()">Importer</button>
+<button id="validateImportBtn" style="display:none;">
+  Valider et enregistrer
+</button>
+
+<div id="importStatus" style="margin-top:10px;"></div>
+
+<!-- Prévisualisation -->
+<div id="previewArea" style="margin-top:10px;"></div>
+
+<!-- Barre de progression -->
+<div id="progressContainer" style="display:none;margin-top:10px;">
+  <div style="background:#ccc;height:20px;border-radius:10px;">
+    <div id="progressBar"
+         style="width:0%;height:100%;background:#28a745;border-radius:10px;">
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- FORMULAIRE QSL UNITAIRE -->
+
+  <form id="genForm" enctype="multipart/form-data" class="wideForm">
+
+```
+<div class="twoColumns">
+  <div>
+    <label>Indicatif :</label>
+    <input type="text" name="indicatif" required>
+
+    <label>Date (UTC) :</label>
+    <input type="date" name="date">
+
+    <label>Heure (UTC) :</label>
+    <input type="time" name="time">
+
+    <label>Bande :</label>
+    <input type="text" name="band">
+
+    <label>Report :</label>
+    <input type="text" name="report">
+  </div>
+
+  <div>
+    <label>Mode :</label>
+    <input type="text" name="mode">
+
+    <label>Note :</label>
+    <textarea name="note"></textarea>
+
+    <label>Image QSL :</label>
+    <input type="file" name="qsl" accept="image/*" required>
+  </div>
 </div>
 
-<div id="create" class="section hidden">
-  <form id="genForm" class="wideForm">
-    <input type="text" name="indicatif" placeholder="Indicatif" required>
-    <input type="date" name="date" required>
-    <input type="time" name="time" required>
-    <input type="text" name="band" placeholder="Bande" required>
-    <input type="text" name="mode" placeholder="Mode" required>
-    <input type="text" name="report" placeholder="Report" required>
-    <textarea name="note" placeholder="Note"></textarea>
-    <input type="file" name="qsl" required>
-    <button type="submit" class="primary">Générer QSL</button>
+<button class="primary" type="submit">Générer QSL</button>
+<div id="genPreview" class="preview"></div>
+```
+
   </form>
 
-  <div id="genPreview"></div>
-</div>
+</section>
 
-<!-- Onglet Facebook -->
-<a href="https://www.facebook.com/groups/1114993245182627" target="_blank" id="fbTab">FB</a>
+<section id="download" class="section hidden">
+  <h2>Télécharger</h2>
+  <div class="dlSearch">
+    <input id="dlCall" placeholder="Votre indicatif">
+    <button id="btnSearch" class="primary">Rechercher</button>
+  </div>
+  <div id="dlPreview"></div>
+</section>
+
+</main>
 
 <footer>
-  TW-eQSL &copy; 2026
+  TANGO WHISKY © 2025
 </footer>
 
 <script src="script.js"></script>
+
 </body>
 </html>
