@@ -1,4 +1,4 @@
- import express from "express";
+import express from "express";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import sharp from "sharp";
@@ -24,15 +24,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(
-  session({
-    name: "tw-session",
-    secret: process.env.SESSION_SECRET || "tw-secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { httpOnly: true, sameSite: "lax" }
-  })
-);
+app.use(session({
+  name: "tw-session",
+  secret: process.env.SESSION_SECRET || "tw-secret",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { httpOnly: true, sameSite: "lax" }
+}));
 
 // ======= USERS =======
 const USERS = JSON.parse(
