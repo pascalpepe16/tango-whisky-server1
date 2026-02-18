@@ -15,29 +15,26 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // ======= MIDDLEWARES =======
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(session({
-  name: "tw-session",
-  secret: process.env.SESSION_SECRET || "tw-secret",
-  resave: false,
-  saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: "lax" }
-}));
-
-// ======= USERS =======
-const USERS = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "users.json"), "utf8")
+app.use(
+  session({
+    name: "tw-session",
+    secret: process.env.SESSION_SECRET || "tw-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { httpOnly: true, sameSite: "lax" }
+  })
 );
 
-// ======= AUTH MIDDLEWARE =======
+// ======= USERS =======
+const USERS = JSON.parse(fs.readFileSync(path.join(__dirname, "users.json"), "utf8"));
+
+// ======= AUTH =======
 function requireAuth(req, res, next) {
   if (req.session?.authenticated) return next();
   res.status(401).json({ error: "Non autorisé" });
@@ -72,27 +69,44 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ======= GENERATE QSL =======
+// ======= GENERATE QSL BUFFER (AUTO-ADAPT) =======
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
-  const base = await sharp(filePath)
-    .resize({ width: 800, height: 450, fit: "cover" })
-    .jpeg({ quality: 90 })
-    .toBuffer();
+  const metadata = await sharp(filePath).metadata();
+  const imgWidth = metadata.width;
+  const imgHeight = metadata.height;
+
+  const panelWidth = Math.round(imgWidth * 0.35);
+  const panelPadding = 20;
+
+  // Fonction pour réduire la taille de police si nécessaire
+  function fitText(text, maxWidth, maxFontSize) {
+    let fontSize = maxFontSize;
+    const avgCharWidth = 0.6;
+    while (fontSize * text.length * avgCharWidth > maxWidth && fontSize > 8) fontSize -= 1;
+    return fontSize;
+  }
+
+  const fontIndicatif = fitText(indicatif, panelWidth - panelPadding * 2, 28);
+  const fontNormal = fitText(date, panelWidth - panelPadding * 2, 20);
+  const fontNote = fitText(note || "", panelWidth - panelPadding * 2, 18);
+
+  const base = await sharp(filePath).jpeg({ quality: 90 }).toBuffer();
 
   const svg = `
-  <svg width="800" height="450">
-    <rect x="520" y="0" width="280" height="450" fill="white"/>
-    <text x="540" y="60" font-size="28" fill="#333" font-weight="bold">${indicatif}</text>
-    <line x1="540" y1="80" x2="780" y2="80" stroke="#ccc"/>
-    <text x="540" y="120" font-size="20" fill="#333">Date: ${date}</text>
-    <text x="540" y="160" font-size="20" fill="#333">UTC: ${time}</text>
-    <text x="540" y="200" font-size="20" fill="#333">Bande: ${band}</text>
-    <text x="540" y="240" font-size="20" fill="#333">Mode: ${mode}</text>
-    <text x="540" y="280" font-size="20" fill="#333">Report: ${report}</text>
-    <text x="540" y="340" font-size="18" fill="#666">${note || ""}</text>
+  <svg width="${imgWidth + panelWidth}" height="${imgHeight}">
+    <rect x="${imgWidth}" y="0" width="${panelWidth}" height="${imgHeight}" fill="white"/>
+    <text x="${imgWidth + panelPadding}" y="60" font-size="${fontIndicatif}" fill="#333" font-weight="bold">${indicatif}</text>
+    <line x1="${imgWidth + panelPadding}" y1="80" x2="${imgWidth + panelWidth - panelPadding}" y2="80" stroke="#ccc"/>
+    <text x="${imgWidth + panelPadding}" y="120" font-size="${fontNormal}" fill="#333">Date: ${date}</text>
+    <text x="${imgWidth + panelPadding}" y="160" font-size="${fontNormal}" fill="#333">UTC: ${time}</text>
+    <text x="${imgWidth + panelPadding}" y="200" font-size="${fontNormal}" fill="#333">Bande: ${band}</text>
+    <text x="${imgWidth + panelPadding}" y="240" font-size="${fontNormal}" fill="#333">Mode: ${mode}</text>
+    <text x="${imgWidth + panelPadding}" y="280" font-size="${fontNormal}" fill="#333">Report: ${report}</text>
+    <text x="${imgWidth + panelPadding}" y="340" font-size="${fontNote}" fill="#666">${note || ""}</text>
   </svg>`;
 
   return await sharp(base)
+    .extend({ top: 0, bottom: 0, left: 0, right: panelWidth, background: "white" })
     .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
     .jpeg({ quality: 92 })
     .toBuffer();
@@ -100,7 +114,7 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
 
 // ======= ROUTES =======
 
-// Upload QSL
+// Upload QSL (unitaire et bulk)
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
