@@ -3,7 +3,6 @@ import session from "express-session";
 import fileUpload from "express-fileupload";
 import sharp from "sharp";
 import fs from "fs";
-import path from "path";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,12 +20,11 @@ app.use(session({
 }));
 
 app.use(fileUpload({
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
-  abortOnLimit: true
+  limits: { fileSize: 20 * 1024 * 1024 }
 }));
 
 // ===============================
-// DOSSIERS
+// DOSSIER UPLOAD
 // ===============================
 const uploadDir = "uploads";
 
@@ -45,9 +43,6 @@ const users = [
   { indicatif: "F1XYZ", password: "1234" }
 ];
 
-// ===============================
-// BASE QSL EN MEMOIRE
-// ===============================
 let qslDB = [];
 
 // ===============================
@@ -91,4 +86,52 @@ app.post("/upload-single-qsl", async (req, res) => {
   try {
 
     if (!req.session.user) {
-      return res.status(401
+      return res.status(401).json({ success: false });
+    }
+
+    if (!req.files || !req.files.qsl) {
+      return res.status(400).json({ success: false });
+    }
+
+    const file = req.files.qsl;
+
+    const filename = Date.now() + "-" + file.name;
+    const filepath = uploadDir + "/" + filename;
+
+    // Redimensionnement propre sans perte visible
+    await sharp(file.data)
+      .resize({
+        width: 1600,
+        withoutEnlargement: true
+      })
+      .jpeg({ quality: 100 }) // qualité max
+      .toFile(filepath);
+
+    const qsl = {
+      owner: req.session.user,
+      url: "/uploads/" + filename,
+      date: Date.now()
+    };
+
+    qslDB.push(qsl);
+
+    res.json({ success: true, qsl });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+});
+
+// ===============================
+// TELECHARGEMENT
+// ===============================
+app.get("/download/:indicatif", (req, res) => {
+  const list = qslDB.filter(q => q.owner === req.params.indicatif);
+  res.json(list);
+});
+
+// ===============================
+app.listen(PORT, () => {
+  console.log("Serveur démarré sur port " + PORT);
+});
