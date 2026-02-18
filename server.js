@@ -1,4 +1,4 @@
-   import express from "express";
+ import express from "express";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import sharp from "sharp";
@@ -7,6 +7,7 @@ import { v2 as cloudinary } from "cloudinary";
 import path from "path";
 import { fileURLToPath } from "url";
 import session from "express-session";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,30 +20,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.set("trust proxy", 1);
-
 app.use(
   session({
     name: "tw-session",
     secret: process.env.SESSION_SECRET || "tw-secret",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none"
-    }
+    cookie: { httpOnly: true, sameSite: "lax" }
   })
 );
 
-// ================= USERS EN MEMOIRE =================
-const USERS = {
-  "14tw670": "123456",
- "14tw207": "radio",
-  "14tw101": "qsl"
-};
+// USERS
+const USERS = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "users.json"), "utf8")
+);
 
-// ================= AUTH =================
+// AUTH
 function requireAuth(req, res, next) {
   if (req.session?.authenticated) return next();
   res.status(401).json({ error: "Non autorisé" });
@@ -50,14 +43,11 @@ function requireAuth(req, res, next) {
 
 app.post("/login", (req, res) => {
   const { indicatif, password } = req.body || {};
-  const call = (indicatif || "").toUpperCase();
-
-  if (USERS[call] && USERS[call] === password) {
+  if (USERS[indicatif] && USERS[indicatif] === password) {
     req.session.authenticated = true;
-    req.session.indicatif = call;
+    req.session.indicatif = indicatif;
     return res.json({ success: true });
   }
-
   res.status(401).json({ success: false });
 });
 
@@ -72,14 +62,14 @@ app.get("/check-auth", (req, res) => {
   });
 });
 
-// ================= CLOUDINARY =================
+// CLOUDINARY
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ================= GALLERY =================
+// GALLERY
 app.get("/qsl", requireAuth, async (req, res) => {
   try {
     const result = await cloudinary.search
@@ -99,7 +89,7 @@ app.get("/qsl", requireAuth, async (req, res) => {
   }
 });
 
-// ================= DOWNLOAD LIST =================
+// DOWNLOAD LIST
 app.get("/download/:call", async (req, res) => {
   try {
     const call = req.params.call.toUpperCase();
@@ -122,36 +112,61 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// ================= GENERATE QSL =================
+// GENERATE QSL
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
 
   const base = await sharp(filePath)
     .resize({ width: 800, height: 450, fit: "cover" })
-    .jpeg({ quality: 100 })
+    .jpeg({ quality: 90 })
     .toBuffer();
 
   const svg = `
   <svg width="800" height="450">
+    <!-- panneau blanc à droite -->
     <rect x="520" y="0" width="280" height="450" fill="white"/>
+
+    <!-- indicatif -->
     <text x="540" y="60" font-size="28" fill="#333" font-weight="bold">
       ${indicatif}
     </text>
+
+    <!-- ligne -->
     <line x1="540" y1="80" x2="780" y2="80" stroke="#ccc"/>
-    <text x="540" y="120" font-size="20" fill="#333">Date: ${date}</text>
-    <text x="540" y="160" font-size="20" fill="#333">UTC: ${time}</text>
-    <text x="540" y="200" font-size="20" fill="#333">Bande: ${band}</text>
-    <text x="540" y="240" font-size="20" fill="#333">Mode: ${mode}</text>
-    <text x="540" y="280" font-size="20" fill="#333">Report: ${report}</text>
-    <text x="540" y="340" font-size="18" fill="#666">${note || ""}</text>
+
+    <!-- infos QSO -->
+    <text x="540" y="120" font-size="20" fill="#333">
+      Date: ${date}
+    </text>
+
+    <text x="540" y="160" font-size="20" fill="#333">
+      UTC: ${time}
+    </text>
+
+    <text x="540" y="200" font-size="20" fill="#333">
+      Bande: ${band}
+    </text>
+
+    <text x="540" y="240" font-size="20" fill="#333">
+      Mode: ${mode}
+    </text>
+
+    <text x="540" y="280" font-size="20" fill="#333">
+      Report: ${report}
+    </text>
+
+    <text x="540" y="340" font-size="18" fill="#666">
+      ${note || ""}
+    </text>
   </svg>`;
 
   return await sharp(base)
     .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-    .jpeg({ quality: 100 })
+    .jpeg({ quality: 92 })
     .toBuffer();
 }
 
-// ================= UPLOAD =================
+
+// UPLOAD
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
@@ -197,7 +212,7 @@ app.post("/upload", requireAuth, async (req, res) => {
   }
 });
 
-// ================= FILE DOWNLOAD =================
+// FILE DOWNLOAD
 app.get("/file", async (req, res) => {
   try {
     const pid = req.query.pid;
@@ -216,7 +231,7 @@ app.get("/file", async (req, res) => {
   }
 });
 
-// ================= SPA FALLBACK =================
+// SPA FALLBACK (TOUJOURS EN DERNIER)
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public/index.html"));
 });
