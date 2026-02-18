@@ -14,33 +14,31 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// ======= MIDDLEWARES =======
+// ===== MIDDLEWARES =====
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(
-  session({
-    name: "tw-session",
-    secret: process.env.SESSION_SECRET || "tw-secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { httpOnly: true, sameSite: "lax" }
-  })
-);
+app.use(session({
+  name: "tw-session",
+  secret: process.env.SESSION_SECRET || "tw-secret",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { httpOnly: true, sameSite: "lax" }
+}));
 
-// ======= USERS =======
+// ===== USERS =====
 const USERS = JSON.parse(fs.readFileSync(path.join(__dirname, "users.json"), "utf8"));
 
-// ======= AUTH =======
+// ===== AUTH =====
 function requireAuth(req, res, next) {
   if (req.session?.authenticated) return next();
   res.status(401).json({ error: "Non autorisé" });
 }
 
-// ======= LOGIN / LOGOUT =======
+// ===== LOGIN / LOGOUT =====
 app.post("/login", (req, res) => {
   const { indicatif, password } = req.body || {};
   if (USERS[indicatif] && USERS[indicatif] === password) {
@@ -62,75 +60,64 @@ app.get("/check-auth", (req, res) => {
   });
 });
 
-// ======= CLOUDINARY CONFIG =======
+// ===== CLOUDINARY =====
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ======= GENERATE QSL BUFFER (AUTO-ADAPT + QRZ STYLE) =======
+// ===== GENERATE QSL BUFFER FLEXIBLE =====
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
-  const metadata = await sharp(filePath).metadata();
+  const baseImg = await sharp(filePath);
+  const metadata = await baseImg.metadata();
   const imgWidth = metadata.width;
   const imgHeight = metadata.height;
 
   const texts = [
-    { value: indicatif, maxFont: 28 },
-    { value: `Date: ${date}`, maxFont: 20 },
-    { value: `UTC: ${time}`, maxFont: 20 },
-    { value: `Bande: ${band}`, maxFont: 20 },
-    { value: `Mode: ${mode}`, maxFont: 20 },
-    { value: `Report: ${report}`, maxFont: 20 },
-    { value: note || "", maxFont: 18 }
+    { label: "", value: indicatif, fontSize: 28 },
+    { label: "Date: ", value: date, fontSize: 20 },
+    { label: "UTC: ", value: time, fontSize: 20 },
+    { label: "Bande: ", value: band, fontSize: 20 },
+    { label: "Mode: ", value: mode, fontSize: 20 },
+    { label: "Report: ", value: report, fontSize: 20 },
+    { label: "", value: note || "", fontSize: 18 }
   ];
 
-  const panelPadding = 20;
+  const panelWidth = 300; // largeur fixe
+  const padding = 20;
+  const lineHeight = 35; // espace entre lignes pour lisibilité
 
-  // Estimer la largeur nécessaire pour le texte
-  let panelWidth = 0;
-  const computedFonts = texts.map(t => {
-    let fontSize = t.maxFont;
-    const approxWidth = () => t.value.length * fontSize * 0.6;
-    while (approxWidth() + panelPadding * 2 > panelWidth && fontSize > 8) fontSize -= 1;
-    panelWidth = Math.max(panelWidth, approxWidth());
-    return fontSize;
+  // créer le SVG avec texte + retour à la ligne
+  let textSvg = "";
+  texts.forEach((t, i) => {
+    const y = padding + i * lineHeight;
+    const content = t.label + t.value;
+    textSvg += `<text x="${imgWidth + padding}" y="${y}" font-size="${t.fontSize}" fill="#222">${content}</text>`;
   });
 
-  panelWidth = Math.ceil(panelWidth + panelPadding * 2);
-
-  const base = await sharp(filePath).jpeg({ quality: 90 }).toBuffer();
-
-  // SVG avec fond QRZ pro (dégradé léger)
   const svg = `
   <svg width="${imgWidth + panelWidth}" height="${imgHeight}">
     <defs>
       <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#f0f0f0" />
-        <stop offset="100%" stop-color="#ffffff" />
+        <stop offset="0%" stop-color="#f0f0f0"/>
+        <stop offset="100%" stop-color="#ffffff"/>
       </linearGradient>
     </defs>
-    <rect x="${imgWidth}" y="0" width="${panelWidth}" height="${imgHeight}" fill="url(#grad)"/>
-    <text x="${imgWidth + panelPadding}" y="60" font-size="${computedFonts[0]}" fill="#222" font-weight="bold">${indicatif}</text>
-    <line x1="${imgWidth + panelPadding}" y1="80" x2="${imgWidth + panelWidth - panelPadding}" y2="80" stroke="#aaa"/>
-    <text x="${imgWidth + panelPadding}" y="120" font-size="${computedFonts[1]}" fill="#333">Date: ${date}</text>
-    <text x="${imgWidth + panelPadding}" y="160" font-size="${computedFonts[2]}" fill="#333">UTC: ${time}</text>
-    <text x="${imgWidth + panelPadding}" y="200" font-size="${computedFonts[3]}" fill="#333">Bande: ${band}</text>
-    <text x="${imgWidth + panelPadding}" y="240" font-size="${computedFonts[4]}" fill="#333">Mode: ${mode}</text>
-    <text x="${imgWidth + panelPadding}" y="280" font-size="${computedFonts[5]}" fill="#333">Report: ${report}</text>
-    <text x="${imgWidth + panelPadding}" y="340" font-size="${computedFonts[6]}" fill="#666">${note || ""}</text>
+    <rect x="${imgWidth}" y="0" width="${panelWidth}" height="${imgHeight}" fill="url(#grad)" rx="10" ry="10"/>
+    ${textSvg}
   </svg>`;
 
-  return await sharp(base)
+  return await baseImg
     .extend({ top: 0, bottom: 0, left: 0, right: panelWidth, background: "white" })
     .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
     .jpeg({ quality: 92 })
     .toBuffer();
 }
 
-// ======= ROUTES =======
+// ===== ROUTES =====
 
-// Upload QSL (unitaire et bulk)
+// Upload QSL unitaire
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
@@ -172,7 +159,7 @@ app.post("/upload", requireAuth, async (req, res) => {
   }
 });
 
-// QSL Gallery
+// Galerie QSL
 app.get("/qsl", requireAuth, async (req, res) => {
   try {
     const result = await cloudinary.search
@@ -192,7 +179,7 @@ app.get("/qsl", requireAuth, async (req, res) => {
   }
 });
 
-// Download list by call
+// Download by call
 app.get("/download/:call", async (req, res) => {
   try {
     const call = req.params.call.toUpperCase();
@@ -214,7 +201,7 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// File download
+// Téléchargement fichier
 app.get("/file", async (req, res) => {
   try {
     const pid = req.query.pid;
@@ -232,7 +219,7 @@ app.get("/file", async (req, res) => {
   }
 });
 
-// ======= 404 API Handler =======
+// ===== 404 API =====
 app.use((req, res, next) => {
   if (
     req.path.startsWith("/upload") ||
@@ -240,17 +227,15 @@ app.use((req, res, next) => {
     req.path.startsWith("/download") ||
     req.path.startsWith("/file") ||
     req.path.startsWith("/login")
-  ) {
-    return res.status(404).json({ error: "Route API non trouvée" });
-  }
+  ) return res.status(404).json({ error: "Route API non trouvée" });
   next();
 });
 
-// ======= SPA Fallback =======
+// ===== SPA fallback =====
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-// ======= START SERVER =======
+// ===== START SERVER =====
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log("TW-eQSL server running on port", PORT));
