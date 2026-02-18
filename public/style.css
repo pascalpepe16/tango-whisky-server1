@@ -1,91 +1,296 @@
 /* ===========================
-    QSL GENERATION CARD
+   GENERAL
 =========================== */
 
-.qslPreview {
-  display: flex;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 10px;
-  overflow: hidden;
-  max-width: 1024px;
-  margin: 15px auto;
-}
-
-.qslImage {
-  flex-shrink: 0;
-  width: 683px; /* hauteur de l'image côté serveur */
-  height: 683px;
-  object-fit: cover;
-  border-right: 2px solid #fff;
-}
-
-.qslText {
-  padding: 18px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+body {
+  margin: 0;
   font-family: Arial, sans-serif;
-  color: #333;
-  background: #fff;
-  line-height: 1.4;
-  overflow-wrap: break-word;
+  color: #fff;
+  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg")
+    center/cover fixed no-repeat;
 }
 
-/* Texte adaptatif : ajuste la taille si trop long */
-.qslText .line {
-  font-size: clamp(14px, 2vw, 24px);
-  margin-bottom: 10px;
-}
-
-/* QRZ background */
-.qrzBox {
-  margin-top: auto;
-  padding: 6px 10px;
-  background: #eaeaea;
-  font-size: 14px;
-  text-align: center;
-  border-radius: 6px;
-  color: #000;
+.hidden {
+  display: none !important;
 }
 
 /* ===========================
-    FACEBOOK TAB
+   HEADER
+=========================== */
+
+header {
+  text-align: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.logo {
+  width: 140px;
+  margin-bottom: 10px;
+}
+
+/* ===========================
+   NAVIGATION
+=========================== */
+
+nav {
+  text-align: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+nav button {
+  margin: 5px;
+  padding: 8px 14px;
+  cursor: pointer;
+  background: #1e90ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+nav button:hover {
+  opacity: 0.9;
+}
+
+/* ===========================
+   SECTIONS
+=========================== */
+
+.section {
+  display: block;
+  padding: 18px;
+  max-width: 1024px;
+  margin: 20px auto;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
+}
+
+/* ===========================
+   FORMS
+=========================== */
+
+.wideForm {
+  width: 95%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.twoColumns input,
+.twoColumns select,
+.twoColumns textarea {
+  width: 100%;
+  font-size: 18px;
+  margin-bottom: 12px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* ===========================
+   BUTTONS
+=========================== */
+
+.primary {
+  background: #1e90ff;
+  color: #fff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.primary:hover {
+  opacity: 0.9;
+}
+
+/* ===========================
+   POPUP MOT DE PASSE
+=========================== */
+
+#passwordBox {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 25px;
+  background: #ffffffee;
+  color: #000;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #0005;
+  z-index: 9999;
+  width: 280px;
+  text-align: center;
+}
+
+/* ===========================
+   GALLERY + THUMBNAILS
+=========================== */
+
+#galleryContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+  justify-items: center;
+}
+
+.thumbWrap {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+  max-width: 220px;
+}
+
+.thumbWrap img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #fff;
+}
+
+.thumbLabel {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* ===========================
+   DOWNLOAD LIST
+=========================== */
+
+.dlWrap {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.dlThumb {
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* ===========================
+   QSL GENERATION PREVIEW
+=========================== */
+
+#genPreview .thumbWrap {
+  display: flex;
+  background: rgba(0,0,0,0.25);
+  padding: 6px;
+  border-radius: 6px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qslImage {
+  width: 1024px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 2px solid #fff;
+  display: block;
+}
+
+.qslTextBox {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 280px; /* largeur du panneau texte */
+  height: auto;
+  background: rgba(255,255,255,0.9);
+  padding: 12px;
+  box-sizing: border-box;
+  font-size: 18px;
+  color: #333;
+  border-left: 2px solid #ccc;
+}
+
+/* ===========================
+   PREVIEW IMAGE
+=========================== */
+
+.preview img {
+  max-width: 100%;
+  border-radius: 6px;
+  border: 2px solid #fff;
+}
+
+/* ===========================
+   FOOTER
+=========================== */
+
+footer {
+  text-align: center;
+  padding: 12px;
+  margin-top: 25px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.thumbMeta {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.badgeWarn {
+  margin-top: 6px;
+  padding: 4px 6px;
+  background: #ff4444;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* ===========================
+   LOGOS HOVER EFFECT
+=========================== */
+
+.logo-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.logo-hover:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 18px #1e90ff;
+}
+
+/* ===========================
+   FACEBOOK TAB
 =========================== */
 
 #fbTab {
   position: fixed;
-  right: 0;
-  top: 40%;
-  width: 42px;
-  height: 140px;
-  background: #1877f2;
-  border-radius: 12px 0 0 12px;
-  box-shadow: 0 0 10px #0005;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  background: #3b5998;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.25s ease;
+  text-decoration: none;
+  z-index: 9999;
+  transition: all 0.3s ease;
 }
 
 #fbTab:hover {
-  right: -5px;
-  transform: scale(1.05);
+  background: #2d4373;
+  transform: translateX(5px) translateY(-50%);
 }
-
-#fbTab img {
-  width: 28px;
-  height: 28px;
-  margin-bottom: 6px;
-}
-
-#fbTab span {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 12px;
-  color: #fff;
-  font-weight: bold;
-}
+ 
