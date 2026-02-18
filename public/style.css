@@ -270,7 +270,7 @@ footer {
 }
 
 /* ===========================
-   FACEBOOK TAB
+   FACEBOOK TAB CORRIGÉE
 =========================== */
 
 #fbTab {
@@ -280,17 +280,22 @@ footer {
   transform: translateY(-50%);
   background: #3b5998;
   color: white;
-  padding: 10px 14px;
+  padding: 8px 12px; /* plus petit */
   border-radius: 0 6px 6px 0;
   font-weight: bold;
   cursor: pointer;
   text-decoration: none;
   z-index: 9999;
+  width: auto;
+  max-width: 50px; /* limite la largeur */
+  text-align: center;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 #fbTab:hover {
   background: #2d4373;
-  transform: translateX(5px) translateY(-50%);
+  transform: translateX(10px) translateY(-50%); /* léger décalage sur hover */
 }
- 
+
