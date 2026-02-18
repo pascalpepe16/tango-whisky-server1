@@ -108,7 +108,7 @@ async function loadGallery() {
     list.forEach(q => {
       const div = document.createElement("div");
       div.className = "thumbWrap";
-      div.innerHTML = `<img src="${q.thumb}">`;
+      div.innerHTML = `<img src="${q.thumb}" style="width:200px;height:auto;">`;
       box.appendChild(div);
     });
   } catch (err) {
@@ -117,7 +117,7 @@ async function loadGallery() {
 }
 
 // ===============================
-// IMPORT CSV / XLSX
+// IMPORT CSV / XLS / XLSX
 // ===============================
 function processFile() {
   const fileInput = document.getElementById("importFile");
@@ -168,7 +168,7 @@ function processFile() {
         status.innerHTML = "Erreur lors de la lecture du CSV";
       }
     });
-  } else if (ext === "xlsx") {
+  } else if (ext === "xls" || ext === "xlsx") {
     const reader = new FileReader();
     reader.onload = function(e) {
       const data = new Uint8Array(e.target.result);
@@ -186,7 +186,7 @@ function processFile() {
     };
     reader.readAsArrayBuffer(file);
   } else {
-    status.innerHTML = "Format non supporté (CSV ou XLSX uniquement)";
+    status.innerHTML = "Format non supporté (CSV, XLS ou XLSX uniquement)";
   }
 }
 
@@ -264,7 +264,7 @@ document.getElementById("btnSearch").onclick = async () => {
       const div = document.createElement("div");
       div.className = "dlWrap";
       div.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb">
+        <img src="${q.thumb}" class="dlThumb" style="width:200px;height:auto;">
         <button onclick="downloadQSL('${q.public_id}')">Télécharger</button>
       `;
       box.appendChild(div);
@@ -294,7 +294,6 @@ document.getElementById("genForm").addEventListener("submit", async e => {
   const formData = new FormData(form);
 
   try {
-    // ✅ CORRECTION : route serveur est /upload
     const res = await fetch(API_URL + "/upload", {
       method: "POST",
       body: formData,
@@ -310,7 +309,7 @@ document.getElementById("genForm").addEventListener("submit", async e => {
 
     preview.innerHTML = `
       <div class="thumbWrap">
-        <img src="${data.qsl.thumb}">
+        <img src="${data.qsl.thumb}" style="width:300px;height:auto;">
         <br>
         <a href="${data.qsl.url}" target="_blank">Voir en grand</a>
       </div>
