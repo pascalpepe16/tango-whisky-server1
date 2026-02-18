@@ -108,7 +108,20 @@ async function loadGallery() {
     list.forEach(q => {
       const div = document.createElement("div");
       div.className = "thumbWrap";
-      div.innerHTML = `<img src="${q.thumb}" style="width:200px;height:auto;">`;
+      div.innerHTML = `
+        <div class="qslContainer">
+          <img src="${q.thumb}" class="qslImage">
+          <div class="qslTextBox">
+            <strong>${q.Indicatif}</strong><br>
+            Date: ${q.Date}<br>
+            Heure: ${q.Heure}<br>
+            Bande: ${q.Bande}<br>
+            Mode: ${q.Mode}<br>
+            Report: ${q.Report}<br>
+            ${q.Note || ""}
+          </div>
+        </div>
+      `;
       box.appendChild(div);
     });
   } catch (err) {
@@ -264,7 +277,18 @@ document.getElementById("btnSearch").onclick = async () => {
       const div = document.createElement("div");
       div.className = "dlWrap";
       div.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb" style="width:200px;height:auto;">
+        <div class="qslContainer">
+          <img src="${q.thumb}" class="qslImage">
+          <div class="qslTextBox">
+            <strong>${q.Indicatif}</strong><br>
+            Date: ${q.Date}<br>
+            Heure: ${q.Heure}<br>
+            Bande: ${q.Bande}<br>
+            Mode: ${q.Mode}<br>
+            Report: ${q.Report}<br>
+            ${q.Note || ""}
+          </div>
+        </div>
         <button onclick="downloadQSL('${q.public_id}')">Télécharger</button>
       `;
       box.appendChild(div);
@@ -309,7 +333,18 @@ document.getElementById("genForm").addEventListener("submit", async e => {
 
     preview.innerHTML = `
       <div class="thumbWrap">
-        <img src="${data.qsl.thumb}" style="width:300px;height:auto;">
+        <div class="qslContainer">
+          <img src="${data.qsl.thumb}" class="qslImage">
+          <div class="qslTextBox">
+            <strong>${data.qsl.Indicatif}</strong><br>
+            Date: ${data.qsl.Date}<br>
+            Heure: ${data.qsl.Heure}<br>
+            Bande: ${data.qsl.Bande}<br>
+            Mode: ${data.qsl.Mode}<br>
+            Report: ${data.qsl.Report}<br>
+            ${data.qsl.Note || ""}
+          </div>
+        </div>
         <br>
         <a href="${data.qsl.url}" target="_blank">Voir en grand</a>
       </div>
