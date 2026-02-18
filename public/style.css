@@ -1,7 +1,6 @@
 /* ===========================
    GENERAL
 =========================== */
-
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -17,7 +16,6 @@ body {
 /* ===========================
    HEADER
 =========================== */
-
 header {
   text-align: center;
   padding: 20px;
@@ -32,7 +30,6 @@ header {
 /* ===========================
    NAVIGATION
 =========================== */
-
 nav {
   text-align: center;
   padding: 12px;
@@ -57,7 +54,6 @@ nav button:hover {
 /* ===========================
    SECTIONS
 =========================== */
-
 .section {
   display: block;
   padding: 18px;
@@ -70,7 +66,6 @@ nav button:hover {
 /* ===========================
    FORMS
 =========================== */
-
 .wideForm {
   width: 95%;
   max-width: 1200px;
@@ -97,7 +92,6 @@ nav button:hover {
 /* ===========================
    BUTTONS
 =========================== */
-
 .primary {
   background: #1e90ff;
   color: #fff;
@@ -115,7 +109,6 @@ nav button:hover {
 /* ===========================
    POPUP MOT DE PASSE
 =========================== */
-
 #passwordBox {
   position: fixed;
   top: 50%;
@@ -134,7 +127,6 @@ nav button:hover {
 /* ===========================
    GALLERY + THUMBNAILS
 =========================== */
-
 #galleryContent {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -159,17 +151,9 @@ nav button:hover {
   border: 2px solid #fff;
 }
 
-.thumbLabel {
-  margin-top: 6px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
-}
-
 /* ===========================
    DOWNLOAD LIST
 =========================== */
-
 .dlWrap {
   display: flex;
   gap: 12px;
@@ -187,43 +171,48 @@ nav button:hover {
 /* ===========================
    QSL GENERATION PREVIEW
 =========================== */
-
 #genPreview .thumbWrap {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   background: rgba(0,0,0,0.25);
   padding: 6px;
   border-radius: 6px;
-  flex-direction: column;
-  align-items: center;
+}
+
+.qslContainer {
+  position: relative;
+  width: 1024px;
+  max-width: 100%;
 }
 
 .qslImage {
-  width: 1024px;
-  max-width: 100%;
+  width: 100%;
   height: auto;
+  display: block;
   border-radius: 6px;
   border: 2px solid #fff;
-  display: block;
 }
 
 .qslTextBox {
   position: absolute;
   top: 0;
   right: 0;
-  width: 280px; /* largeur du panneau texte */
-  height: auto;
+  min-width: 260px;
+  max-width: 320px;
   background: rgba(255,255,255,0.9);
   padding: 12px;
   box-sizing: border-box;
   font-size: 18px;
   color: #333;
   border-left: 2px solid #ccc;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* ===========================
    PREVIEW IMAGE
 =========================== */
-
 .preview img {
   max-width: 100%;
   border-radius: 6px;
@@ -233,7 +222,6 @@ nav button:hover {
 /* ===========================
    FOOTER
 =========================== */
-
 footer {
   text-align: center;
   padding: 12px;
@@ -259,7 +247,6 @@ footer {
 /* ===========================
    LOGOS HOVER EFFECT
 =========================== */
-
 .logo-hover {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
@@ -270,9 +257,8 @@ footer {
 }
 
 /* ===========================
-   FACEBOOK TAB CORRIGÉE
+   FACEBOOK TAB
 =========================== */
-
 #fbTab {
   position: fixed;
   top: 50%;
@@ -280,22 +266,21 @@ footer {
   transform: translateY(-50%);
   background: #3b5998;
   color: white;
-  padding: 8px 12px; /* plus petit */
+  padding: 8px 12px;
   border-radius: 0 6px 6px 0;
   font-weight: bold;
   cursor: pointer;
   text-decoration: none;
   z-index: 9999;
   width: auto;
-  max-width: 50px; /* limite la largeur */
+  max-width: 60px;
   text-align: center;
-  transition: all 0.3s ease;
   white-space: nowrap;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 #fbTab:hover {
   background: #2d4373;
-  transform: translateX(10px) translateY(-50%); /* léger décalage sur hover */
+  transform: translateX(10px) translateY(-50%);
 }
-
