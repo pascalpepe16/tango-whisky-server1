@@ -1,4 +1,4 @@
- import express from "express";
+  import express from "express";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import sharp from "sharp";
@@ -189,10 +189,15 @@ app.post("/upload", requireAuth, async (req, res) => {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
-        tags: [`indicatif_${indicatif}`]
+        tags: [`indicatif_${indicatif}`],
+        context: { indicatif, date, time, band, mode, report, note: noteLines.join(" ") }
       },
       (err, result) => {
-        if (err) return res.status(500).json({ success: false });
+        if (err) {
+          console.error("UPLOAD ERROR:", err);
+          return res.status(500).json({ success: false });
+        }
+
         res.json({
           success: true,
           qsl: {
@@ -202,15 +207,15 @@ app.post("/upload", requireAuth, async (req, res) => {
           }
         });
       }
-    );
-
-    stream.end(buffer);
+    ).end(finalBuffer);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
+    console.error("UPLOAD FATAL:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
+
+
 
 // FILE DOWNLOAD
 app.get("/file", async (req, res) => {
