@@ -1,4 +1,4 @@
- // ===============================
+  // ===============================
 // CONFIG
 // ===============================
 const API_URL = location.origin;
@@ -320,44 +320,47 @@ function downloadQSL(pid) {
 // ===============================
 // GENERATION QSL UNITAIRE
 // ===============================
-document.getElementById("genForm").addEventListener("submit", async e => {
-  e.preventDefault();
+const genForm = document.getElementById("genForm");
 
-  const form = e.target;
-  const preview = document.getElementById("genPreview");
-  preview.innerHTML = "Génération…";
+if (genForm) {
+  genForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const formData = new FormData(form);
+    const preview = document.getElementById("genPreview");
+    preview.innerHTML = "Génération…";
 
-  try {
-    const res = await fetch(API_URL + "/upload-single-qsl", {
-      method: "POST",
-      body: formData,
-      credentials: "same-origin"
-    });
+    try {
+      const formData = new FormData(genForm);
 
-    const data = await res.json();
+      const res = await fetch("/upload-single-qsl", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin"
+      });
 
-    if (!data.success) {
-      preview.innerHTML = "Erreur : " + (data.error || "inconnue");
-      return;
+      if (!res.ok) {
+        throw new Error("Erreur serveur");
+      }
+
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "Erreur génération");
+      }
+
+      preview.innerHTML = `
+        <div>
+          <img src="${data.qsl.thumb}" style="max-width:300px;">
+          <p>QSL générée avec succès</p>
+        </div>
+      `;
+    } catch (err) {
+      console.error(err);
+      preview.innerHTML = "Erreur réseau";
     }
+  });
+}
 
-    preview.innerHTML = `
-      <div class="thumbWrap">
-        <img src="${data.qsl.thumb}">
-        <br>
-        <a href="${data.qsl.url}" target="_blank">Voir en grand</a>
-      </div>
-    `;
-
-    form.reset();
-
-  } catch (err) {
-    preview.innerHTML = "Erreur réseau";
-    console.error(err);
-  }
-});
 
 // ===============================
 // INIT
