@@ -162,12 +162,12 @@ nav button:hover {
   display: flex;
   width: 100%;
   max-width: 1024px;
-  aspect-ratio: 1024 / 683;
+  aspect-ratio: 1024/683;
   margin: 15px auto;
   border-radius: 12px;
   overflow: hidden;
-  background: #111;
-  box-shadow: 0 0 15px #0008;
+  background: none; /* plus de gris */
+  box-shadow: 0 0 10px #0008;
 }
 
 /* IMAGE */
@@ -179,8 +179,7 @@ nav button:hover {
 .qsl-image img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* gardera l'aspect original */
-  background: #222; /* si l'image n'occupe pas tout */
+  object-fit: contain;
 }
 
 /* TEXTE */
@@ -209,7 +208,7 @@ nav button:hover {
 }
 
 /* ===========================
-    PREVIEW
+    PREVIEW + MINIATURES
 =========================== */
 
 .preview {
@@ -217,6 +216,22 @@ nav button:hover {
   max-width: 1024px;
   margin-left: auto;
   margin-right: auto;
+}
+
+#previewThumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#previewThumbnails img {
+  width: 100px;
+  height: 70px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #fff;
+  cursor: pointer;
 }
 
 /* ===========================
@@ -293,7 +308,7 @@ footer {
 }
 
 /* ===========================
-    MOBILE 📱
+    MOBILE
 =========================== */
 
 @media (max-width: 768px) {
@@ -327,6 +342,11 @@ footer {
 
   .thumbWrap img {
     height: 120px;
+  }
+
+  #previewThumbnails img {
+    width: 70px;
+    height: 50px;
   }
 
 }
