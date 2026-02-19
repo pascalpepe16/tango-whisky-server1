@@ -1,5 +1,4 @@
- <!doctype html>
-
+<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
@@ -9,9 +8,7 @@
   <link rel="stylesheet" href="style.css">
 
   <!-- Librairies pour import Excel/CSV -->
-
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 </head>
@@ -25,22 +22,10 @@
 
 <nav>
   <button onclick="showTab('home')">Accueil</button>
-
-  <button id="btnGallery" style="display:none;" onclick="showTab('gallery')">
-    Galerie
-  </button>
-
-  <button id="btnCreate" style="display:none;" onclick="showTab('create')">
-    Créer / Ajouter
-  </button>
-
-<button onclick="showTab('download')">Télécharger</button>
-
-
-
-  <button id="logoutBtn" onclick="logout()" style="display:none;">
-    Déconnexion
-  </button>
+  <button id="btnGallery" style="display:none;" onclick="showTab('gallery')">Galerie</button>
+  <button id="btnCreate" style="display:none;" onclick="showTab('create')">Créer / Ajouter</button>
+  <button onclick="showTab('download')">Télécharger</button>
+  <button id="logoutBtn" onclick="logout()" style="display:none;">Déconnexion</button>
 </nav>
 
 <div id="loginBox" class="box">
@@ -71,21 +56,19 @@
   <!-- IMPORT CSV -->
   <div class="importBox">
     <h3>Import CSV / Excel</h3>
-
     <input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
 
     <label>Image pour toutes les QSL :</label><br>
     <input type="file" id="bulkImage" accept="image/*"><br><br>
 
     <button onclick="processFile()">Importer</button>
-    <button id="validateImportBtn" style="display:none;">
-      Valider et enregistrer
-    </button>
+    <button id="validateImportBtn" style="display:none;">Valider et enregistrer</button>
 
     <div id="importStatus"></div>
 
     <!-- PREVIEW -->
     <div id="previewArea"></div>
+    <div id="previewThumbnails"></div>
 
     <!-- PROGRESS -->
     <div id="progressContainer">
@@ -97,7 +80,6 @@
 
   <!-- FORMULAIRE QSL -->
   <form id="genForm" enctype="multipart/form-data" class="wideForm">
-
     <div class="twoColumns">
       <div>
         <label>Indicatif :</label>
@@ -131,7 +113,12 @@
     <button class="primary" type="submit">Générer QSL</button>
 
     <div id="genPreview"></div>
-
+    <div id="genThumbnails"></div>
+    <div id="genProgressContainer">
+      <div class="progressBarBg">
+        <div id="genProgressBar"></div>
+      </div>
+    </div>
   </form>
 
 </section>
@@ -153,7 +140,6 @@
 </a>
 
 </main>
-
 
 <footer>
   TANGO WHISKY © 2026
