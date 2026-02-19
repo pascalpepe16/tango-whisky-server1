@@ -1,68 +1,22 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  color: #fff;
-  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg") center/cover fixed no-repeat;
-}
-
-.hidden { display: none !important; }
-
-header {
-  text-align: center;
-  padding: 20px;
-  background: rgba(0,0,0,0.45);
-}
-
-.logo { width: 140px; margin-bottom: 10px; }
-
-nav {
-  text-align: center;
-  padding: 12px;
-  background: rgba(0,0,0,0.6);
-}
-
-nav button {
-  margin: 5px; padding: 8px 14px;
-  cursor: pointer; background: #1e90ff;
-  color: white; border: none; border-radius: 6px; font-size: 15px;
-}
-
-nav button:hover { opacity: 0.9; }
-
-.section {
-  display: block;
-  padding: 18px;
-  max-width: 980px;
-  margin: 20px auto;
-  background: rgba(0,0,0,0.55);
-  border-radius: 8px;
-}
-
-.wideForm { width: 95%; max-width: 1200px; margin: auto; }
-.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-.twoColumns input, .twoColumns select, .twoColumns textarea { width: 100%; font-size: 16px; margin-bottom: 10px; padding: 6px; border-radius: 6px; border: 1px solid #ccc; }
-
-.primary { background: #1e90ff; color: #fff; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
-.primary:hover { opacity: 0.9; }
-
-#galleryContent { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; justify-items: center; }
-
-.thumbWrap { background: rgba(0,0,0,0.35); padding: 8px; border-radius: 8px; text-align: center; width: 100%; max-width: 220px; }
-.thumbWrap img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; border: 2px solid #fff; }
-
-#fbFooterLink { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 45px; height: 45px; z-index:1000; }
-#fbFooterLink img { width: 100%; height: 100%; border-radius: 50%; }
-#fbFooterLink:hover { transform: scale(1.15); }
-
-.qsl-card { display:flex; flex-direction:row; background:#222; border-radius:12px; overflow:hidden; max-width:100%; margin:15px 0; }
-.qsl-image { flex:1; background:#333; display:flex; justify-content:center; align-items:center; }
-.qsl-image img { width:100%; height:100%; object-fit:contain; }
-.qsl-text { flex:1; background:#1c1c1c; color:#fff; padding:12px; display:flex; flex-direction:column; justify-content:center; font-size:clamp(12px,1vw,16px); }
-.qsl-text h3 { color:#4fc3f7; margin-bottom:8px; }
-.qsl-text p { margin:3px 0; }
-
-@media (max-width:768px){ .qsl-card{flex-direction:column;} .qsl-image, .qsl-text{width:100%;} }
-
-.importBox { border:1px solid #444; padding:10px; margin-bottom:20px; }
-.progressBarBg { background:#333; height:20px; border-radius:10px; }
-#progressBar { width:0%; height:100%; background:#28a745; border-radius:10px; }
+body { margin:0; font-family:Arial,sans-serif; color:#fff; background:#000; }
+header { text-align:center; padding:15px; background:rgba(0,0,0,0.5);}
+.logo{width:120px; margin-bottom:8px;}
+nav{ text-align:center; padding:10px; background:rgba(0,0,0,0.6);}
+nav button{ margin:4px; padding:6px 12px; cursor:pointer; background:#1e90ff; color:white; border:none; border-radius:6px;}
+.section{ max-width:980px; margin:15px auto; padding:15px; border-radius:8px; background:rgba(0,0,0,0.5);}
+.wideForm{ width:95%; max-width:1200px; margin:auto;}
+.twoColumns{ display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+.twoColumns input, .twoColumns textarea{width:100%; padding:6px; border-radius:6px; border:1px solid #ccc; font-size:16px;}
+.primary{background:#1e90ff; color:white; padding:8px 15px; border:none; border-radius:6px; cursor:pointer;}
+.primary:hover{opacity:0.9;}
+#fbFooterLink{ position:fixed; bottom:15px; left:50%; transform:translateX(-50%);}
+#fbFooterLink img{ width:45px; height:45px; border-radius:50%;}
+.miniatures{ display:flex; flex-wrap:wrap; gap:12px; margin-top:10px;}
+.thumbWrap{ width:220px; border-radius:8px; overflow:hidden; text-align:center; background:rgba(0,0,0,0.3);}
+.thumbWrap img{ width:100%; object-fit:contain; max-height:140px; display:block; margin:auto;}
+.qsl-card{ display:flex; border-radius:12px; overflow:hidden; width:100%; max-width:480px; background:#111; flex-direction:row;}
+.qsl-image{ flex:3;}
+.qsl-image img{ width:100%; height:100%; object-fit:contain;}
+.qsl-text{ flex:2; background:#222; color:#fff; padding:10px; font-size:14px; display:flex; flex-direction:column; justify-content:center;}
+.progressBarBg{ background:#333; height:18px; border-radius:10px;}
+#progressBar{ width:0%; height:100%; background:#28a745; border-radius:10px;}
