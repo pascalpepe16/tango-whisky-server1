@@ -82,3 +82,37 @@ button {
 #fbFooterLink img {
   width:100%;
 }
+/* LOGIN BOX FIX */
+#loginBox {
+  max-width: 320px;
+  margin: 30px auto;
+  padding: 20px;
+  background: rgba(0,0,0,0.75);
+  border-radius: 10px;
+  text-align: center;
+}
+
+#loginBox input {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: none;
+}
+
+#loginBox button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* HOME FIX */
+#home {
+  text-align: center;
+  font-size: 18px;
+}
+
+/* CENTRAGE GLOBAL */
+main {
+  max-width: 1000px;
+  margin: auto;
+}
