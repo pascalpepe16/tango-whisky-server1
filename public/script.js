@@ -323,6 +323,27 @@ document.getElementById("genForm").addEventListener("submit", async e => {
     console.error(err);
   }
 });
+function generateQSLPreview(data, imageUrl) {
+  return `
+    <div class="qsl-card">
+      
+      <div class="qsl-image">
+        <img src="${imageUrl}">
+      </div>
+
+      <div class="qsl-text">
+        <h3>${data.indicatif || ''}</h3>
+        <p>Date: ${data.date || ''}</p>
+        <p>Heure: ${data.time || ''}</p>
+        <p>Bande: ${data.band || ''}</p>
+        <p>Mode: ${data.mode || ''}</p>
+        <p>Report: ${data.report || ''}</p>
+        <p>${data.note || ''}</p>
+      </div>
+
+    </div>
+  `;
+}
 
 // ===============================
 // INIT
