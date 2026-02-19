@@ -1,87 +1,84 @@
+/* ==========================
+   GENERAL
+========================== */
+
 body {
-  font-family: Arial;
   margin: 0;
-  background: #111;
-  color: white;
+  font-family: Arial, sans-serif;
+  background: url('https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg') center/cover fixed no-repeat;
+  color: #fff;
 }
+
+.hidden { display: none !important; }
+
+header {
+  text-align: center;
+  padding: 20px;
+  background: rgba(0,0,0,0.45);
+}
+.logo { width: 140px; margin-bottom: 10px; }
 
 nav {
   text-align: center;
-  padding: 10px;
+  padding: 12px;
+  background: rgba(0,0,0,0.6);
 }
-
-button {
+nav button {
   margin: 5px;
-  padding: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  background: #1e90ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
 }
+nav button:hover { opacity: 0.9; }
 
 .section {
-  padding: 20px;
+  display: block;
+  padding: 18px;
+  max-width: 980px;
+  margin: 20px auto;
+  background: rgba(0,0,0,0.55);
+  border-radius: 8px;
 }
 
-.hidden {
-  display: none;
+.wideForm { width: 95%; max-width: 1200px; margin: auto; }
+.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+.twoColumns input, .twoColumns select, .twoColumns textarea {
+  width: 100%; font-size: 16px; margin-bottom: 12px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;
 }
+.primary { background: #1e90ff; color: #fff; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+.primary:hover { opacity: 0.9; }
+.importBox { border:1px solid #444; padding:10px; margin-bottom:20px; }
+#progressContainer { display:none; margin-top:10px; }
+.progressBarBg { background:#333; height:20px; border-radius:10px; }
+#progressBar { width:0%; height:100%; background:#28a745; border-radius:10px; transition: width 0.3s ease; }
+#previewArea { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; justify-content:center; }
 
-/* ================= QSL ================= */
+.thumbWrap { max-width:220px; text-align:center; border-radius:8px; overflow:hidden; }
+.thumbWrap img { width:100%; height:auto; object-fit:cover; border:2px solid #fff; border-radius:6px; }
 
-.qsl-card {
-  display: flex;
-  max-width: 700px;
-  width: 100%;
-  aspect-ratio: 3/2;
-  background: #111;
-  margin: 10px auto;
-  border-radius: 10px;
-  overflow: hidden;
+.qsl-card { display:flex; flex-direction:row; max-width:100%; border-radius:12px; overflow:hidden; background:#111; }
+.qsl-image { flex:3; }
+.qsl-image img { width:100%; height:auto; display:block; }
+.qsl-text { flex:2; padding:20px; background:#1c1c1c; color:#fff; display:flex; flex-direction:column; justify-content:center; font-size:clamp(12px,1.2vw,16px); }
+.qsl-text h3 { color:#4fc3f7; margin-bottom:8px; }
+.qsl-text p { margin:4px 0; }
+
+#fbFooterLink { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:45px; height:45px; z-index:1000; }
+#fbFooterLink img { width:100%; height:100%; border-radius:50%; }
+#fbFooterLink:hover { transform:translateX(-50%) scale(1.15); }
+
+.dlWrap { display:flex; align-items:center; gap:12px; margin-bottom:15px; }
+.dlThumb { width:180px; height:120px; object-fit:cover; border-radius:6px; }
+
+footer { text-align:center; padding:12px; margin-top:25px; background:rgba(0,0,0,0.4); }
+
+@media (max-width:768px) {
+  .twoColumns { grid-template-columns:1fr; }
+  .qsl-card { flex-direction:column; }
+  .qsl-text { padding:12px; font-size:clamp(12px,2.5vw,16px); }
 }
-
-.qsl-image {
-  width: 60%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: black;
-}
-
-.qsl-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain; /* FIX IMAGE */
-}
-
-.qsl-text {
-  width: 40%;
-  background: #2a2a2a; /* FIX GRIS */
-  padding: 10px;
-  font-size: 14px;
-}
-
-/* MINI PREVIEW */
-#previewArea .qsl-card,
-#genPreview .qsl-card {
-  max-width: 320px;
-}
-
-/* PROGRESS */
-.progressBarBg {
-  background: #333;
-  height: 20px;
-}
-
-#progressBar {
-  height: 100%;
-  width: 0%;
-  background: green;
-}
-
-/* MOBILE */
-@media(max-width:600px){
-  .qsl-card{
-    flex-direction: column;
-  }
-  .qsl-image,
-  .qsl-text{
-    width:100%;
-  }
-}
+ 
