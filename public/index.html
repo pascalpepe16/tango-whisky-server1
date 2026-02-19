@@ -7,13 +7,14 @@
 
   <link rel="stylesheet" href="style.css">
 
+  <!-- Librairies pour import Excel/CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <header>
-  <img src="https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763588704/akyt1anm1inwmygj3vfz.png" class="logo">
+  <img src="https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763588704/akyt1anm1inwmygj3vfz.png" class="logo" alt="TW">
   <h1>TANGO WHISKY eQSL</h1>
 </header>
 
@@ -25,52 +26,73 @@
   <button id="logoutBtn" onclick="logout()" style="display:none;">Déconnexion</button>
 </nav>
 
-<div id="loginBox">
-
+<div id="loginBox" class="box">
   <h3>Connexion</h3>
-  <input type="text" id="loginIndicatif" placeholder="Indicatif">
+  <input type="text" id="loginIndicatif" placeholder="Indicatif (ex: 14tw101)">
   <input type="password" id="loginPassword" placeholder="Mot de passe">
-  <button onclick="login()">Connexion</button>
-  <p id="loginError"></p>
+  <div class="btns">
+    <button class="primary" onclick="login()">Connexion</button>
+  </div>
+  <p id="loginError" style="color:red;"></p>
 </div>
 
 <main>
 
 <section id="home" class="section">
   <h2>Bienvenue</h2>
+  <p>Portail eQSL TANGO WHISKY – 73' de l'équipe</p>
 </section>
 
 <section id="gallery" class="section hidden">
   <h2>Galerie</h2>
-  <div id="galleryContent"></div>
+  <div id="galleryContent">Chargement…</div>
 </section>
 
 <section id="create" class="section hidden">
-  <h2>Créer QSL</h2>
+  <h2>Créer / Générer une QSL</h2>
 
-  <input type="file" id="importFile">
-  <input type="file" id="bulkImage">
-  <button onclick="processFile()">Importer</button>
-  <div id="previewArea"></div>
+  <div class="importBox">
+    <h3>Import CSV / Excel</h3>
+    <input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
+    <label>Image pour toutes les QSL :</label><br>
+    <input type="file" id="bulkImage" accept="image/*"><br><br>
+    <button onclick="processFile()">Importer</button>
+    <button id="validateImportBtn" style="display:none;">Valider et enregistrer</button>
+    <div id="importStatus"></div>
+    <div id="previewArea"></div>
+    <div id="progressContainer">
+      <div class="progressBarBg">
+        <div id="progressBar"></div>
+      </div>
+    </div>
+  </div>
 
-  <form id="genForm">
-    <input type="text" name="indicatif" placeholder="Indicatif" required>
-    <input type="date" name="date">
-    <input type="time" name="time">
-    <input type="text" name="band" placeholder="Bande">
-    <input type="text" name="mode" placeholder="Mode">
-    <input type="text" name="report" placeholder="Report">
-    <input type="file" name="qsl" required>
-    <button type="submit">Générer</button>
+  <form id="genForm" enctype="multipart/form-data" class="wideForm">
+    <div class="twoColumns">
+      <div>
+        <label>Indicatif :</label><input type="text" name="indicatif" required>
+        <label>Date :</label><input type="date" name="date">
+        <label>Heure :</label><input type="time" name="time">
+        <label>Bande :</label><input type="text" name="band">
+        <label>Report :</label><input type="text" name="report">
+      </div>
+      <div>
+        <label>Mode :</label><input type="text" name="mode">
+        <label>Note :</label><textarea name="note"></textarea>
+        <label>Image QSL :</label><input type="file" name="qsl" accept="image/*" required>
+      </div>
+    </div>
+    <button class="primary" type="submit">Générer QSL</button>
+    <div id="genPreview"></div>
   </form>
-
-  <div id="genPreview"></div>
 </section>
 
 <section id="download" class="section hidden">
   <h2>Télécharger</h2>
-  <input id="dlCall" placeholder="Indicatif">
-  <button id="btnSearch">Rechercher</button>
+  <div class="dlSearch">
+    <input id="dlCall" placeholder="Votre indicatif">
+    <button id="btnSearch" class="primary">Rechercher</button>
+  </div>
   <div id="dlPreview"></div>
 </section>
 
@@ -80,7 +102,9 @@
 
 </main>
 
-<footer>© 2026</footer>
+<footer>
+  TANGO WHISKY © 2026
+</footer>
 
 <script src="script.js"></script>
 </body>
