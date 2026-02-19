@@ -1,22 +1,141 @@
-body { margin:0; font-family:Arial,sans-serif; color:#fff; background:#000; }
-header { text-align:center; padding:15px; background:rgba(0,0,0,0.5);}
-.logo{width:120px; margin-bottom:8px;}
-nav{ text-align:center; padding:10px; background:rgba(0,0,0,0.6);}
-nav button{ margin:4px; padding:6px 12px; cursor:pointer; background:#1e90ff; color:white; border:none; border-radius:6px;}
-.section{ max-width:980px; margin:15px auto; padding:15px; border-radius:8px; background:rgba(0,0,0,0.5);}
-.wideForm{ width:95%; max-width:1200px; margin:auto;}
-.twoColumns{ display:grid; grid-template-columns:1fr 1fr; gap:20px;}
-.twoColumns input, .twoColumns textarea{width:100%; padding:6px; border-radius:6px; border:1px solid #ccc; font-size:16px;}
-.primary{background:#1e90ff; color:white; padding:8px 15px; border:none; border-radius:6px; cursor:pointer;}
-.primary:hover{opacity:0.9;}
-#fbFooterLink{ position:fixed; bottom:15px; left:50%; transform:translateX(-50%);}
-#fbFooterLink img{ width:45px; height:45px; border-radius:50%;}
-.miniatures{ display:flex; flex-wrap:wrap; gap:12px; margin-top:10px;}
-.thumbWrap{ width:220px; border-radius:8px; overflow:hidden; text-align:center; background:rgba(0,0,0,0.3);}
-.thumbWrap img{ width:100%; object-fit:contain; max-height:140px; display:block; margin:auto;}
-.qsl-card{ display:flex; border-radius:12px; overflow:hidden; width:100%; max-width:480px; background:#111; flex-direction:row;}
-.qsl-image{ flex:3;}
-.qsl-image img{ width:100%; height:100%; object-fit:contain;}
-.qsl-text{ flex:2; background:#222; color:#fff; padding:10px; font-size:14px; display:flex; flex-direction:column; justify-content:center;}
-.progressBarBg{ background:#333; height:18px; border-radius:10px;}
-#progressBar{ width:0%; height:100%; background:#28a745; border-radius:10px;}
+/* GENERAL */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg") center/cover fixed no-repeat;
+}
+
+header, nav, .section, footer {
+  background: rgba(0,0,0,0.6);
+}
+
+.section {
+  max-width: 980px;
+  margin: 20px auto;
+  padding: 18px;
+  border-radius: 8px;
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.twoColumns input, .twoColumns textarea {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+/* BOUTONS */
+button, .primary {
+  background: #1e90ff;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover, .primary:hover {opacity: 0.9;}
+
+/* MINIATURES */
+.miniatures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.miniatures .qsl-card {
+  width: 200px;
+  height: 133px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #222;
+}
+
+.miniatures .qsl-card .qsl-image img {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+}
+
+.miniatures .qsl-card .qsl-text {
+  display: none;
+}
+
+/* QSL CARD FINAL (GRAND) */
+.qsl-card {
+  display: flex;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 12px;
+  width: 100%;
+  max-width: 1024px;
+  height: auto;
+}
+
+.qsl-image {
+  flex: 3;
+}
+
+.qsl-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.qsl-text {
+  flex: 2;
+  background: #333;
+  padding: 12px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* PROGRESS BAR */
+.progressBarBg {
+  background: #444;
+  height: 18px;
+  border-radius: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+#progressBar {
+  width: 0%;
+  height: 100%;
+  background: #28a745;
+  border-radius: 10px;
+}
+
+/* FOOTER FACEBOOK */
+#fbFooterLink {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45px;
+  height: 45px;
+  z-index: 1000;
+}
+#fbFooterLink img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .twoColumns {grid-template-columns: 1fr;}
+  .qsl-card {flex-direction: column;}
+  .qsl-text {flex: none; padding: 8px;}
+}
