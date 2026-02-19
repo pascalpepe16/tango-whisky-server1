@@ -1,21 +1,32 @@
+/* ===========================
+   GENERAL
+=========================== */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   color: #fff;
-  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg")
-    center/cover fixed no-repeat;
+  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg") center/cover fixed no-repeat;
 }
 
 .hidden { display: none !important; }
 
+/* ===========================
+   HEADER
+=========================== */
 header {
   text-align: center;
   padding: 20px;
   background: rgba(0,0,0,0.45);
 }
 
-.logo { width: 140px; margin-bottom: 10px; }
+.logo {
+  width: 140px;
+  margin-bottom: 10px;
+}
 
+/* ===========================
+   NAVIGATION
+=========================== */
 nav {
   text-align: center;
   padding: 12px;
@@ -35,6 +46,9 @@ nav button {
 
 nav button:hover { opacity: 0.9; }
 
+/* ===========================
+   SECTIONS
+=========================== */
 .section {
   display: block;
   padding: 18px;
@@ -44,7 +58,16 @@ nav button:hover { opacity: 0.9; }
   border-radius: 8px;
 }
 
-.wideForm { width: 95%; max-width:1200px; margin:auto; }
+.section.hidden { display: none; }
+
+/* ===========================
+   FORMS
+=========================== */
+.wideForm {
+  width: 95%;
+  max-width: 1200px;
+  margin: auto;
+}
 
 .twoColumns {
   display: grid;
@@ -52,15 +75,20 @@ nav button:hover { opacity: 0.9; }
   gap: 25px;
 }
 
-.twoColumns input, .twoColumns select, .twoColumns textarea {
+.twoColumns input,
+.twoColumns select,
+.twoColumns textarea {
   width: 100%;
-  font-size: 18px;
+  font-size: 16px;
   margin-bottom: 12px;
   padding: 6px;
   border-radius: 6px;
   border: 1px solid #ccc;
 }
 
+/* ===========================
+   BUTTONS
+=========================== */
 .primary {
   background: #1e90ff;
   color: #fff;
@@ -73,28 +101,147 @@ nav button:hover { opacity: 0.9; }
 
 .primary:hover { opacity: 0.9; }
 
-#progressContainer { margin-top:10px; display:block; }
-.progressBarBg { background:#333; height:20px; border-radius:10px; }
-#progressBar { width:0%; height:100%; background:#28a745; border-radius:10px; }
-
-.previewMini { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; justify-content:center; }
-
-.thumbWrap { background: rgba(0,0,0,0.35); padding:6px; border-radius:6px; text-align:center; width:150px; }
-.thumbWrap img { width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid #fff; }
-
-.qsl-card { display:flex; width:100%; max-width:900px; margin:auto; margin-top:10px; border-radius:12px; overflow:hidden; background:#111; }
-.qsl-image { width:60%; height:auto; }
-.qsl-image img { width:100%; height:100%; object-fit:contain; }
-.qsl-text { width:40%; background:#222; color:#fff; padding:16px; display:flex; flex-direction:column; justify-content:center; font-size:clamp(12px,1.1vw,16px); border-radius:0 12px 12px 0; }
-.qsl-text h3 { margin-bottom:6px; color:#4fc3f7; }
-.qsl-text p { margin:4px 0; }
-
-footer {
-  text-align:center;
-  padding:12px;
-  margin-top:25px;
-  background:rgba(0,0,0,0.4);
+/* ===========================
+   GALLERY & THUMBNAILS
+=========================== */
+#galleryContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+  gap: 18px;
+  justify-items: center;
 }
 
-#fbFooterLink { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:45px; height:45px; z-index:1000; }
-#fbFooterLink img { width:100%; height:100%; border-radius:50%; }
+.thumbWrap {
+  background: rgba(0,0,0,0.35);
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+  max-width: 220px;
+}
+
+.thumbWrap img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #fff;
+}
+
+.thumbLabel {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* ===========================
+   DOWNLOAD
+=========================== */
+.dlWrap {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.dlThumb {
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* ===========================
+   PREVIEW / QSL CARD
+=========================== */
+.qsl-card {
+  display: flex;
+  flex-direction: row;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 10px 0;
+  background: #1c1c1c;
+  border: 1px solid #333;
+}
+
+.qsl-image {
+  width: 60%;
+}
+
+.qsl-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* conserve aspect ratio */
+}
+
+.qsl-text {
+  width: 40%;
+  padding: 15px;
+  background: #333; /* fond gris */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: clamp(12px, 1vw, 16px);
+}
+
+.qsl-text h3 { color: #4fc3f7; margin-bottom: 10px; }
+.qsl-text p { margin: 3px 0; }
+
+/* ===========================
+   IMPORT PREVIEW MINIATURES
+=========================== */
+#importPreviewArea .thumbWrap,
+#previewArea .thumbWrap {
+  width: 150px;
+  height: auto;
+}
+
+.thumbWrap img {
+  object-fit: contain;
+}
+
+/* ===========================
+   PROGRESS
+=========================== */
+.progressBarBg {
+  background: #333;
+  height: 20px;
+  border-radius: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+#progressBar {
+  width: 0%;
+  height: 100%;
+  background: #28a745;
+  border-radius: 10px;
+}
+
+/* ===========================
+   FOOTER / FACEBOOK
+=========================== */
+footer {
+  text-align: center;
+  padding: 12px;
+  margin-top: 25px;
+  background: rgba(0,0,0,0.4);
+}
+
+#fbFooterLink {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45px;
+  height: 45px;
+  z-index: 1000;
+}
+
+#fbFooterLink img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
