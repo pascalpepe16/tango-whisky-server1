@@ -4,17 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TANGO WHISKY eQSL</title>
-
   <link rel="stylesheet" href="style.css">
-
-  <!-- Librairies pour import Excel/CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <header>
-  <img src="https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763588704/akyt1anm1inwmygj3vfz.png" class="logo" alt="TW">
+  <img src="https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763588704/akyt1anm1inwmygj3vfz.png"
+       class="logo" alt="TW">
   <h1>TANGO WHISKY eQSL</h1>
 </header>
 
@@ -70,21 +68,30 @@
   <form id="genForm" enctype="multipart/form-data" class="wideForm">
     <div class="twoColumns">
       <div>
-        <label>Indicatif :</label><input type="text" name="indicatif" required>
-        <label>Date :</label><input type="date" name="date">
-        <label>Heure :</label><input type="time" name="time">
-        <label>Bande :</label><input type="text" name="band">
-        <label>Report :</label><input type="text" name="report">
+        <label>Indicatif :</label>
+        <input type="text" name="indicatif" required>
+        <label>Date :</label>
+        <input type="date" name="date">
+        <label>Heure :</label>
+        <input type="time" name="time">
+        <label>Bande :</label>
+        <input type="text" name="band">
+        <label>Report :</label>
+        <input type="text" name="report">
       </div>
       <div>
-        <label>Mode :</label><input type="text" name="mode">
-        <label>Note :</label><textarea name="note"></textarea>
-        <label>Image QSL :</label><input type="file" name="qsl" accept="image/*" required>
+        <label>Mode :</label>
+        <input type="text" name="mode">
+        <label>Note :</label>
+        <textarea name="note"></textarea>
+        <label>Image QSL :</label>
+        <input type="file" name="qsl" accept="image/*" required>
       </div>
     </div>
     <button class="primary" type="submit">Générer QSL</button>
     <div id="genPreview"></div>
   </form>
+
 </section>
 
 <section id="download" class="section hidden">
@@ -96,8 +103,10 @@
   <div id="dlPreview"></div>
 </section>
 
-<a href="https://www.facebook.com/groups/1114993245182627" target="_blank" id="fbFooterLink">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png">
+<a href="https://www.facebook.com/groups/1114993245182627"
+   target="_blank"
+   id="fbFooterLink">
+   <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png">
 </a>
 
 </main>
