@@ -6,16 +6,14 @@ let importedLogs = [];
 window.isAuthenticated = false;
 
 // ===============================
-// QSL PREVIEW GENERATOR (AJOUT)
+// QSL PREVIEW GENERATOR
 // ===============================
 function generateQSLPreview(data, imageUrl) {
   return `
     <div class="qsl-card">
-      
       <div class="qsl-image">
-        <img src="${imageUrl}">
+        <img src="${imageUrl}" alt="QSL Image">
       </div>
-
       <div class="qsl-text">
         <h3>${data.indicatif || data.Indicatif || ''}</h3>
         <p>Date: ${data.date || data.Date || ''}</p>
@@ -25,7 +23,6 @@ function generateQSLPreview(data, imageUrl) {
         <p>Report: ${data.report || data.Report || ''}</p>
         <p>${data.note || data.Note || ''}</p>
       </div>
-
     </div>
   `;
 }
@@ -133,7 +130,7 @@ async function loadGallery() {
     list.forEach(q => {
       const div = document.createElement("div");
       div.className = "thumbWrap";
-      div.innerHTML = `<img src="${q.thumb}">`;
+      div.innerHTML = `<img src="${q.thumb}" alt="QSL Thumbnail">`;
       box.appendChild(div);
     });
   } catch (err) {
@@ -149,6 +146,7 @@ function processFile() {
   const file = fileInput.files[0];
   const status = document.getElementById("importStatus");
   const previewArea = document.getElementById("previewArea");
+  const thumbnails = document.getElementById("previewThumbnails");
 
   if (!file) {
     status.innerHTML = "Choisissez un fichier";
@@ -156,11 +154,7 @@ function processFile() {
   }
 
   const imageInput = document.getElementById("bulkImage");
-  let imageURL = "";
-
-  if (imageInput.files[0]) {
-    imageURL = URL.createObjectURL(imageInput.files[0]);
-  }
+  let imageURL = imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : "";
 
   const ext = file.name.split(".").pop().toLowerCase();
 
@@ -176,9 +170,14 @@ function processFile() {
 
   const showPreview = () => {
     previewArea.innerHTML = "";
+    thumbnails.innerHTML = "";
 
     importedLogs.slice(0, 10).forEach(row => {
       previewArea.innerHTML += generateQSLPreview(row, imageURL);
+      const thumbDiv = document.createElement("div");
+      thumbDiv.className = "thumbWrap";
+      thumbDiv.innerHTML = `<img src="${imageURL}" alt="Miniature">`;
+      thumbnails.appendChild(thumbDiv);
     });
   };
 
@@ -187,9 +186,7 @@ function processFile() {
       header: true,
       skipEmptyLines: true,
       complete: function(results) {
-        importedLogs = results.data
-          .map(normalizeRow)
-          .filter(r => r.Indicatif !== "");
+        importedLogs = results.data.map(normalizeRow).filter(r => r.Indicatif !== "");
         status.innerHTML = `${importedLogs.length} lignes valides chargées`;
         showPreview();
         document.getElementById("validateImportBtn").style.display = "inline-block";
@@ -203,10 +200,7 @@ function processFile() {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const raw = XLSX.utils.sheet_to_json(ws);
 
-      importedLogs = raw
-        .map(normalizeRow)
-        .filter(r => r.Indicatif !== "");
-
+      importedLogs = raw.map(normalizeRow).filter(r => r.Indicatif !== "");
       status.innerHTML = `${importedLogs.length} lignes valides chargées`;
       showPreview();
       document.getElementById("validateImportBtn").style.display = "inline-block";
@@ -248,7 +242,6 @@ document.getElementById("validateImportBtn").onclick = async function () {
         body: formData,
         credentials: "same-origin"
       });
-
       const data = await res.json();
       if (data.success) success++;
     } catch (err) {}
@@ -262,7 +255,7 @@ document.getElementById("validateImportBtn").onclick = async function () {
 };
 
 // ===============================
-// GENERATION QSL UNITAIRE (MODIFIÉ)
+// GENERATION QSL UNITAIRE
 // ===============================
 document.getElementById("genForm").addEventListener("submit", e => {
   e.preventDefault();
@@ -272,14 +265,13 @@ document.getElementById("genForm").addEventListener("submit", e => {
 
   const formData = new FormData(form);
   const imgFile = formData.get("qsl");
-
   const data = Object.fromEntries(formData.entries());
   const imgURL = URL.createObjectURL(imgFile);
 
-  // 🔥 PREVIEW DIRECT
+  // Affichage direct QSL
   preview.innerHTML = generateQSLPreview(data, imgURL);
 
-  // 🔥 ENVOI SERVEUR
+  // Envoi serveur
   fetch(API_URL + "/upload", {
     method: "POST",
     body: formData,
