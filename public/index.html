@@ -4,11 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TANGO WHISKY eQSL</title>
+
   <link rel="stylesheet" href="style.css">
 
   <!-- Librairies pour import Excel/CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 </head>
 <body>
 
@@ -19,10 +21,10 @@
 </header>
 
 <nav>
-  <button>Accueil</button>
+  <button id="btnHome">Accueil</button>
   <button id="btnGallery" style="display:none;">Galerie</button>
   <button id="btnCreate" style="display:none;">Créer / Ajouter</button>
-  <button>Télécharger</button>
+  <button id="btnDownload">Télécharger</button>
   <button id="logoutBtn" style="display:none;">Déconnexion</button>
 </nav>
 
@@ -56,16 +58,18 @@
     <input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
     <label>Image pour toutes les QSL :</label><br>
     <input type="file" id="bulkImage" accept="image/*"><br><br>
-    <button id="importBtn">Importer</button>
+    <button onclick="processFile()">Importer</button>
     <button id="validateImportBtn" style="display:none;">Valider et enregistrer</button>
     <div id="importStatus"></div>
-    <div id="previewArea" class="previewArea"></div>
-    <div id="progressContainer" class="progressContainer">
-      <div class="progressBarBg"><div id="progressBar"></div></div>
+    <div id="previewArea" class="previewMini"></div>
+    <div id="progressContainer" style="display:none;">
+      <div class="progressBarBg">
+        <div id="progressBar"></div>
+      </div>
     </div>
   </div>
 
-  <form id="genForm" class="wideForm" enctype="multipart/form-data">
+  <form id="genForm" enctype="multipart/form-data" class="wideForm">
     <div class="twoColumns">
       <div>
         <label>Indicatif :</label>
@@ -79,6 +83,7 @@
         <label>Report :</label>
         <input type="text" name="report">
       </div>
+
       <div>
         <label>Mode :</label>
         <input type="text" name="mode">
@@ -88,10 +93,10 @@
         <input type="file" name="qsl" accept="image/*" required>
       </div>
     </div>
-    <button class="primary" type="submit">Générer QSL</button>
-    <div id="genPreview" class="previewArea"></div>
-  </form>
 
+    <button class="primary" type="submit">Générer QSL</button>
+    <div id="genPreview" class="previewMini"></div>
+  </form>
 </section>
 
 <section id="download" class="section hidden">
@@ -104,7 +109,8 @@
 </section>
 
 <a href="https://www.facebook.com/groups/1114993245182627"
-   target="_blank" id="fbFooterLink">
+   target="_blank"
+   id="fbFooterLink">
    <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png">
 </a>
 
