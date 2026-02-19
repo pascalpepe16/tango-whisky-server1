@@ -6,6 +6,31 @@ let importedLogs = [];
 window.isAuthenticated = false;
 
 // ===============================
+// QSL PREVIEW GENERATOR (AJOUT)
+// ===============================
+function generateQSLPreview(data, imageUrl) {
+  return `
+    <div class="qsl-card">
+      
+      <div class="qsl-image">
+        <img src="${imageUrl}">
+      </div>
+
+      <div class="qsl-text">
+        <h3>${data.indicatif || data.Indicatif || ''}</h3>
+        <p>Date: ${data.date || data.Date || ''}</p>
+        <p>Heure: ${data.time || data.Heure || ''}</p>
+        <p>Bande: ${data.band || data.Bande || ''}</p>
+        <p>Mode: ${data.mode || data.Mode || ''}</p>
+        <p>Report: ${data.report || data.Report || ''}</p>
+        <p>${data.note || data.Note || ''}</p>
+      </div>
+
+    </div>
+  `;
+}
+
+// ===============================
 // AUTH / SESSION
 // ===============================
 async function checkAuth() {
@@ -130,6 +155,13 @@ function processFile() {
     return;
   }
 
+  const imageInput = document.getElementById("bulkImage");
+  let imageURL = "";
+
+  if (imageInput.files[0]) {
+    imageURL = URL.createObjectURL(imageInput.files[0]);
+  }
+
   const ext = file.name.split(".").pop().toLowerCase();
 
   const normalizeRow = row => ({
@@ -144,10 +176,9 @@ function processFile() {
 
   const showPreview = () => {
     previewArea.innerHTML = "";
+
     importedLogs.slice(0, 10).forEach(row => {
-      const div = document.createElement("div");
-      div.innerHTML = `<strong>${row.Indicatif}</strong> ${row.Date} ${row.Heure}`;
-      previewArea.appendChild(div);
+      previewArea.innerHTML += generateQSLPreview(row, imageURL);
     });
   };
 
@@ -162,10 +193,6 @@ function processFile() {
         status.innerHTML = `${importedLogs.length} lignes valides chargées`;
         showPreview();
         document.getElementById("validateImportBtn").style.display = "inline-block";
-      },
-      error: function(err) {
-        console.error(err);
-        status.innerHTML = "Erreur lors de la lecture du CSV";
       }
     });
   } else if (ext === "xlsx") {
@@ -185,8 +212,6 @@ function processFile() {
       document.getElementById("validateImportBtn").style.display = "inline-block";
     };
     reader.readAsArrayBuffer(file);
-  } else {
-    status.innerHTML = "Format non supporté (CSV ou XLSX uniquement)";
   }
 }
 
@@ -237,113 +262,30 @@ document.getElementById("validateImportBtn").onclick = async function () {
 };
 
 // ===============================
-// DOWNLOAD SEARCH
+// GENERATION QSL UNITAIRE (MODIFIÉ)
 // ===============================
-document.getElementById("btnSearch").onclick = async () => {
-  const call = document.getElementById("dlCall").value.trim().toUpperCase();
-  const box = document.getElementById("dlPreview");
-
-  if (!call) {
-    alert("Entrer un indicatif");
-    return;
-  }
-
-  box.innerHTML = "Recherche…";
-
-  try {
-    const res = await fetch(API_URL + "/download/" + call);
-    const list = await res.json();
-
-    if (!list.length) {
-      box.innerHTML = "Aucune QSL trouvée";
-      return;
-    }
-
-    box.innerHTML = "";
-    list.forEach(q => {
-      const div = document.createElement("div");
-      div.className = "dlWrap";
-      div.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb">
-        <button onclick="downloadQSL('${q.public_id}')">Télécharger</button>
-      `;
-      box.appendChild(div);
-    });
-  } catch (err) {
-    console.error(err);
-    box.innerHTML = "Erreur réseau";
-  }
-};
-
-function downloadQSL(pid) {
-  const a = document.createElement("a");
-  a.href = API_URL + "/file?pid=" + encodeURIComponent(pid);
-  a.click();
-}
-
-// ===============================
-// GENERATION QSL UNITAIRE
-// ===============================
-document.getElementById("genForm").addEventListener("submit", async e => {
+document.getElementById("genForm").addEventListener("submit", e => {
   e.preventDefault();
 
   const form = e.target;
   const preview = document.getElementById("genPreview");
-  preview.innerHTML = "Génération…";
 
   const formData = new FormData(form);
+  const imgFile = formData.get("qsl");
 
-  try {
-    // ✅ CORRECTION : route serveur est /upload
-    const res = await fetch(API_URL + "/upload", {
-      method: "POST",
-      body: formData,
-      credentials: "same-origin"
-    });
+  const data = Object.fromEntries(formData.entries());
+  const imgURL = URL.createObjectURL(imgFile);
 
-    const data = await res.json();
+  // 🔥 PREVIEW DIRECT
+  preview.innerHTML = generateQSLPreview(data, imgURL);
 
-    if (!data.success) {
-      preview.innerHTML = "Erreur : " + (data.error || "inconnue");
-      return;
-    }
-
-    preview.innerHTML = `
-      <div class="thumbWrap">
-        <img src="${data.qsl.thumb}">
-        <br>
-        <a href="${data.qsl.url}" target="_blank">Voir en grand</a>
-      </div>
-    `;
-
-    form.reset();
-
-  } catch (err) {
-    preview.innerHTML = "Erreur réseau";
-    console.error(err);
-  }
+  // 🔥 ENVOI SERVEUR
+  fetch(API_URL + "/upload", {
+    method: "POST",
+    body: formData,
+    credentials: "same-origin"
+  }).catch(() => {});
 });
-function generateQSLPreview(data, imageUrl) {
-  return `
-    <div class="qsl-card">
-      
-      <div class="qsl-image">
-        <img src="${imageUrl}">
-      </div>
-
-      <div class="qsl-text">
-        <h3>${data.indicatif || ''}</h3>
-        <p>Date: ${data.date || ''}</p>
-        <p>Heure: ${data.time || ''}</p>
-        <p>Bande: ${data.band || ''}</p>
-        <p>Mode: ${data.mode || ''}</p>
-        <p>Report: ${data.report || ''}</p>
-        <p>${data.note || ''}</p>
-      </div>
-
-    </div>
-  `;
-}
 
 // ===============================
 // INIT
