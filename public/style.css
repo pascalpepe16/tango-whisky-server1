@@ -238,4 +238,23 @@ footer {
   transform: scale(1.1);
   box-shadow: 0 0 18px #1e90ff;
 }
+#fbFooterLink {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(0,0,0,0.6);
+  padding: 8px;
+  border-radius: 50%;
+  z-index: 9999;
+  transition: transform 0.2s ease;
+}
+
+#fbFooterLink img {
+  width: 28px;
+  height: 28px;
+}
+
+#fbFooterLink:hover {
+  transform: scale(1.15);
+}
  
