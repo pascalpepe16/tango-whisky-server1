@@ -1,247 +1,87 @@
-/* ===========================
-   GENERAL
-=========================== */
 body {
+  font-family: Arial;
   margin: 0;
-  font-family: Arial, sans-serif;
-  color: #fff;
-  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg") center/cover fixed no-repeat;
+  background: #111;
+  color: white;
 }
 
-.hidden { display: none !important; }
-
-/* ===========================
-   HEADER
-=========================== */
-header {
-  text-align: center;
-  padding: 20px;
-  background: rgba(0,0,0,0.45);
-}
-
-.logo {
-  width: 140px;
-  margin-bottom: 10px;
-}
-
-/* ===========================
-   NAVIGATION
-=========================== */
 nav {
   text-align: center;
-  padding: 12px;
-  background: rgba(0,0,0,0.6);
+  padding: 10px;
 }
 
-nav button {
+button {
   margin: 5px;
-  padding: 8px 14px;
-  cursor: pointer;
-  background: #1e90ff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-}
-
-nav button:hover { opacity: 0.9; }
-
-/* ===========================
-   SECTIONS
-=========================== */
-.section {
-  display: block;
-  padding: 18px;
-  max-width: 980px;
-  margin: 20px auto;
-  background: rgba(0,0,0,0.55);
-  border-radius: 8px;
-}
-
-.section.hidden { display: none; }
-
-/* ===========================
-   FORMS
-=========================== */
-.wideForm {
-  width: 95%;
-  max-width: 1200px;
-  margin: auto;
-}
-
-.twoColumns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 25px;
-}
-
-.twoColumns input,
-.twoColumns select,
-.twoColumns textarea {
-  width: 100%;
-  font-size: 16px;
-  margin-bottom: 12px;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-/* ===========================
-   BUTTONS
-=========================== */
-.primary {
-  background: #1e90ff;
-  color: #fff;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.primary:hover { opacity: 0.9; }
-
-/* ===========================
-   GALLERY & THUMBNAILS
-=========================== */
-#galleryContent {
-  display: grid;
-  grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
-  gap: 18px;
-  justify-items: center;
-}
-
-.thumbWrap {
-  background: rgba(0,0,0,0.35);
   padding: 8px;
-  border-radius: 8px;
-  text-align: center;
-  width: 100%;
-  max-width: 220px;
 }
 
-.thumbWrap img {
-  width: 100%;
-  height: 130px;
-  object-fit: cover;
-  border-radius: 6px;
-  border: 2px solid #fff;
+.section {
+  padding: 20px;
 }
 
-.thumbLabel {
-  margin-top: 6px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
+.hidden {
+  display: none;
 }
 
-/* ===========================
-   DOWNLOAD
-=========================== */
-.dlWrap {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 15px;
-}
+/* ================= QSL ================= */
 
-.dlThumb {
-  width: 180px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 6px;
-}
-
-/* ===========================
-   PREVIEW / QSL CARD
-=========================== */
 .qsl-card {
   display: flex;
-  flex-direction: row;
-  border-radius: 12px;
+  max-width: 700px;
+  width: 100%;
+  aspect-ratio: 3/2;
+  background: #111;
+  margin: 10px auto;
+  border-radius: 10px;
   overflow: hidden;
-  margin: 10px 0;
-  background: #1c1c1c;
-  border: 1px solid #333;
 }
 
 .qsl-image {
   width: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
 }
 
 .qsl-image img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* conserve aspect ratio */
+  object-fit: contain; /* FIX IMAGE */
 }
 
 .qsl-text {
   width: 40%;
-  padding: 15px;
-  background: #333; /* fond gris */
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  font-size: clamp(12px, 1vw, 16px);
+  background: #2a2a2a; /* FIX GRIS */
+  padding: 10px;
+  font-size: 14px;
 }
 
-.qsl-text h3 { color: #4fc3f7; margin-bottom: 10px; }
-.qsl-text p { margin: 3px 0; }
-
-/* ===========================
-   IMPORT PREVIEW MINIATURES
-=========================== */
-#importPreviewArea .thumbWrap,
-#previewArea .thumbWrap {
-  width: 150px;
-  height: auto;
+/* MINI PREVIEW */
+#previewArea .qsl-card,
+#genPreview .qsl-card {
+  max-width: 320px;
 }
 
-.thumbWrap img {
-  object-fit: contain;
-}
-
-/* ===========================
-   PROGRESS
-=========================== */
+/* PROGRESS */
 .progressBarBg {
   background: #333;
   height: 20px;
-  border-radius: 10px;
-  width: 100%;
-  margin-top: 10px;
 }
 
 #progressBar {
+  height: 100%;
   width: 0%;
-  height: 100%;
-  background: #28a745;
-  border-radius: 10px;
+  background: green;
 }
 
-/* ===========================
-   FOOTER / FACEBOOK
-=========================== */
-footer {
-  text-align: center;
-  padding: 12px;
-  margin-top: 25px;
-  background: rgba(0,0,0,0.4);
-}
-
-#fbFooterLink {
-  position: fixed;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 45px;
-  height: 45px;
-  z-index: 1000;
-}
-
-#fbFooterLink img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+/* MOBILE */
+@media(max-width:600px){
+  .qsl-card{
+    flex-direction: column;
+  }
+  .qsl-image,
+  .qsl-text{
+    width:100%;
+  }
 }
