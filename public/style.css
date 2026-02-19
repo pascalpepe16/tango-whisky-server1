@@ -1,352 +1,83 @@
-/* ===========================
-    GENERAL
-=========================== */
+/* ==========================
+   GENERAL
+========================== */
 
 body {
   margin: 0;
   font-family: Arial, sans-serif;
+  background: url('https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg') center/cover fixed no-repeat;
   color: #fff;
-  background: url("https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg")
-    center/cover fixed no-repeat;
 }
 
-.hidden {
-  display: none !important;
-}
-
-/* ===========================
-    HEADER
-=========================== */
+.hidden { display: none !important; }
 
 header {
   text-align: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0,0,0,0.45);
 }
-
-.logo {
-  width: 140px;
-  margin-bottom: 10px;
-}
-
-/* ===========================
-    NAVIGATION
-=========================== */
+.logo { width: 140px; margin-bottom: 10px; }
 
 nav {
   text-align: center;
   padding: 12px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0,0,0,0.6);
 }
-
 nav button {
   margin: 5px;
   padding: 8px 14px;
   cursor: pointer;
   background: #1e90ff;
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 6px;
   font-size: 15px;
 }
-
-nav button:hover {
-  opacity: 0.9;
-}
-
-/* ===========================
-    SECTIONS
-=========================== */
+nav button:hover { opacity: 0.9; }
 
 .section {
+  display: block;
   padding: 18px;
-  max-width: 1100px;
+  max-width: 980px;
   margin: 20px auto;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0,0,0,0.55);
   border-radius: 8px;
 }
 
-/* ===========================
-    FORM
-=========================== */
-
-.twoColumns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+.wideForm { width: 95%; max-width: 1200px; margin: auto; }
+.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+.twoColumns input, .twoColumns select, .twoColumns textarea {
+  width: 100%; font-size: 16px; margin-bottom: 12px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;
 }
+.primary { background: #1e90ff; color: #fff; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+.primary:hover { opacity: 0.9; }
+.importBox { border:1px solid #444; padding:10px; margin-bottom:20px; }
+#progressContainer { display:none; margin-top:10px; }
+.progressBarBg { background:#333; height:20px; border-radius:10px; }
+#progressBar { width:0%; height:100%; background:#28a745; border-radius:10px; transition: width 0.3s ease; }
+#previewArea { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; justify-content:center; }
 
-.twoColumns input,
-.twoColumns textarea,
-.twoColumns select {
-  width: 100%;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-}
+.thumbWrap { max-width:220px; text-align:center; border-radius:8px; overflow:hidden; }
+.thumbWrap img { width:100%; height:auto; object-fit:cover; border:2px solid #fff; border-radius:6px; }
 
-/* ===========================
-    BOUTONS
-=========================== */
+.qsl-card { display:flex; flex-direction:row; max-width:100%; border-radius:12px; overflow:hidden; background:#111; }
+.qsl-image { flex:3; }
+.qsl-image img { width:100%; height:auto; display:block; }
+.qsl-text { flex:2; padding:20px; background:#1c1c1c; color:#fff; display:flex; flex-direction:column; justify-content:center; font-size:clamp(12px,1.2vw,16px); }
+.qsl-text h3 { color:#4fc3f7; margin-bottom:8px; }
+.qsl-text p { margin:4px 0; }
 
-.primary {
-  background: #1e90ff;
-  color: #fff;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
+#fbFooterLink { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:45px; height:45px; z-index:1000; }
+#fbFooterLink img { width:100%; height:100%; border-radius:50%; }
+#fbFooterLink:hover { transform:translateX(-50%) scale(1.15); }
 
-.primary:hover {
-  opacity: 0.9;
-}
+.dlWrap { display:flex; align-items:center; gap:12px; margin-bottom:15px; }
+.dlThumb { width:180px; height:120px; object-fit:cover; border-radius:6px; }
 
-/* ===========================
-    GALERIE
-=========================== */
+footer { text-align:center; padding:12px; margin-top:25px; background:rgba(0,0,0,0.4); }
 
-#galleryContent {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
-}
-
-.thumbWrap {
-  background: rgba(0,0,0,0.35);
-  padding: 8px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.thumbWrap img {
-  width: 100%;
-  height: 150px;
-  object-fit: contain;
-  border-radius: 6px;
-  border: 2px solid #fff;
-}
-
-.thumbLabel {
-  margin-top: 6px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
-}
-
-/* ===========================
-    DOWNLOAD
-=========================== */
-
-.dlWrap {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.dlThumb {
-  width: 180px;
-  height: 120px;
-  object-fit: contain;
-  border-radius: 6px;
-}
-
-/* ===========================
-    QSL CARD (PREVIEW & FINAL)
-=========================== */
-
-.qsl-card {
-  display: flex;
-  width: 100%;
-  max-width: 1024px;
-  aspect-ratio: 1024/683;
-  margin: 15px auto;
-  border-radius: 12px;
-  overflow: hidden;
-  background: none; /* plus de gris */
-  box-shadow: 0 0 10px #0008;
-}
-
-/* IMAGE */
-.qsl-image {
-  width: 60%;
-  height: 100%;
-}
-
-.qsl-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* TEXTE */
-.qsl-text {
-  width: 40%;
-  padding: 20px;
-  background: #1c1c1c;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  font-size: clamp(12px, 1.2vw, 16px);
-  overflow-y: auto;
-}
-
-.qsl-text h3 {
-  margin-bottom: 10px;
-  color: #4fc3f7;
-  font-size: clamp(14px, 1.5vw, 18px);
-}
-
-.qsl-text p {
-  margin: 3px 0;
-  line-height: 1.3;
-  word-break: break-word;
-}
-
-/* ===========================
-    PREVIEW + MINIATURES
-=========================== */
-
-.preview {
-  margin-top: 10px;
-  max-width: 1024px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#previewThumbnails {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-#previewThumbnails img {
-  width: 100px;
-  height: 70px;
-  object-fit: contain;
-  border-radius: 6px;
-  border: 1px solid #fff;
-  cursor: pointer;
-}
-
-/* ===========================
-    IMPORT
-=========================== */
-
-.importBox {
-  border: 1px solid #444;
-  padding: 10px;
-  margin-bottom: 20px;
-}
-
-/* ===========================
-    PROGRESS
-=========================== */
-
-#progressContainer {
-  display: none;
-  margin-top: 10px;
-  width: 100%;
-  max-width: 1024px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.progressBarBg {
-  background: #333;
-  height: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-#progressBar {
-  width: 0%;
-  height: 100%;
-  background: #28a745;
-  border-radius: 10px;
-  transition: width 0.25s;
-}
-
-/* ===========================
-    FACEBOOK
-=========================== */
-
-#fbFooterLink {
-  position: fixed;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-  height: 50px;
-  z-index: 1000;
-}
-
-#fbFooterLink img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-}
-
-#fbFooterLink:hover {
-  transform: translateX(-50%) scale(1.1);
-}
-
-/* ===========================
-    FOOTER
-=========================== */
-
-footer {
-  text-align: center;
-  padding: 12px;
-  margin-top: 25px;
-  background: rgba(0, 0, 0, 0.4);
-}
-
-/* ===========================
-    MOBILE
-=========================== */
-
-@media (max-width: 768px) {
-
-  .twoColumns {
-    grid-template-columns: 1fr;
-  }
-
-  .qsl-card {
-    flex-direction: column;
-    aspect-ratio: auto;
-    max-width: 90%;
-  }
-
-  .qsl-image {
-    width: 100%;
-    height: 200px;
-  }
-
-  .qsl-text {
-    width: 100%;
-    font-size: 13px;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  .dlWrap {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .thumbWrap img {
-    height: 120px;
-  }
-
-  #previewThumbnails img {
-    width: 70px;
-    height: 50px;
-  }
-
+@media (max-width:768px) {
+  .twoColumns { grid-template-columns:1fr; }
+  .qsl-card { flex-direction:column; }
+  .qsl-text { padding:12px; font-size:clamp(12px,2.5vw,16px); }
 }
