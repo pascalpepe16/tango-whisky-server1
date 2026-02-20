@@ -5,32 +5,46 @@ const API_URL = location.origin;
 let importedLogs = [];
 window.isAuthenticated = false;
 
-// ===============================
-// QSL PREVIEW GENERATOR FIX
-// ===============================
 function generateQSLPreview(data, imageUrl) {
   return `
     <div class="qsl-card">
-
-      <div class="qsl-left">
+      <div class="qsl-image">
         <img src="${imageUrl}">
       </div>
 
-      <div class="qsl-right">
+      <div class="qsl-text">
         <h3>${data.indicatif || data.Indicatif || ''}</h3>
 
-        <p><b>To:</b> ${data.indicatif || data.Indicatif || ''}</p>
-        <p><b>Date:</b> ${data.date || data.Date || ''}</p>
-        <p><b>UTC:</b> ${data.time || data.Heure || ''}</p>
-        <p><b>Mode:</b> ${data.mode || data.Mode || ''}</p>
-        <p><b>RST:</b> ${data.report || data.Report || ''}</p>
-        <p><b>Freq:</b> ${data.band || data.Bande || ''}</p>
+        <div class="line">
+          <span class="label">Date</span>
+          <span class="value">${data.date || data.Date || ''}</span>
+        </div>
 
-        <p class="remarks">
-          ${data.note || data.Note || "73's merci pour le contact"}
-        </p>
+        <div class="line">
+          <span class="label">Heure</span>
+          <span class="value">${data.time || data.Heure || ''}</span>
+        </div>
+
+        <div class="line">
+          <span class="label">Bande</span>
+          <span class="value">${data.band || data.Bande || ''}</span>
+        </div>
+
+        <div class="line">
+          <span class="label">Mode</span>
+          <span class="value">${data.mode || data.Mode || ''}</span>
+        </div>
+
+        <div class="line">
+          <span class="label">Report</span>
+          <span class="value">${data.report || data.Report || ''}</span>
+        </div>
+
+        <div style="margin-top:10px;">
+          ${data.note || data.Note || ''}
+        </div>
+
       </div>
-
     </div>
   `;
 }
