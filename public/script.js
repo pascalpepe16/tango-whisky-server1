@@ -6,30 +6,19 @@ let importedLogs = [];
 window.isAuthenticated = false;
 
 // ===============================
-// QSL PREVIEW GENERATOR (NOUVEAU DESIGN)
+// QSL PREVIEW GENERATOR (STYLE CARTE REELLE)
 // ===============================
 function generateQSLPreview(data, imageUrl) {
   return `
-    <div class="qsl-card-new">
+    <div class="qsl-card">
 
-      <div class="qsl-bg">
+      <div class="qsl-left">
         <img src="${imageUrl}">
       </div>
 
-      <div class="qsl-title">
-        <div class="main">TANGO WHISKY</div>
-        <div class="sub">INTERNATIONAL DX GROUP</div>
-      </div>
+      <div class="qsl-right">
+        <h3>${data.indicatif || data.Indicatif || ''}</h3>
 
-      <div class="qsl-callsign">
-        ${data.indicatif || data.Indicatif || ''}
-      </div>
-
-      <div class="qsl-operator">
-        OP: ${data.op || "Radio TW"}
-      </div>
-
-      <div class="qsl-info">
         <p><b>From:</b> ${data.from || "14TWXXX"}</p>
         <p><b>To:</b> ${data.indicatif || data.Indicatif || ''}</p>
         <p><b>Date:</b> ${data.date || data.Date || ''}</p>
@@ -46,7 +35,6 @@ function generateQSLPreview(data, imageUrl) {
     </div>
   `;
 }
-
 // ===============================
 // AUTH / SESSION
 // ===============================
