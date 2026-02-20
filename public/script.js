@@ -11,17 +11,13 @@ function generateQSLPreview(data, imageUrl) {
       <div class="qsl-image">
         <img src="${imageUrl}">
       </div>
-
       <div class="qsl-text">
-        <h3>${data.indicatif || ''}</h3>
-
-        <div class="line"><span>Date</span><span>${data.date || ''}</span></div>
-        <div class="line"><span>Heure</span><span>${data.time || ''}</span></div>
-        <div class="line"><span>Bande</span><span>${data.band || ''}</span></div>
-        <div class="line"><span>Mode</span><span>${data.mode || ''}</span></div>
-        <div class="line"><span>Report</span><span>${data.report || ''}</span></div>
-
-        <div>${data.note || ''}</div>
+        <b>${data.Indicatif || data.indicatif || ''}</b><br>
+        ${data.Date || ''}<br>
+        ${data.Heure || ''}<br>
+        ${data.Bande || ''}<br>
+        ${data.Mode || ''}<br>
+        ${data.Report || ''}<br>
       </div>
     </div>
   `;
