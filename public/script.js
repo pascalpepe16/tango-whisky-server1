@@ -6,7 +6,7 @@ let importedLogs = [];
 window.isAuthenticated = false;
 
 // ===============================
-// QSL PREVIEW GENERATOR (STYLE CARTE REELLE)
+// QSL PREVIEW GENERATOR FIX
 // ===============================
 function generateQSLPreview(data, imageUrl) {
   return `
@@ -19,7 +19,6 @@ function generateQSLPreview(data, imageUrl) {
       <div class="qsl-right">
         <h3>${data.indicatif || data.Indicatif || ''}</h3>
 
-        <p><b>From:</b> ${data.from || "14TWXXX"}</p>
         <p><b>To:</b> ${data.indicatif || data.Indicatif || ''}</p>
         <p><b>Date:</b> ${data.date || data.Date || ''}</p>
         <p><b>UTC:</b> ${data.time || data.Heure || ''}</p>
