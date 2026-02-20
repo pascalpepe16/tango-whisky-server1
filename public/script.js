@@ -189,16 +189,48 @@ document.getElementById("validateImportBtn").onclick=async function(){
 // ===============================
 // GENERATION QSL UNITAIRE
 // ===============================
-document.getElementById("genForm").addEventListener("submit",e=>{
+document.getElementById("genForm").addEventListener("submit",async e=>{
   e.preventDefault();
+
   const form=e.target;
   const preview=document.getElementById("genPreview");
   const formData=new FormData(form);
+
   const imgFile=formData.get("qsl");
   const data=Object.fromEntries(formData.entries());
   const imgURL=URL.createObjectURL(imgFile);
+
+  // 1. Générer preview HTML
   preview.innerHTML=generateQSLPreview(data,imgURL);
-  fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"}).catch(()=>{});
+
+  // 2. Attendre rendu DOM
+  await new Promise(r=>setTimeout(r,300));
+
+  const card = preview.querySelector(".qsl-card");
+
+  // 3. Transformer en IMAGE
+  const canvas = await html2canvas(card, {scale:2});
+  
+  canvas.toBlob(async blob=>{
+    const newFormData = new FormData();
+
+    newFormData.append("indicatif", data.indicatif);
+    newFormData.append("date", data.date);
+    newFormData.append("time", data.time);
+    newFormData.append("band", data.band);
+    newFormData.append("report", data.report);
+    newFormData.append("mode", data.mode);
+    newFormData.append("note", data.note);
+
+    // 👉 ON ENVOIE L'IMAGE GÉNÉRÉE (IMPORTANT)
+    newFormData.append("qsl", blob, "qsl.png");
+
+    await fetch(API_URL+"/upload",{
+      method:"POST",
+      body:newFormData,
+      credentials:"same-origin"
+    });
+  });
 });
 
 // ===============================
