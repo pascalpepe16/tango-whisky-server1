@@ -1,68 +1,117 @@
+/* ==========================
+   GENERAL
+========================== */
+
 body {
-  margin:0;
-  font-family:Arial;
-  background:url('https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg') center/cover fixed;
-  color:#fff;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg') center/cover fixed no-repeat;
+  color: #fff;
 }
 
-.hidden{display:none;}
+.hidden { display: none !important; }
 
-.section{
-  padding:20px;
-  margin:20px auto;
-  max-width:1000px;
-  background:rgba(0,0,0,0.6);
-  border-radius:10px;
+header {
+  text-align: center;
+  padding: 20px;
+  background: rgba(0,0,0,0.45);
+}
+.logo { width: 140px; margin-bottom: 10px; }
+
+nav {
+  text-align: center;
+  padding: 12px;
+  background: rgba(0,0,0,0.6);
+}
+nav button {
+  margin: 5px;
+  padding: 8px 14px;
+  cursor: pointer;
+  background: #1e90ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+}
+nav button:hover { opacity: 0.9; }
+
+.section {
+  display: block;
+  padding: 18px;
+  max-width: 980px;
+  margin: 20px auto;
+  background: rgba(0,0,0,0.55);
+  border-radius: 8px;
 }
 
-/* GALERIE FIX */
-#galleryContent{
+.wideForm { width: 95%; max-width: 1200px; margin: auto; }
+.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+.twoColumns input, .twoColumns select, .twoColumns textarea {
+  width: 100%; font-size: 16px; margin-bottom: 12px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;
+}
+.primary { background: #1e90ff; color: #fff; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+.primary:hover { opacity: 0.9; }
+.importBox { border:1px solid #444; padding:10px; margin-bottom:20px; }
+#progressContainer { display:none; margin-top:10px; }
+.progressBarBg { background:#333; height:20px; border-radius:10px; }
+#progressBar { width:0%; height:100%; background:#28a745; border-radius:10px; transition: width 0.3s ease; }
+#previewArea { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; justify-content:center; }
+
+.thumbWrap { max-width:220px; text-align:center; border-radius:8px; overflow:hidden; }
+.thumbWrap img { width:100%; height:auto; object-fit:cover; border:2px solid #fff; border-radius:6px; }
+
+.qsl-card { 
+  display:flex; 
+  flex-direction:row; 
+  max-width:100%; 
+  border-radius:12px; 
+  overflow:hidden; 
+  background:#111; 
+}
+
+.qsl-image { 
+  flex:3; 
   display:flex;
-  flex-wrap:wrap;
-  gap:15px;
+  align-items:center;
   justify-content:center;
+  background:#000;
 }
 
-.thumbWrap img{
-  width:200px;
-  border-radius:8px;
-  cursor:pointer;
-  transition:0.3s;
-}
-.thumbWrap img:hover{
-  transform:scale(1.05);
+.qsl-image img { 
+  width:100%; 
+  height:100%;
+  object-fit:contain; /* IMPORTANT */
 }
 
-/* QSL */
-.qsl-card{
-  display:flex;
-  background:#111;
-  border-radius:10px;
-  overflow:hidden;
-}
-.qsl-image img{width:100%;}
-.qsl-text{padding:10px;}
-
-/* PROGRESS */
-#progressContainer{display:block;}
-.progressBarBg{background:#333;height:20px;}
-#progressBar{background:#28a745;height:100%;width:0%;}
-
-/* FB FIX FINAL */
-#fbFooterLink{
-  position:fixed;
-  bottom:15px;
-  left:50%;
-  transform:translateX(-50%);
-  width:50px;
-}
-#fbFooterLink img{
-  width:100%;
-  border-radius:50%;
+.qsl-text { 
+  flex:2; 
+  padding:20px; 
+  background:#1c1c1c; 
+  color:#fff; 
+  display:flex; 
+  flex-direction:column; 
+  justify-content:center; 
+  font-size:clamp(12px,1.2vw,16px); 
 }
 
-/* DOWNLOAD */
-.dlThumb{
-  width:150px;
-  margin:10px;
+.qsl-text p {
+  margin:3px 0;
+  border-bottom:1px solid rgba(255,255,255,0.2);
+  padding-bottom:2px;
 }
+
+#fbFooterLink { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:45px; height:45px; z-index:1000; }
+#fbFooterLink img { width:100%; height:100%; border-radius:50%; }
+#fbFooterLink:hover { transform:translateX(-50%) scale(1.15); }
+
+.dlWrap { display:flex; align-items:center; gap:12px; margin-bottom:15px; }
+.dlThumb { width:180px; height:120px; object-fit:cover; border-radius:6px; }
+
+footer { text-align:center; padding:12px; margin-top:25px; background:rgba(0,0,0,0.4); }
+
+@media (max-width:768px) {
+  .twoColumns { grid-template-columns:1fr; }
+  .qsl-card { flex-direction:column; }
+  .qsl-text { padding:12px; font-size:clamp(12px,2.5vw,16px); }
+}
+ 
