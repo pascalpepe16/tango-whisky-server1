@@ -7,6 +7,7 @@
 
   <link rel="stylesheet" href="style.css">
 
+  <!-- Librairies -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -25,7 +26,8 @@
   <button id="logoutBtn" onclick="logout()" style="display:none;">Déconnexion</button>
 </nav>
 
-<div id="loginBox" class="box">
+<!-- LOGIN -->
+<div id="loginBox">
   <h3>Connexion</h3>
   <input type="text" id="loginIndicatif" placeholder="Indicatif">
   <input type="password" id="loginPassword" placeholder="Mot de passe">
@@ -45,37 +47,34 @@
 </section>
 
 <section id="create" class="section hidden">
+
   <h2>Créer / Ajouter</h2>
 
-  <div class="importBox">
-    <input type="file" id="importFile">
-    <input type="file" id="bulkImage">
-    <button onclick="processFile()">Importer</button>
-    <button id="validateImportBtn" style="display:none;">Valider</button>
+  <input type="file" id="importFile">
+  <input type="file" id="bulkImage">
+  <button onclick="processFile()">Importer</button>
 
-    <div id="previewArea"></div>
-  </div>
+  <div id="previewArea"></div>
 
-  <form id="genForm">
-    <input name="indicatif">
-    <input name="date">
-    <input name="time">
-    <input name="band">
-    <input name="report">
-    <input name="mode">
-    <textarea name="note"></textarea>
-    <input type="file" name="qsl">
-    <button type="submit">Générer</button>
-
-    <div id="genPreview"></div>
-  </form>
 </section>
 
 <section id="download" class="section hidden">
+  <h2>Télécharger</h2>
   <input id="dlCall">
   <button id="btnSearch">Rechercher</button>
   <div id="dlPreview"></div>
 </section>
+
+</main>
+
+<!-- ✅ FACEBOOK FIX -->
+<a href="https://www.facebook.com/groups/1114993245182627" target="_blank" id="fbFooterLink">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png">
+</a>
+
+<footer>
+  TANGO WHISKY © 2026
+</footer>
 
 <script src="script.js"></script>
 </body>
