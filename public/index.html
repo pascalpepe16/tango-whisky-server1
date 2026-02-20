@@ -11,9 +11,8 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <!-- AJOUT IMPORTANT -->
+  <!-- EXPORT IMAGE -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
 </head>
 <body>
 
@@ -35,7 +34,7 @@
   <input type="text" id="loginIndicatif" placeholder="Indicatif">
   <input type="password" id="loginPassword" placeholder="Mot de passe">
   <button class="primary" onclick="login()">Connexion</button>
-  <p id="loginError" style="color:red;"></p>
+  <p id="loginError"></p>
 </div>
 
 <main>
@@ -50,38 +49,35 @@
 </section>
 
 <section id="create" class="section hidden">
-  <h2>Créer / Générer une QSL</h2>
+  <h2>Créer QSL</h2>
 
-  <div class="importBox">
-    <input type="file" id="importFile" accept=".csv,.xlsx"><br><br>
-    <input type="file" id="bulkImage" accept="image/*"><br><br>
-    <button onclick="processFile()">Importer</button>
-    <button id="validateImportBtn" style="display:none;">Valider</button>
-    <div id="importStatus"></div>
-    <div id="previewArea"></div>
-  </div>
+  <div id="previewArea"></div>
 
-  <form id="genForm" enctype="multipart/form-data">
-    <input name="indicatif" placeholder="Indicatif">
-    <input type="date" name="date">
-    <input type="time" name="time">
+  <form id="genForm">
+    <input name="indicatif" placeholder="Indicatif" required>
+    <input name="date" type="date">
+    <input name="time" type="time">
     <input name="band" placeholder="Bande">
     <input name="mode" placeholder="Mode">
     <input name="report" placeholder="Report">
     <textarea name="note"></textarea>
     <input type="file" name="qsl" required>
-    <button class="primary">Générer</button>
-    <div id="genPreview"></div>
+    <button type="submit">Générer</button>
   </form>
+
+  <div id="genPreview"></div>
 </section>
 
 <section id="download" class="section hidden">
-  <input id="dlCall" placeholder="Indicatif">
+  <h2>Télécharger</h2>
+  <input id="dlCall">
   <button id="btnSearch">Rechercher</button>
   <div id="dlPreview"></div>
 </section>
 
 </main>
+
+<footer>© 2026</footer>
 
 <script src="script.js"></script>
 </body>
