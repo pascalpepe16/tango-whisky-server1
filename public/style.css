@@ -17,7 +17,10 @@ header {
   background: rgba(0,0,0,0.45);
 }
 
-.logo { width: 140px; margin-bottom: 10px; }
+.logo {
+  width: 140px;
+  margin-bottom: 10px;
+}
 
 nav {
   text-align: center;
@@ -36,6 +39,10 @@ nav button {
   font-size: 15px;
 }
 
+nav button:hover {
+  opacity: 0.9;
+}
+
 .section {
   display: block;
   padding: 18px;
@@ -45,7 +52,11 @@ nav button {
   border-radius: 8px;
 }
 
-.wideForm { width: 95%; max-width: 1200px; margin: auto; }
+.wideForm {
+  width: 95%;
+  max-width: 1200px;
+  margin: auto;
+}
 
 .twoColumns {
   display: grid;
@@ -74,15 +85,19 @@ nav button {
   font-size: 16px;
 }
 
+.primary:hover {
+  opacity: 0.9;
+}
+
+/* ==========================
+   IMPORT / PREVIEW
+========================== */
+
 .importBox {
   border:1px solid #444;
   padding:10px;
   margin-bottom:20px;
 }
-
-/* ==========================
-   PREVIEW AREA (RESTAURÉ)
-========================== */
 
 #previewArea {
   display:flex;
@@ -93,84 +108,59 @@ nav button {
 }
 
 /* ==========================
-   GALERIE (FIX)
+   GALERIE (FIX OK)
 ========================== */
 
+#galleryContent {
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  justify-content:center;
+}
+
 .thumbWrap {
-  max-width:220px;
+  width:200px;
   text-align:center;
-  border-radius:8px;
-  overflow:hidden;
 }
 
 .thumbWrap img {
   width:100%;
-  height:150px;
+  height:140px;
   object-fit:cover;
   border:2px solid #fff;
   border-radius:6px;
 }
 
 /* ==========================
-   QSL CARD (FIX IMAGE SANS CASSE)
+   QSL CARD (CREATE + PREVIEW)
 ========================== */
 
 .qsl-card {
   display:flex;
   flex-direction:row;
-  max-width:100%;
-  border-radius:12px;
-  overflow:hidden;
+  width:260px;
   background:#111;
+  border-radius:10px;
+  overflow:hidden;
 }
 
 .qsl-image {
-  flex:3;
+  flex:1;
   background:#000;
 }
 
 .qsl-image img {
   width:100%;
-  height:100%;
-  object-fit:contain; /* ✅ IMAGE COMPLETE */
+  height:140px;
+  object-fit:contain; /* IMAGE COMPLETE */
 }
 
 .qsl-text {
-  flex:2;
-  padding:20px;
+  flex:1;
+  padding:6px;
+  font-size:10px;
   background:#1c1c1c;
   color:#fff;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  font-size:clamp(12px,1.2vw,16px);
-}
-
-.qsl-text h3 {
-  color:#4fc3f7;
-  margin-bottom:8px;
-}
-
-.qsl-text p {
-  margin:4px 0;
-}
-
-/* ==========================
-   MINIATURE CREATE (FIX PROPRE)
-========================== */
-
-#previewArea .qsl-card {
-  width:260px;
-}
-
-#previewArea .qsl-image img {
-  height:140px;
-  object-fit:contain;
-}
-
-#previewArea .qsl-text {
-  font-size:10px;
-  padding:6px;
 }
 
 /* ==========================
@@ -192,23 +182,23 @@ nav button {
 }
 
 /* ==========================
-   FACEBOOK ICON (FIX POSITION)
+   FACEBOOK ICON (FIX)
 ========================== */
 
 #fbFooterLink {
-  position:fixed;
-  bottom:15px;
-  left:50%;
-  transform:translateX(-50%);
-  width:45px;
-  height:45px;
-  z-index:1000;
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45px;
+  height: 45px;
+  z-index: 1000;
 }
 
 #fbFooterLink img {
-  width:100%;
-  height:100%;
-  border-radius:50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 
 /* ==========================
@@ -227,6 +217,15 @@ footer {
 ========================== */
 
 @media (max-width:768px) {
-  .twoColumns { grid-template-columns:1fr; }
-  .qsl-card { flex-direction:column; }
+  .twoColumns {
+    grid-template-columns:1fr;
+  }
+
+  .qsl-card {
+    flex-direction:column;
+  }
+
+  .qsl-image img {
+    height:180px;
+  }
 }
