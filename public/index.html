@@ -7,12 +7,8 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Librairies -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <!-- EXPORT IMAGE -->
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -49,35 +45,37 @@
 </section>
 
 <section id="create" class="section hidden">
-  <h2>Créer QSL</h2>
+  <h2>Créer / Ajouter</h2>
 
-  <div id="previewArea"></div>
+  <div class="importBox">
+    <input type="file" id="importFile">
+    <input type="file" id="bulkImage">
+    <button onclick="processFile()">Importer</button>
+    <button id="validateImportBtn" style="display:none;">Valider</button>
+
+    <div id="previewArea"></div>
+  </div>
 
   <form id="genForm">
-    <input name="indicatif" placeholder="Indicatif" required>
-    <input name="date" type="date">
-    <input name="time" type="time">
-    <input name="band" placeholder="Bande">
-    <input name="mode" placeholder="Mode">
-    <input name="report" placeholder="Report">
+    <input name="indicatif">
+    <input name="date">
+    <input name="time">
+    <input name="band">
+    <input name="report">
+    <input name="mode">
     <textarea name="note"></textarea>
-    <input type="file" name="qsl" required>
+    <input type="file" name="qsl">
     <button type="submit">Générer</button>
-  </form>
 
-  <div id="genPreview"></div>
+    <div id="genPreview"></div>
+  </form>
 </section>
 
 <section id="download" class="section hidden">
-  <h2>Télécharger</h2>
   <input id="dlCall">
   <button id="btnSearch">Rechercher</button>
   <div id="dlPreview"></div>
 </section>
-
-</main>
-
-<footer>© 2026</footer>
 
 <script src="script.js"></script>
 </body>
