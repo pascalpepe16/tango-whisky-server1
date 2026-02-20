@@ -1,44 +1,122 @@
 body {
   margin:0;
-  font-family:Arial;
-  background:#000;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(180deg,#050505,#0a0a0a);
   color:#fff;
 }
 
-.section {
-  padding:20px;
+/* HEADER */
+header {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:15px;
+  padding:15px;
+  background:#000;
+  border-bottom:2px solid #0077cc;
 }
 
-.hidden { display:none; }
+.logo {
+  height:50px;
+}
 
+h1 {
+  margin:0;
+  color:#00aaff;
+}
+
+/* NAV */
+nav {
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  padding:10px;
+  background:#111;
+}
+
+nav button {
+  padding:10px 15px;
+  border:none;
+  border-radius:6px;
+  background:#222;
+  color:#fff;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+nav button:hover {
+  background:#0077cc;
+}
+
+/* SECTIONS */
+.section {
+  padding:20px;
+  text-align:center;
+}
+
+.hidden {
+  display:none;
+}
+
+/* BOX LOGIN */
+.box {
+  max-width:300px;
+  margin:20px auto;
+  padding:20px;
+  background:#111;
+  border-radius:10px;
+  box-shadow:0 0 10px #000;
+}
+
+.box input {
+  width:100%;
+  margin:5px 0;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+}
+
+.primary {
+  width:100%;
+  padding:10px;
+  background:#0077cc;
+  border:none;
+  border-radius:6px;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* QSL CARD (PROPRE) */
 .qsl-card {
   display:flex;
   width:100%;
-  max-width:800px;
-  height:220px;
+  max-width:850px;
+  height:230px;
   background:#111;
-  border-radius:10px;
+  border-radius:12px;
   overflow:hidden;
-  margin:10px auto;
+  margin:15px auto;
+  box-shadow:0 0 15px rgba(0,0,0,0.6);
 }
 
-/* IMAGE NON ÉCRASÉE */
+/* IMAGE */
 .qsl-image {
   flex:2;
+  background:#000;
 }
+
 .qsl-image img {
   width:100%;
   height:100%;
   object-fit:contain;
-  background:#000;
 }
 
-/* TEXTE PROPRE */
+/* TEXTE */
 .qsl-text {
   flex:1;
   background:#fff;
   color:#000;
-  padding:10px;
+  padding:12px;
   font-size:13px;
   display:flex;
   flex-direction:column;
@@ -46,20 +124,52 @@ body {
 }
 
 .qsl-text h3 {
-  margin:0 0 8px 0;
+  margin:0 0 8px;
   color:#0077cc;
+  font-size:16px;
 }
 
-/* LIGNES ALIGNÉES */
+/* LIGNES */
 .line {
   display:flex;
   justify-content:space-between;
-  border-bottom:1px solid #ccc;
-  margin:2px 0;
+  border-bottom:1px solid #ddd;
+  padding:2px 0;
+  font-size:12px;
 }
 
-/* MINIATURE */
+/* MINI PREVIEW */
 #previewArea .qsl-card {
   width:260px;
   height:140px;
+}
+
+/* FORM */
+form input,
+form textarea {
+  width:100%;
+  margin:5px 0;
+  padding:8px;
+  border-radius:6px;
+  border:none;
+}
+
+form button {
+  margin-top:10px;
+  padding:10px;
+  background:#00aaff;
+  border:none;
+  border-radius:6px;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* FOOTER */
+footer {
+  text-align:center;
+  padding:15px;
+  background:#000;
+  margin-top:20px;
+  font-size:12px;
+  color:#777;
 }
