@@ -2,99 +2,138 @@ const API_URL = location.origin;
 let importedLogs = [];
 window.isAuthenticated = false;
 
-// ===============================
-// QSL PREVIEW
-// ===============================
+/* ===============================
+   PREVIEW
+=============================== */
 function generateQSLPreview(data, imageUrl) {
   return `
     <div class="qsl-card">
       <div class="qsl-image">
         <img src="${imageUrl}">
       </div>
+
       <div class="qsl-text">
-        <h3>${data.indicatif || data.Indicatif || ''}</h3>
+        <h3>${data.indicatif || ''}</h3>
 
-        <div class="line"><span>Date</span><span>${data.date || data.Date || ''}</span></div>
-        <div class="line"><span>Heure</span><span>${data.time || data.Heure || ''}</span></div>
-        <div class="line"><span>Bande</span><span>${data.band || data.Bande || ''}</span></div>
-        <div class="line"><span>Mode</span><span>${data.mode || data.Mode || ''}</span></div>
-        <div class="line"><span>Report</span><span>${data.report || data.Report || ''}</span></div>
+        <div class="line"><span>Date</span><span>${data.date || ''}</span></div>
+        <div class="line"><span>Heure</span><span>${data.time || ''}</span></div>
+        <div class="line"><span>Bande</span><span>${data.band || ''}</span></div>
+        <div class="line"><span>Mode</span><span>${data.mode || ''}</span></div>
+        <div class="line"><span>Report</span><span>${data.report || ''}</span></div>
 
-        <div style="margin-top:10px;">
-          ${data.note || data.Note || ''}
-        </div>
+        <div>${data.note || ''}</div>
       </div>
     </div>
   `;
 }
 
-// ===============================
-// DOWNLOAD IDENTIQUE AU PREVIEW
-// ===============================
-function downloadElementAsImage(element) {
-  html2canvas(element, {
-    scale: 3,
-    useCORS: true
-  }).then(canvas => {
-    const link = document.createElement("a");
-    link.download = "qsl.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+/* ===============================
+   AUTH
+=============================== */
+async function checkAuth(){
+  try{
+    const res = await fetch(API_URL+"/check-auth",{credentials:"same-origin"});
+    const data = await res.json();
+    window.isAuthenticated = data.authenticated === true;
+
+    document.getElementById("loginBox").style.display = window.isAuthenticated ? "none":"block";
+    document.getElementById("btnGallery").style.display = window.isAuthenticated ? "inline-block":"none";
+    document.getElementById("btnCreate").style.display = window.isAuthenticated ? "inline-block":"none";
+    document.getElementById("logoutBtn").style.display = window.isAuthenticated ? "inline-block":"none";
+
+  }catch(e){console.log(e);}
+}
+
+async function login(){
+  const indicatif = document.getElementById("loginIndicatif").value;
+  const password = document.getElementById("loginPassword").value;
+
+  const res = await fetch(API_URL+"/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({indicatif,password})
+  });
+
+  if(!res.ok){
+    document.getElementById("loginError").innerText="Erreur login";
+    return;
+  }
+
+  checkAuth();
+}
+
+function logout(){
+  window.location.href = API_URL+"/logout";
+}
+
+/* ===============================
+   NAV
+=============================== */
+function showTab(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+/* ===============================
+   CREATE
+=============================== */
+document.getElementById("genForm").addEventListener("submit",e=>{
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+  const img = URL.createObjectURL(formData.get("qsl"));
+
+  const html = generateQSLPreview(data,img);
+
+  document.getElementById("genPreview").innerHTML = html;
+});
+
+/* ===============================
+   DOWNLOAD IDENTIQUE PREVIEW
+=============================== */
+function downloadElement(el){
+  html2canvas(el,{scale:3,useCORS:true}).then(canvas=>{
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL();
+    a.download="qsl.png";
+    a.click();
   });
 }
 
-function downloadSameRender(image, indicatif, date, time, band, mode, report, note) {
-
-  const temp = document.createElement("div");
-  temp.style.position = "absolute";
-  temp.style.left = "-9999px";
-
-  const data = { indicatif, date, time, band, mode, report, note };
-
-  temp.innerHTML = generateQSLPreview(data, image);
-
-  document.body.appendChild(temp);
-
-  const card = temp.querySelector(".qsl-card");
-
-  downloadElementAsImage(card);
-
-  document.body.removeChild(temp);
-}
-
-// ===============================
-// DOWNLOAD SEARCH
-// ===============================
-document.getElementById("btnSearch").onclick = async () => {
-  const call = document.getElementById("dlCall").value.trim().toUpperCase();
+/* ===============================
+   SEARCH + DOWNLOAD
+=============================== */
+document.getElementById("btnSearch").onclick = async ()=>{
+  const call = document.getElementById("dlCall").value;
   const box = document.getElementById("dlPreview");
 
-  if (!call) return;
-
-  box.innerHTML = "Recherche…";
-
-  const res = await fetch(API_URL + "/download/" + call);
+  const res = await fetch(API_URL+"/download/"+call);
   const list = await res.json();
 
-  box.innerHTML = "";
+  box.innerHTML="";
 
-  list.forEach(q => {
+  list.forEach(q=>{
     const div = document.createElement("div");
 
     div.innerHTML = `
-      <img src="${q.thumb}" class="dlThumb">
-      <button onclick="downloadSameRender(
-        '${q.image}',
-        '${q.indicatif}',
-        '${q.date}',
-        '${q.time}',
-        '${q.band}',
-        '${q.mode}',
-        '${q.report}',
-        '${q.note}'
-      )">Télécharger</button>
+      <img src="${q.thumb}" width="200">
+      <button>Download</button>
     `;
+
+    div.querySelector("button").onclick = ()=>{
+      const temp = document.createElement("div");
+      temp.innerHTML = generateQSLPreview(q, q.image);
+      document.body.appendChild(temp);
+
+      downloadElement(temp.querySelector(".qsl-card"));
+
+      document.body.removeChild(temp);
+    };
 
     box.appendChild(div);
   });
 };
+
+checkAuth();
+showTab("home");
