@@ -115,24 +115,16 @@ app.get("/download/:call", async (req, res) => {
 // GENERATE QSL
 async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
 
- // ✅ BON
-app.post("/upload", upload.single("qsl"), async (req,res)=>{
-  try{
-    const file = req.file;
+  const base = await sharp(filePath)
+    .resize({ width: 800, height: 450, fit: "cover" })
+    .jpeg({ quality: 90 })
+    .toBuffer();
 
-    // garder image originale
-    const filename = Date.now() + ".png";
+  const svg = `
+  <svg width="800" height="450">
+    <!-- panneau blanc à droite -->
+    <rect x="520" y="0" width="280" height="450" fill="white"/>
 
-    fs.writeFileSync("./uploads/"+filename, file.buffer);
-
-    // thumb (optionnel)
-    fs.writeFileSync("./uploads/thumb_"+filename, file.buffer);
-
-    res.json({ success:true });
-  }catch(err){
-    res.status(500).json({ success:false });
-  }
-});
     <!-- indicatif -->
     <text x="540" y="60" font-size="28" fill="#333" font-weight="bold">
       ${indicatif}
