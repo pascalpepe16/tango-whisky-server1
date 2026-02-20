@@ -6,23 +6,43 @@ let importedLogs = [];
 window.isAuthenticated = false;
 
 // ===============================
-// QSL PREVIEW GENERATOR
+// QSL PREVIEW GENERATOR (NOUVEAU DESIGN)
 // ===============================
 function generateQSLPreview(data, imageUrl) {
   return `
-    <div class="qsl-card">
-      <div class="qsl-image">
+    <div class="qsl-card-new">
+
+      <div class="qsl-bg">
         <img src="${imageUrl}">
       </div>
-      <div class="qsl-text">
-        <h3>${data.indicatif || data.Indicatif || ''}</h3>
-        <p>Date: ${data.date || data.Date || ''}</p>
-        <p>Heure: ${data.time || data.Heure || ''}</p>
-        <p>Bande: ${data.band || data.Bande || ''}</p>
-        <p>Mode: ${data.mode || data.Mode || ''}</p>
-        <p>Report: ${data.report || data.Report || ''}</p>
-        <p>${data.note || data.Note || ''}</p>
+
+      <div class="qsl-title">
+        <div class="main">TANGO WHISKY</div>
+        <div class="sub">INTERNATIONAL DX GROUP</div>
       </div>
+
+      <div class="qsl-callsign">
+        ${data.indicatif || data.Indicatif || ''}
+      </div>
+
+      <div class="qsl-operator">
+        OP: ${data.op || "Radio TW"}
+      </div>
+
+      <div class="qsl-info">
+        <p><b>From:</b> ${data.from || "14TWXXX"}</p>
+        <p><b>To:</b> ${data.indicatif || data.Indicatif || ''}</p>
+        <p><b>Date:</b> ${data.date || data.Date || ''}</p>
+        <p><b>UTC:</b> ${data.time || data.Heure || ''}</p>
+        <p><b>Mode:</b> ${data.mode || data.Mode || ''}</p>
+        <p><b>RST:</b> ${data.report || data.Report || ''}</p>
+        <p><b>Freq:</b> ${data.band || data.Bande || ''}</p>
+
+        <p class="remarks">
+          ${data.note || data.Note || "73's merci pour le contact"}
+        </p>
+      </div>
+
     </div>
   `;
 }
