@@ -16,13 +16,18 @@ header {
   padding: 20px;
   background: rgba(0,0,0,0.45);
 }
-.logo { width: 140px; margin-bottom: 10px; }
+
+.logo {
+  width: 140px;
+  margin-bottom: 10px;
+}
 
 nav {
   text-align: center;
   padding: 12px;
   background: rgba(0,0,0,0.6);
 }
+
 nav button {
   margin: 5px;
   padding: 8px 14px;
@@ -33,7 +38,10 @@ nav button {
   border-radius: 6px;
   font-size: 15px;
 }
-nav button:hover { opacity: 0.9; }
+
+nav button:hover {
+  opacity: 0.9;
+}
 
 .section {
   display: block;
@@ -44,180 +52,236 @@ nav button:hover { opacity: 0.9; }
   border-radius: 8px;
 }
 
-.wideForm { width: 95%; max-width: 1200px; margin: auto; }
-.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-.twoColumns input, .twoColumns select, .twoColumns textarea {
-  width: 100%; font-size: 16px; margin-bottom: 12px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;
+.wideForm {
+  width: 95%;
+  max-width: 1200px;
+  margin: auto;
 }
-.primary { background: #1e90ff; color: #fff; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
-.primary:hover { opacity: 0.9; }
-.importBox { border:1px solid #444; padding:10px; margin-bottom:20px; }
-#progressContainer { display:none; margin-top:10px; }
-.progressBarBg { background:#333; height:20px; border-radius:10px; }
-#progressBar { width:0%; height:100%; background:#28a745; border-radius:10px; transition: width 0.3s ease; }
-#previewArea { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; justify-content:center; }
 
-.thumbWrap { max-width:220px; text-align:center; border-radius:8px; overflow:hidden; }
-.thumbWrap img { width:100%; height:auto; object-fit:cover; border:2px solid #fff; border-radius:6px; }
-
-.qsl-card { display:flex; flex-direction:row; max-width:100%; border-radius:12px; overflow:hidden; background:#111; }
-.qsl-image { flex:3; }
-.qsl-image img { width:100%; height:auto; display:block; }
-.qsl-text { flex:2; padding:20px; background:#1c1c1c; color:#fff; display:flex; flex-direction:column; justify-content:center; font-size:clamp(12px,1.2vw,16px); }
-.qsl-text h3 { color:#4fc3f7; margin-bottom:8px; }
-.qsl-text p { margin:4px 0; }
-
-#fbFooterLink { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:45px; height:45px; z-index:1000; }
-#fbFooterLink img { width:100%; height:100%; border-radius:50%; }
-#fbFooterLink:hover { transform:translateX(-50%) scale(1.15); }
-
-.dlWrap { display:flex; align-items:center; gap:12px; margin-bottom:15px; }
-.dlThumb { width:180px; height:120px; object-fit:cover; border-radius:6px; }
-
-footer { text-align:center; padding:12px; margin-top:25px; background:rgba(0,0,0,0.4); }
-
-@media (max-width:768px) {
-  .twoColumns { grid-template-columns:1fr; }
-  .qsl-card { flex-direction:column; }
-  .qsl-text { padding:12px; font-size:clamp(12px,2.5vw,16px); }
+.twoColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
 }
- 
+
+.twoColumns input,
+.twoColumns select,
+.twoColumns textarea {
+  width: 100%;
+  font-size: 16px;
+  margin-bottom: 12px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.primary {
+  background: #1e90ff;
+  color: #fff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.primary:hover {
+  opacity: 0.9;
+}
+
+.importBox {
+  border: 1px solid #444;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+#progressContainer {
+  display: none;
+  margin-top: 10px;
+}
+
+.progressBarBg {
+  background: #333;
+  height: 20px;
+  border-radius: 10px;
+}
+
+#progressBar {
+  width: 0%;
+  height: 100%;
+  background: #28a745;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+#previewArea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  justify-content: center;
+}
+
+.thumbWrap {
+  max-width: 220px;
+  text-align: center;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.thumbWrap img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border: 2px solid #fff;
+  border-radius: 6px;
+}
+
 /* ==========================
-   QSL STYLE CARTE REELLE
+   QSL CARD FINAL
 ========================== */
 
 .qsl-card {
   display: flex;
   width: 100%;
-  max-width: 850px;
-  height: 250px;
-  margin: 10px auto;
-  border-radius: 10px;
+  max-width: 950px;
+  height: 320px;
+  margin: 15px auto;
+  border-radius: 12px;
   overflow: hidden;
   background: #111;
-  box-shadow: 0 0 10px rgba(0,0,0,0.6);
+  box-shadow: 0 0 15px rgba(0,0,0,0.7);
 }
 
-/* IMAGE GAUCHE */
+/* IMAGE */
 .qsl-left {
-  flex: 2;
-}
-
-.qsl-left img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* INFOS DROITE */
-.qsl-right {
-  flex: 1;
-  background: #f5f5f5;
-  color: #000;
-  padding: 12px;
-  font-size: 13px;
+  flex: 3;
+  background: #000;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
 }
 
+.qsl-left img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* TEXTE */
+.qsl-right {
+  flex: 2;
+  background: #ffffff;
+  color: #000;
+  padding: 20px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
 .qsl-right h3 {
-  margin: 0 0 8px 0;
+  margin-bottom: 12px;
   color: #0077cc;
+  font-size: 20px;
 }
 
 .qsl-right p {
-  margin: 3px 0;
+  margin: 6px 0;
 }
 
 .qsl-right .remarks {
-  margin-top: 8px;
+  margin-top: 12px;
   font-style: italic;
+  line-height: 1.4;
 }
 
 /* ==========================
-   MINIATURES (CREATE)
+   MINIATURES
 ========================== */
 
 #previewArea .qsl-card {
-  width: 260px;
-  height: 150px;
+  width: 320px;
+  height: 190px;
 }
 
 #previewArea .qsl-right {
-  font-size: 10px;
-  padding: 6px;
+  font-size: 11px;
+  padding: 10px;
 }
 
 #previewArea .qsl-right h3 {
-  font-size: 12px;
-}
-
-.qsl-bg img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* TITRE */
-.qsl-title {
-  position: absolute;
-  top: 10px;
-  width: 100%;
-  text-align: center;
-  color: gold;
-  text-shadow: 2px 2px 6px black;
-}
-
-.qsl-title .main {
-  font-size: 36px;
-  font-weight: bold;
-}
-
-.qsl-title .sub {
   font-size: 14px;
 }
 
-/* CALLSIGN */
-.qsl-callsign {
-  position: absolute;
-  top: 120px;
-  left: 30px;
-  font-size: 60px;
-  color: red;
-  transform: rotate(-15deg);
-  text-shadow: 3px 3px 6px black;
-  font-weight: bold;
+/* ==========================
+   DOWNLOAD
+========================== */
+
+.dlWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
 }
 
-/* OP */
-.qsl-operator {
-  position: absolute;
-  top: 200px;
-  left: 50px;
-  font-size: 22px;
-  color: red;
-  text-shadow: 2px 2px 4px black;
+.dlThumb {
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
-/* PANNEAU DROIT */
-.qsl-info {
-  position: absolute;
-  right: 10px;
-  top: 20px;
-  width: 250px;
-  background: rgba(255,255,255,0.9);
+/* ==========================
+   FOOTER
+========================== */
+
+#fbFooterLink {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45px;
+  height: 45px;
+  z-index: 1000;
+}
+
+#fbFooterLink img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+#fbFooterLink:hover {
+  transform: translateX(-50%) scale(1.15);
+}
+
+footer {
+  text-align: center;
   padding: 12px;
-  border-radius: 10px;
-  color: #000;
-  font-size: 13px;
+  margin-top: 25px;
+  background: rgba(0,0,0,0.4);
 }
 
-.qsl-info p {
-  margin: 4px 0;
-}
+/* ==========================
+   MOBILE
+========================== */
 
-.qsl-info .remarks {
-  margin-top: 8px;
-  font-style: italic;
+@media (max-width: 768px) {
+  .twoColumns {
+    grid-template-columns: 1fr;
+  }
+
+  .qsl-card {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .qsl-left {
+    height: 200px;
+  }
+
+  .qsl-right {
+    padding: 12px;
+  }
 }
