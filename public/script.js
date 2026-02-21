@@ -44,25 +44,8 @@ if (window.isAuthenticated) {
 } catch (err) { console.error("checkAuth error", err); }
 }
 
-async function login() {
-const indicatif = document.getElementById("loginIndicatif").value.trim();
-const password = document.getElementById("loginPassword").value;
-const errBox = document.getElementById("loginError");
-errBox.innerText = "";
-try {
-const res = await fetch(API_URL + "/login", {
-method: "POST",
-headers: {"Content-Type":"application/json"},
-credentials: "same-origin",
-body: JSON.stringify({indicatif, password})
-});
-if (!res.ok) { errBox.innerText = "Identifiants incorrects"; return; }
-await checkAuth();
-showTab("home");
-} catch(err){ errBox.innerText="Erreur réseau"; }
-}
-
 function logout(){ window.location.href = API_URL + "/logout"; }
+window.logout = logout; // rendre globale
 
 // ===============================
 // NAVIGATION
@@ -234,7 +217,7 @@ box.innerHTML="";
 list.forEach(q=>{
 const div=document.createElement("div");
 div.className="dlWrap";
-div.innerHTML=`<img src="${q.thumb}" class="dlThumb"><button onclick="downloadQSL('${q.public_id}')">Télécharger</button>`;
+div.innerHTML=`<img src="${q.thumb}" class="dlThumb"><button onclick=\"downloadQSL('${q.public_id}')\">Télécharger</button>`;
 box.appendChild(div);
 });
 }catch(err){ box.innerHTML="Erreur réseau"; console.error(err); }
@@ -245,9 +228,12 @@ const a=document.createElement("a");
 a.href=API_URL+"/file?pid="+encodeURIComponent(pid);
 a.click();
 }
+window.downloadQSL = downloadQSL; // rendre globale
 
 // ===============================
 // INIT
 // ===============================
+document.addEventListener('DOMContentLoaded', () => {
 checkAuth();
 showTab("home");
+});
