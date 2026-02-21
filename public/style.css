@@ -327,14 +327,23 @@ footer {
     font-size:clamp(12px,2.5vw,16px); 
   }
 }
+/* ===============================
+PREVIEW MINIATURE SIMPLE (scale 0.4)
+=============================== */
+
 #genPreview {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
 }
 
 #genPreview .qsl-card {
   transform: scale(0.4);
   transform-origin: top center;
+}
+
+/* évite que ça prenne toute la largeur */
+#genPreview .qsl-card {
+  max-width: 100%;
 }
