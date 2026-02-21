@@ -104,7 +104,19 @@ async function loadGallery(){
     });
   }catch(err){ box.innerHTML="Erreur réseau"; }
 }
-
+function resizeImage(file, maxWidth, callback) {
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+  img.onload = () => {
+    const scale = Math.min(1, maxWidth / img.width);
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(callback, 'image/jpeg', 0.85); // Compression 85%
+  };
+}
 // ===============================
 // IMPORT CSV / XLSX
 // ===============================
