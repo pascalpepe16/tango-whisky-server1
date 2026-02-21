@@ -90,46 +90,19 @@ function showTab(id){
 // GALLERY
 // ===============================
 async function loadGallery(){
-  const box=document.getElementById("galleryContent");
-  box.innerHTML="Chargement…";
-
+  const box=document.getElementById("galleryContent"); box.innerHTML="Chargement…";
   try{
     const res=await fetch(API_URL+"/qsl",{credentials:"same-origin"});
     const list=await res.json();
-
-    if(!Array.isArray(list)||!list.length){
-      box.innerHTML="Aucune QSL";
-      return;
-    }
-
+    if(!Array.isArray(list)||!list.length){ box.innerHTML="Aucune QSL"; return; }
     box.innerHTML="";
-
     list.forEach(q=>{
-      const d = q.data || {};
-
       const div=document.createElement("div");
-      div.className="qsl-card";
-
-      div.innerHTML=`
-        <div class="qsl-image">
-          <img src="${q.thumb}">
-        </div>
-        <div class="qsl-text">
-          <h3>${d.indicatif || ""}</h3>
-          <p>Date: ${d.date || ""}</p>
-          <p>Heure: ${d.time || ""}</p>
-          <p>Bande: ${d.band || ""}</p>
-          <p>Mode: ${d.mode || ""}</p>
-          <p>Report: ${d.report || ""}</p>
-        </div>
-      `;
-
+      div.className="thumbWrap";
+      div.innerHTML=`<img src="${q.thumb}">`;
       box.appendChild(div);
     });
-
-  }catch(err){
-    box.innerHTML="Erreur réseau";
-  }
+  }catch(err){ box.innerHTML="Erreur réseau"; }
 }
 
 // ===============================
