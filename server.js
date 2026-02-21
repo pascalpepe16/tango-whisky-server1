@@ -127,7 +127,7 @@ async function generateQSLBuffer({
   const imageWidth = 1526;
   const imageHeight = 1024;
 
-  // Largeur du cadre texte (25% de l'image originale)
+  // Largeur du cadre texte (25% de l'image)
   const rectWidth = Math.round(imageWidth * 0.25);
   const rectHeight = imageHeight;
 
@@ -140,30 +140,35 @@ async function generateQSLBuffer({
   const marginTop = 80;
   const lineSpacing = 50;
 
+  // Taille de police adaptative selon largeur du cadre
+  const titleFontSize = Math.round(rectWidth * 0.08); // environ 8% largeur
+  const normalFontSize = Math.round(rectWidth * 0.06);
+  const noteFontSize = Math.round(rectWidth * 0.05);
+
   // Préparer l'image principale
   const base = await sharp(filePath)
     .resize({ width: imageWidth, height: imageHeight, fit: "cover" })
     .jpeg({ quality: 90 })
     .toBuffer();
 
-  // SVG du cadre texte
+  // SVG du cadre texte avec fond semi-transparent
   const svg = `
     <svg width="${rectWidth}" height="${rectHeight}">
-      <rect x="0" y="0" width="${rectWidth}" height="${rectHeight}" fill="white"/>
+      <rect x="0" y="0" width="${rectWidth}" height="${rectHeight}" fill="white" fill-opacity="0.95" rx="20"/>
       
-      <text x="${marginX}" y="${marginTop}" font-size="32" fill="#333" font-weight="bold">${indicatif}</text>
-      <line x1="${marginX}" y1="${marginTop + 20}" x2="${rectWidth - marginX}" y2="${marginTop + 20}" stroke="#ccc"/>
+      <text x="${marginX}" y="${marginTop}" font-size="${titleFontSize}" fill="#333" font-weight="bold">${indicatif}</text>
+      <line x1="${marginX}" y1="${marginTop + 20}" x2="${rectWidth - marginX}" y2="${marginTop + 20}" stroke="#ccc" stroke-width="2"/>
       
-      <text x="${marginX}" y="${marginTop + lineSpacing}" font-size="24" fill="#333">Date: ${date}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 2}" font-size="24" fill="#333">UTC: ${time}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 3}" font-size="24" fill="#333">Bande: ${band}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 4}" font-size="24" fill="#333">Mode: ${mode}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 5}" font-size="24" fill="#333">Report: ${report}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 6 + 20}" font-size="20" fill="#666">${note || ""}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing}" font-size="${normalFontSize}" fill="#333">Date: ${date}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 2}" font-size="${normalFontSize}" fill="#333">UTC: ${time}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 3}" font-size="${normalFontSize}" fill="#333">Bande: ${band}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 4}" font-size="${normalFontSize}" fill="#333">Mode: ${mode}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 5}" font-size="${normalFontSize}" fill="#333">Report: ${report}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 6 + 20}" font-size="${noteFontSize}" fill="#666">${note || ""}</text>
     </svg>
   `;
 
-  // Composer l'image finale : image originale à gauche + cadre à droite
+  // Composer l'image finale : image à gauche + cadre texte à droite
   return await sharp({
     create: {
       width: totalWidth,
@@ -174,7 +179,7 @@ async function generateQSLBuffer({
   })
     .composite([
       { input: base, top: 0, left: 0 },
-      { input: Buffer.from(svg), top: 0, left: imageWidth } // cadre à droite
+      { input: Buffer.from(svg), top: 0, left: imageWidth }
     ])
     .jpeg({ quality: 92 })
     .toBuffer();
