@@ -120,7 +120,6 @@ async function loadGallery(){
           <p>Bande: ${q.data?.band || ""}</p>
           <p>Mode: ${q.data?.mode || ""}</p>
           <p>Report: ${q.data?.report || ""}</p>
-          <p>${q.data?.note || ""}</p>
         </div>
       `;
 
@@ -131,7 +130,6 @@ async function loadGallery(){
     box.innerHTML="Erreur réseau";
   }
 }
-
 // ===============================
 // GENERATION QSL UNITAIRE
 // ===============================
