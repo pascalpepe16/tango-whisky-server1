@@ -16,6 +16,7 @@ header {
   padding: 20px;
   background: rgba(0,0,0,0.45);
 }
+
 .logo { width: 140px; margin-bottom: 10px; }
 
 nav {
@@ -23,6 +24,7 @@ nav {
   padding: 12px;
   background: rgba(0,0,0,0.6);
 }
+
 nav button {
   margin: 5px;
   padding: 8px 14px;
@@ -32,8 +34,17 @@ nav button {
   border: none;
   border-radius: 6px;
   font-size: 15px;
+  transition: all 0.2s ease;
 }
-nav button:hover { opacity: 0.9; }
+
+nav button:hover { 
+  opacity: 0.9; 
+  transform: translateY(-1px);
+}
+
+/* ==========================
+   SECTIONS
+========================== */
 
 .section {
   display: block;
@@ -45,20 +56,122 @@ nav button:hover { opacity: 0.9; }
 }
 
 .wideForm { width: 95%; max-width: 1200px; margin: auto; }
-.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-.twoColumns input, .twoColumns select, .twoColumns textarea {
-  width: 100%; font-size: 16px; margin-bottom: 12px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;
-}
-.primary { background: #1e90ff; color: #fff; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
-.primary:hover { opacity: 0.9; }
-.importBox { border:1px solid #444; padding:10px; margin-bottom:20px; }
-#progressContainer { display:none; margin-top:10px; }
-.progressBarBg { background:#333; height:20px; border-radius:10px; }
-#progressBar { width:0%; height:100%; background:#28a745; border-radius:10px; transition: width 0.3s ease; }
-#previewArea { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; justify-content:center; }
 
-.thumbWrap { max-width:220px; text-align:center; border-radius:8px; overflow:hidden; }
-.thumbWrap img { width:100%; height:auto; object-fit:cover; border:2px solid #fff; border-radius:6px; }
+.twoColumns { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 25px; 
+}
+
+.twoColumns input, 
+.twoColumns select, 
+.twoColumns textarea {
+  width: 100%; 
+  font-size: 16px; 
+  margin-bottom: 12px; 
+  padding: 6px; 
+  border-radius: 6px; 
+  border: 1px solid #ccc;
+}
+
+/* ==========================
+   BUTTONS
+========================== */
+
+.primary { 
+  background: #1e90ff; 
+  color: #fff; 
+  padding: 10px 18px; 
+  border: none; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  font-size: 16px; 
+  transition: 0.2s;
+}
+
+.primary:hover { 
+  opacity: 0.9; 
+  transform: scale(1.03);
+}
+
+/* Bouton téléchargement */
+.btn-download {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #28a745;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.btn-download:hover {
+  background: #218838;
+  transform: scale(1.05);
+}
+
+/* ==========================
+   IMPORT / PROGRESS
+========================== */
+
+.importBox { border:1px solid #444; padding:10px; margin-bottom:20px; }
+
+#progressContainer { display:none; margin-top:10px; }
+
+.progressBarBg { background:#333; height:20px; border-radius:10px; }
+
+#progressBar { 
+  width:0%; 
+  height:100%; 
+  background:#28a745; 
+  border-radius:10px; 
+  transition: width 0.3s ease; 
+}
+
+/* ==========================
+   PREVIEW MINIATURES
+========================== */
+
+#previewArea { 
+  display:flex; 
+  flex-wrap:wrap; 
+  gap:15px; 
+  margin-top:15px; 
+  justify-content:center; 
+}
+
+.thumbWrap { 
+  width:200px; 
+  text-align:center; 
+  border-radius:10px; 
+  overflow:hidden; 
+  background: rgba(0,0,0,0.6);
+  padding:10px;
+  transition: 0.2s;
+}
+
+.thumbWrap:hover {
+  transform: translateY(-4px);
+}
+
+.thumbWrap img { 
+  width:100%; 
+  height:auto; 
+  object-fit:cover; 
+  border-radius:6px;
+  cursor:pointer;
+  transition: 0.3s;
+}
+
+.thumbWrap img:hover {
+  transform: scale(1.05);
+}
+
+/* ==========================
+   QSL CARD
+========================== */
 
 .qsl-card { 
   display:flex; 
@@ -67,6 +180,7 @@ nav button:hover { opacity: 0.9; }
   border-radius:12px; 
   overflow:hidden; 
   background:#111; 
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
 .qsl-image { 
@@ -80,7 +194,7 @@ nav button:hover { opacity: 0.9; }
 .qsl-image img { 
   width:100%; 
   height:100%;
-  object-fit:contain; /* IMPORTANT */
+  object-fit:contain;
 }
 
 .qsl-text { 
@@ -95,23 +209,78 @@ nav button:hover { opacity: 0.9; }
 }
 
 .qsl-text p {
-  margin:3px 0;
-  border-bottom:1px solid rgba(255,255,255,0.2);
-  padding-bottom:2px;
+  margin:4px 0;
+  border-bottom:1px solid rgba(255,255,255,0.15);
+  padding-bottom:3px;
 }
 
-#fbFooterLink { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:45px; height:45px; z-index:1000; }
-#fbFooterLink img { width:100%; height:100%; border-radius:50%; }
-#fbFooterLink:hover { transform:translateX(-50%) scale(1.15); }
+/* ==========================
+   DOWNLOAD PREVIEW BLOCK
+========================== */
 
-.dlWrap { display:flex; align-items:center; gap:12px; margin-bottom:15px; }
-.dlThumb { width:180px; height:120px; object-fit:cover; border-radius:6px; }
+.dlWrap { 
+  display:flex; 
+  flex-direction:column;
+  align-items:center; 
+  gap:8px; 
+  margin-bottom:15px; 
+}
 
-footer { text-align:center; padding:12px; margin-top:25px; background:rgba(0,0,0,0.4); }
+.dlThumb { 
+  width:200px; 
+  height:auto; 
+  object-fit:cover; 
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.dlThumb:hover {
+  transform: scale(1.05);
+}
+
+/* ==========================
+   FOOTER
+========================== */
+
+footer { 
+  text-align:center; 
+  padding:12px; 
+  margin-top:25px; 
+  background:rgba(0,0,0,0.4); 
+}
+
+#fbFooterLink { 
+  position:fixed; 
+  bottom:15px; 
+  left:50%; 
+  transform:translateX(-50%); 
+  width:45px; 
+  height:45px; 
+  z-index:1000; 
+}
+
+#fbFooterLink img { 
+  width:100%; 
+  height:100%; 
+  border-radius:50%; 
+}
+
+#fbFooterLink:hover { 
+  transform:translateX(-50%) scale(1.15); 
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
 
 @media (max-width:768px) {
   .twoColumns { grid-template-columns:1fr; }
+
   .qsl-card { flex-direction:column; }
-  .qsl-text { padding:12px; font-size:clamp(12px,2.5vw,16px); }
+
+  .qsl-text { 
+    padding:12px; 
+    font-size:clamp(12px,2.5vw,16px); 
+  }
 }
- 
