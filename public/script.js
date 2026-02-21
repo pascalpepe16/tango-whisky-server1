@@ -90,7 +90,8 @@ function showTab(id){
 // GALLERY
 // ===============================
 async function loadGallery(){
-  const box=document.getElementById("galleryContent"); box.innerHTML="Chargement…";
+  const box=document.getElementById("galleryContent"); 
+  box.innerHTML="Chargement…";
   try{
     const res=await fetch(API_URL+"/qsl",{credentials:"same-origin"});
     const list=await res.json();
@@ -98,11 +99,22 @@ async function loadGallery(){
     box.innerHTML="";
     list.forEach(q=>{
       const div=document.createElement("div");
-      div.className="thumbWrap";
-      div.innerHTML=`<img src="${q.thumb}">`;
+      div.className="qsl-card";
+      div.innerHTML=`
+        <div class="qsl-image"><img src="${q.thumb}"></div>
+        <div class="qsl-text">
+          <h3>${q.Indicatif || ''}</h3>
+          <p>Date: ${q.Date || ''}</p>
+          <p>Heure: ${q.Heure || ''}</p>
+          <p>Bande: ${q.Bande || ''}</p>
+          <p>Mode: ${q.Mode || ''}</p>
+          <p>Report: ${q.Report || ''}</p>
+          <p>${q.Note || ''}</p>
+        </div>
+      `;
       box.appendChild(div);
     });
-  }catch(err){ box.innerHTML="Erreur réseau"; }
+  }catch(err){ box.innerHTML="Erreur réseau"; console.error(err); }
 }
 
 // ===============================
@@ -112,7 +124,7 @@ function processFile(){
   const fileInput=document.getElementById("importFile");
   const file=fileInput.files[0];
   const status=document.getElementById("importStatus");
-  const previewArea=document.getElementById("previewArea");
+  const previewArea=document.getElementById("genPreview"); // <- preview réduit
   if(!file){ status.innerHTML="Choisissez un fichier"; return; }
   const imageInput=document.getElementById("bulkImage");
   const imageURL=imageInput.files[0]?URL.createObjectURL(imageInput.files[0]):"";
@@ -129,7 +141,7 @@ function processFile(){
   const showPreview=()=>{
     previewArea.innerHTML="";
     importedLogs.slice(0,10).forEach(row=>{
-      previewArea.innerHTML += generateQSLPreview(row,imageURL); // ✅ AJOUT pour multiple QSL
+      previewArea.innerHTML+=generateQSLPreview(row,imageURL);
     });
   };
   if(ext==="csv"){
@@ -189,8 +201,7 @@ document.getElementById("validateImportBtn").onclick=async function(){
 };
 
 // ===============================
-// GENERATION QSL UNITAIRE
-// ===============================
+// GENERATION QSL UNITAIRE (PREVIEW REDUIT)
 document.getElementById("genForm").addEventListener("submit",e=>{
   e.preventDefault();
   const form=e.target;
@@ -199,10 +210,7 @@ document.getElementById("genForm").addEventListener("submit",e=>{
   const imgFile=formData.get("qsl");
   const data=Object.fromEntries(formData.entries());
   const imgURL=URL.createObjectURL(imgFile);
-
-  // ✅ IMPORTANT : AJOUT DE LA GALERIE
-  preview.innerHTML += generateQSLPreview(data,imgURL); // permet d’empiler les QSL
-  
+  preview.innerHTML=generateQSLPreview(data,imgURL);
   fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"}).catch(()=>{});
 });
 
