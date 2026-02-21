@@ -1,3 +1,4 @@
+```javascript
 // ===============================
 // CONFIG
 // ===============================
@@ -87,104 +88,49 @@ function showTab(id){
 }
 
 // ===============================
-// GALLERY
+// ✅ GALLERY CORRIGÉE (AVEC TEXTE)
 // ===============================
 async function loadGallery(){
-  const box=document.getElementById("galleryContent"); box.innerHTML="Chargement…";
+  const box=document.getElementById("galleryContent");
+  box.innerHTML="Chargement…";
+
   try{
     const res=await fetch(API_URL+"/qsl",{credentials:"same-origin"});
     const list=await res.json();
-    if(!Array.isArray(list)||!list.length){ box.innerHTML="Aucune QSL"; return; }
+
+    if(!Array.isArray(list)||!list.length){
+      box.innerHTML="Aucune QSL";
+      return;
+    }
+
     box.innerHTML="";
+
     list.forEach(q=>{
       const div=document.createElement("div");
-      div.className="thumbWrap";
-      div.innerHTML=`<img src="${q.thumb}">`;
+      div.className="qsl-card";
+
+      div.innerHTML=`
+        <div class="qsl-image">
+          <img src="${q.thumb}">
+        </div>
+        <div class="qsl-text">
+          <h3>${q.data?.indicatif || ""}</h3>
+          <p>Date: ${q.data?.date || ""}</p>
+          <p>Heure: ${q.data?.time || ""}</p>
+          <p>Bande: ${q.data?.band || ""}</p>
+          <p>Mode: ${q.data?.mode || ""}</p>
+          <p>Report: ${q.data?.report || ""}</p>
+          <p>${q.data?.note || ""}</p>
+        </div>
+      `;
+
       box.appendChild(div);
     });
-  }catch(err){ box.innerHTML="Erreur réseau"; }
-}
 
-// ===============================
-// IMPORT CSV / XLSX
-// ===============================
-function processFile(){
-  const fileInput=document.getElementById("importFile");
-  const file=fileInput.files[0];
-  const status=document.getElementById("importStatus");
-  const previewArea=document.getElementById("previewArea");
-  if(!file){ status.innerHTML="Choisissez un fichier"; return; }
-  const imageInput=document.getElementById("bulkImage");
-  const imageURL=imageInput.files[0]?URL.createObjectURL(imageInput.files[0]):"";
-  const ext=file.name.split(".").pop().toLowerCase();
-  const normalizeRow=row=>({
-    Indicatif:(row.indicatif||row.Indicatif||"").trim(),
-    Date:(row.date||row.Date||"").trim(),
-    Heure:(row.heure||row.Heure||"").trim(),
-    Bande:(row.bande||row.Bande||"").trim(),
-    Report:(row.report||row.Report||"").trim(),
-    Mode:(row.mode||row.Mode||"").trim(),
-    Note:(row.note||row.Note||"").trim()
-  });
-  const showPreview=()=>{
-    previewArea.innerHTML="";
-    importedLogs.slice(0,10).forEach(row=>{ previewArea.innerHTML+=generateQSLPreview(row,imageURL); });
-  };
-  if(ext==="csv"){
-    Papa.parse(file,{header:true,skipEmptyLines:true,complete:function(results){
-      importedLogs=results.data.map(normalizeRow).filter(r=>r.Indicatif!=="");
-      status.innerHTML=`${importedLogs.length} lignes valides chargées`;
-      showPreview();
-      document.getElementById("validateImportBtn").style.display="inline-block";
-    }});
-  } else if(ext==="xlsx"){
-    const reader=new FileReader();
-    reader.onload=function(e){
-      const data=new Uint8Array(e.target.result);
-      const wb=XLSX.read(data,{type:"array"});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const raw=XLSX.utils.sheet_to_json(ws);
-      importedLogs=raw.map(normalizeRow).filter(r=>r.Indicatif!=="");
-      status.innerHTML=`${importedLogs.length} lignes valides chargées`;
-      showPreview();
-      document.getElementById("validateImportBtn").style.display="inline-block";
-    };
-    reader.readAsArrayBuffer(file);
+  }catch(err){
+    box.innerHTML="Erreur réseau";
   }
 }
-
-// ===============================
-// BULK UPLOAD
-// ===============================
-document.getElementById("validateImportBtn").onclick=async function(){
-  const imageInput=document.getElementById("bulkImage");
-  const status=document.getElementById("importStatus");
-  const progress=document.getElementById("progressContainer");
-  const bar=document.getElementById("progressBar");
-  progress.style.display="block";
-  bar.style.width="0%";
-  let success=0;
-  for(let i=0;i<importedLogs.length;i++){
-    const row=importedLogs[i];
-    const formData=new FormData();
-    formData.append("indicatif",row.Indicatif);
-    formData.append("date",row.Date);
-    formData.append("time",row.Heure);
-    formData.append("band",row.Bande);
-    formData.append("report",row.Report);
-    formData.append("mode",row.Mode);
-    formData.append("note",row.Note);
-    formData.append("qsl",imageInput.files[0]);
-    try{
-      const res=await fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"});
-      const data=await res.json(); if(data.success) success++;
-    }catch(err){}
-    const percent=Math.round(((i+1)/importedLogs.length)*100);
-    bar.style.width=percent+"%";
-    status.innerHTML=`Traitement ${i+1}/${importedLogs.length}`;
-  }
-  status.innerHTML=`✅ ${success} QSL enregistrées`;
-};
 
 // ===============================
 // GENERATION QSL UNITAIRE
@@ -200,15 +146,12 @@ document.getElementById("genForm").addEventListener("submit",async e=>{
   const data=Object.fromEntries(formData.entries());
   const imgURL=URL.createObjectURL(imgFile);
 
-  // 1. Générer preview HTML
   preview.innerHTML=generateQSLPreview(data,imgURL);
 
-  // 2. Attendre rendu DOM
   await new Promise(r=>setTimeout(r,300));
 
   const card = preview.querySelector(".qsl-card");
 
-  // 3. Transformer en IMAGE
   const canvas = await html2canvas(card, {scale:2});
   
   canvas.toBlob(async blob=>{
@@ -222,7 +165,6 @@ document.getElementById("genForm").addEventListener("submit",async e=>{
     newFormData.append("mode", data.mode);
     newFormData.append("note", data.note);
 
-    // 👉 ON ENVOIE L'IMAGE GÉNÉRÉE (IMPORTANT)
     newFormData.append("qsl", blob, "qsl.png");
 
     await fetch(API_URL+"/upload",{
@@ -266,3 +208,4 @@ function downloadQSL(pid){
 // ===============================
 checkAuth();
 showTab("home");
+```
