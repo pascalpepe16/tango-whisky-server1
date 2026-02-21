@@ -164,7 +164,13 @@ function processFile(){
     reader.readAsArrayBuffer(file);
   }
 }
-
+/* Réduction des QSL dans l'aperçu global */
+#previewArea .qsl-card,
+#genPreview .qsl-card {
+transform: scale(0.7);
+transform-origin: top left;
+margin-bottom: 10px;
+}
 // ===============================
 // BULK UPLOAD
 // ===============================
