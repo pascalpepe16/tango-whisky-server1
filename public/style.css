@@ -305,18 +305,19 @@ footer {
    PREVIEW CREER / AJOUTER REDUIT
 ========================== */
 
-#genPreview {
+##genPreview {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  justify-content: center;
+  gap: 10px;           /* réduit l'espace entre les QSL */
+  justify-content: flex-start;
 }
 
 #genPreview .qsl-card {
-  transform: scale(0.4);          /* réduit taille globale */
-  transform-origin: top center;
-  width: 260px;                    /* largeur de la carte avant scale */
+  width: 260px;        /* taille de la QSL */
   flex: 0 0 auto;
+  margin-bottom: 10px; /* petit espace vertical */
+  transform: scale(0.4); 
+  transform-origin: top left;
 }
 
 #genPreview .qsl-image {
