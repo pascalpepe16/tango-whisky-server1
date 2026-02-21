@@ -312,23 +312,20 @@ footer {
   object-fit: cover;    /* Pour que l’image remplisse le cadre sans déformer */
 }
 
-/* ==========================
-   GEN PREVIEW (Créer / Ajouter)
-========================== */
-
+/* ===============================
+   PREVIEW QSL Créer / Ajouter
+=============================== */
 #genPreview {
   display: flex;
-  flex-wrap: wrap;       /* permet plusieurs lignes automatiquement */
-  gap: 10px;             /* espace entre cartes */
-  justify-content: flex-start; 
+  flex-wrap: wrap;       /* plusieurs lignes automatiquement */
+  gap: 10px;             /* espace entre miniatures */
+  justify-content: flex-start;
 }
 
 #genPreview .qsl-card {
-  flex: 0 0 48%;          /* chaque carte prend environ la moitié du conteneur */
+  flex: 0 0 45%;         /* chaque carte prend ~45% du conteneur */
   box-sizing: border-box;
-  transform: scale(0.5);  /* réduction moitié de la taille originale */
-  transform-origin: top left;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 #genPreview .qsl-image img {
@@ -338,7 +335,6 @@ footer {
 }
 
 #genPreview .qsl-text {
-  font-size: 12px;        /* texte lisible malgré réduction */
+  font-size: 14px;        /* texte lisible malgré réduction */
   line-height: 1.2;
-  padding: 8px;
 }
