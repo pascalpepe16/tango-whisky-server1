@@ -125,7 +125,7 @@ async function generateQSLBuffer({
 }) {
   // On agrandit l'image pour remplir complètement le cadre
   const base = await sharp(filePath)
-    .resize({ width: 1000, height: 600, fit: "cover" }) // taille plus grande pour éviter les coupes
+    .resize({ width: 1526, height: 1024, fit: "cover" }) // taille plus grande pour éviter les coupes
     .jpeg({ quality: 90 })
     .toBuffer();
 
