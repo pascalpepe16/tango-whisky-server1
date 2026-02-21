@@ -134,10 +134,11 @@ nav button:hover {
    PREVIEW MINIATURES
 ========================== */
 
-#previewArea, #galleryContent { 
+#previewArea { 
   display:flex; 
   flex-wrap:wrap; 
   gap:15px; 
+  margin-top:15px; 
   justify-content:center; 
 }
 
@@ -239,50 +240,6 @@ nav button:hover {
 }
 
 /* ==========================
-   PREVIEW QSL CREER / AJOUTER
-========================== */
-
-#genPreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-start;
-}
-
-#genPreview .qsl-card {
-  flex: 0 0 45%;
-  max-width: 45%;
-  box-sizing: border-box;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #111;
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
-}
-
-#genPreview .qsl-image {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #000;
-}
-
-#genPreview .qsl-image img {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-}
-
-#genPreview .qsl-text {
-  font-size: 14px;
-  line-height: 1.2;
-  padding: 10px;
-  color: #fff;
-}
-
-/* ==========================
    FOOTER
 ========================== */
 
@@ -327,10 +284,6 @@ footer {
     font-size:clamp(12px,2.5vw,16px); 
   }
 }
-/* ===============================
-PREVIEW MINIATURE SIMPLE (scale 0.4)
-=============================== */
-
 #genPreview {
   display: block;
 }
