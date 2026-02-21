@@ -304,32 +304,32 @@ footer {
 
 
 /* ==========================
-PREVIEW CREER / AJOUTER FIX
+PREVIEW CREER / AJOUTER FIX FINAL
 ========================== */
 
 #genPreview {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  gap: 12px;
+  justify-content: flex-start;
 }
 
 #genPreview .qsl-card {
-  width: 260px;              /* taille globale de la QSL */
+  width: 240px;         /* taille réelle */
   flex: 0 0 auto;
 }
 
 #genPreview .qsl-image {
-  height: 130px;             /* réduit la hauteur image */
+  height: 120px;
 }
 
 #genPreview .qsl-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;         /* image bien cadrée */
+  object-fit: cover;
 }
 
 #genPreview .qsl-text {
-  font-size: 12px;           /* texte plus compact */
+  font-size: 12px;
   padding: 8px;
 }
