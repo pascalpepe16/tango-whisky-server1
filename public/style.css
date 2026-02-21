@@ -302,12 +302,7 @@ footer {
   flex: 0 0 auto;
 }
 
-/* PREVIEW REDUIT */
-#genPreview .qsl-card {
-  transform: scale(0.4);
-  transform-origin: top center;
-  margin-bottom: -80px;
-}
+
 /* ==========================
 PREVIEW CREER / AJOUTER FIX
 ========================== */
