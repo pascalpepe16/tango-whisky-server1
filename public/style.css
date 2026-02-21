@@ -284,3 +284,25 @@ footer {
     font-size:clamp(12px,2.5vw,16px); 
   }
 }
+#galleryContent {
+  display: flex;
+  flex-wrap: wrap;      /* Permet plusieurs lignes */
+  gap: 10px;            /* Espace entre les miniatures */
+  justify-content: flex-start; /* Alignement horizontal */
+}
+
+.thumbWrap {
+  width: 150px;         /* Largeur fixe pour chaque miniature */
+  height: 150px;        /* Hauteur fixe */
+  overflow: hidden;     /* Si l’image dépasse */
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbWrap img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;    /* Pour que l’image remplisse le cadre sans déformer */
+}
