@@ -166,25 +166,18 @@ async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, 
 }
 
 
-// UPLOAD
+// ✅ UPLOAD CORRIGÉ (PLUS DE MODIFICATION IMAGE)
 app.post("/upload", requireAuth, async (req, res) => {
   try {
-    if (!req.files || !req.files.qsl)
+    if (!req.files || !req.files.qsl) {
       return res.status(400).json({ success: false });
+    }
 
     const file = req.files.qsl;
     const indicatif = (req.body.indicatif || "").toUpperCase();
 
-    const buffer = await generateQSLBuffer({
-      filePath: file.tempFilePath,
-      indicatif,
-      date: req.body.date,
-      time: req.body.time,
-      band: req.body.band,
-      mode: req.body.mode,
-      report: req.body.report,
-      note: req.body.note
-    });
+    // 👉 ON PREND L'IMAGE TELLE QUELLE (preview = identique)
+    const buffer = fs.readFileSync(file.tempFilePath);
 
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -192,7 +185,11 @@ app.post("/upload", requireAuth, async (req, res) => {
         tags: [`indicatif_${indicatif}`]
       },
       (err, result) => {
-        if (err) return res.status(500).json({ success: false });
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ success: false });
+        }
+
         res.json({
           success: true,
           qsl: {
@@ -205,13 +202,11 @@ app.post("/upload", requireAuth, async (req, res) => {
     );
 
     stream.end(buffer);
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false });
   }
 });
-
 // FILE DOWNLOAD
 app.get("/file", async (req, res) => {
   try {
