@@ -286,12 +286,11 @@ footer {
 }
 
 /* ==========================
-   AJOUTS (GALLERY + PREVIEW)
+   GALLERY MULTI LIGNES
 ========================== */
 
-/* GALLERY MULTI LIGNES */
 #galleryContent {
-  display: flex;
+  display:flex;
   flex-wrap: wrap;
   gap: 15px;
   justify-content: center;
@@ -302,25 +301,27 @@ footer {
   flex: 0 0 auto;
 }
 
-
 /* ==========================
-PREVIEW CREER / AJOUTER FIX FINAL
+   PREVIEW CREER / AJOUTER (REDUCTION SCALE)
 ========================== */
 
 #genPreview {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: flex-start;
+  flex-wrap: wrap;        /* permet plusieurs lignes automatiquement */
+  gap: 10px;
+  justify-content: center;
 }
 
 #genPreview .qsl-card {
-  width: 240px;         /* taille réelle */
+  width: 260px;
   flex: 0 0 auto;
+  transform: scale(0.4);  /* réduction */
+  transform-origin: top center;
+  margin-bottom: 20px;
 }
 
 #genPreview .qsl-image {
-  height: 120px;
+  height: 130px;           /* hauteur réduite pour preview */
 }
 
 #genPreview .qsl-image img {
@@ -330,6 +331,6 @@ PREVIEW CREER / AJOUTER FIX FINAL
 }
 
 #genPreview .qsl-text {
-  font-size: 12px;
+  font-size: 12px;         /* texte plus compact */
   padding: 8px;
 }
