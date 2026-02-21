@@ -128,7 +128,9 @@ function processFile(){
   });
   const showPreview=()=>{
     previewArea.innerHTML="";
-    importedLogs.slice(0,10).forEach(row=>{ previewArea.innerHTML+=generateQSLPreview(row,imageURL); });
+    importedLogs.slice(0,10).forEach(row=>{
+      previewArea.innerHTML += generateQSLPreview(row,imageURL); // ✅ AJOUT pour multiple QSL
+    });
   };
   if(ext==="csv"){
     Papa.parse(file,{header:true,skipEmptyLines:true,complete:function(results){
@@ -197,7 +199,10 @@ document.getElementById("genForm").addEventListener("submit",e=>{
   const imgFile=formData.get("qsl");
   const data=Object.fromEntries(formData.entries());
   const imgURL=URL.createObjectURL(imgFile);
-  preview.innerHTML=generateQSLPreview(data,imgURL);
+
+  // ✅ IMPORTANT : AJOUT DE LA GALERIE
+  preview.innerHTML += generateQSLPreview(data,imgURL); // permet d’empiler les QSL
+  
   fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"}).catch(()=>{});
 });
 
