@@ -123,26 +123,41 @@ async function generateQSLBuffer({
   report,
   note
 }) {
+  // Dimensions finales de l'image
+  const width = 1526;
+  const height = 1024;
+
   // On agrandit l'image pour remplir complètement le cadre
   const base = await sharp(filePath)
-    .resize({ width: 1526, height: 1024, fit: "cover" }) // taille plus grande pour éviter les coupes
+    .resize({ width, height, fit: "cover" })
     .jpeg({ quality: 90 })
     .toBuffer();
 
-  // SVG avec zone texte élargie
+  // Paramètres du cadre texte
+  const rectWidth = Math.round(width * 0.25); // 25% largeur image
+  const rectHeight = height;
+  const rectX = width - rectWidth;
+  const rectY = 0;
+
+  // Marges internes pour le texte
+  const marginX = 20;
+  const marginTop = 80;
+  const lineSpacing = 50; // espacement vertical entre lignes
+
+  // SVG avec texte dynamique
   const svg = `
-    <svg width="1526" height="1024">
-      <rect x="650" y="0" width="350" height="600" fill="white"/>
+    <svg width="${width}" height="${height}">
+      <rect x="${rectX}" y="${rectY}" width="${rectWidth}" height="${rectHeight}" fill="white"/>
       
-      <text x="670" y="80" font-size="32" fill="#333" font-weight="bold">${indicatif}</text>
-      <line x1="670" y1="100" x2="980" y2="100" stroke="#ccc"/>
+      <text x="${rectX + marginX}" y="${marginTop}" font-size="32" fill="#333" font-weight="bold">${indicatif}</text>
+      <line x1="${rectX + marginX}" y1="${marginTop + 20}" x2="${width - marginX}" y2="${marginTop + 20}" stroke="#ccc"/>
       
-      <text x="670" y="150" font-size="24" fill="#333">Date: ${date}</text>
-      <text x="670" y="200" font-size="24" fill="#333">UTC: ${time}</text>
-      <text x="670" y="250" font-size="24" fill="#333">Bande: ${band}</text>
-      <text x="670" y="300" font-size="24" fill="#333">Mode: ${mode}</text>
-      <text x="670" y="350" font-size="24" fill="#333">Report: ${report}</text>
-      <text x="670" y="420" font-size="20" fill="#666">${note || ""}</text>
+      <text x="${rectX + marginX}" y="${marginTop + lineSpacing}" font-size="24" fill="#333">Date: ${date}</text>
+      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 2}" font-size="24" fill="#333">UTC: ${time}</text>
+      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 3}" font-size="24" fill="#333">Bande: ${band}</text>
+      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 4}" font-size="24" fill="#333">Mode: ${mode}</text>
+      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 5}" font-size="24" fill="#333">Report: ${report}</text>
+      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 6 + 20}" font-size="20" fill="#666">${note || ""}</text>
     </svg>
   `;
 
