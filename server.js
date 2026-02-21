@@ -122,106 +122,75 @@ async function generateQSLBuffer({
   mode,
   report,
   note,
-  watermarkPath
+  watermarkPath // chemin vers l'image filigrane
 }) {
   const imageWidth = 1526;
   const imageHeight = 1024;
 
-  const marginX = 30;
-  const marginTop = 100;
-  const lineSpacing = 40;
-  const maxCharsPerLine = 25; // contrôle du retour ligne
+  const marginX = 20;
+  const marginTop = 80;
+  const lineSpacing = 50;
 
-  // Fonction pour découper le texte en lignes
-  function wrapText(text, maxChars) {
-    if (!text) return [];
-    const words = text.split(" ");
-    let lines = [];
-    let currentLine = "";
-
-    words.forEach(word => {
-      if ((currentLine + word).length > maxChars) {
-        lines.push(currentLine);
-        currentLine = word + " ";
-      } else {
-        currentLine += word + " ";
-      }
-    });
-
-    if (currentLine) lines.push(currentLine);
-    return lines;
-  }
-
+  // Préparer l'image principale
   const base = await sharp(filePath)
     .resize({ width: imageWidth, height: imageHeight, fit: "cover" })
     .jpeg({ quality: 90 })
     .toBuffer();
 
-  const rectWidth = Math.round(imageWidth * 0.28);
+  // Texte à afficher
+  const lines = [
+    { text: indicatif, fontSizeRatio: 0.08, bold: true },
+    { text: `Date: ${date}`, fontSizeRatio: 0.06 },
+    { text: `UTC: ${time}`, fontSizeRatio: 0.06 },
+    { text: `Bande: ${band}`, fontSizeRatio: 0.06 },
+    { text: `Mode: ${mode}`, fontSizeRatio: 0.06 },
+    { text: `Report: ${report}`, fontSizeRatio: 0.06 },
+    { text: note || "", fontSizeRatio: 0.05 }
+  ];
+
+  // Largeur du cadre adaptée
+  const rectWidth = Math.max(...lines.map(line => line.text.length)) * 15;
   const rectHeight = imageHeight;
   const totalWidth = imageWidth + rectWidth;
+  const totalHeight = imageHeight;
 
-  // Charger watermark
+  // Préparer le filigrane en base64
   const watermarkBuffer = await sharp(watermarkPath)
-    .resize({ width: Math.round(rectWidth * 0.7) })
+    .resize({ width: Math.round(rectWidth * 0.8) }) // taille ajustée au cadre
     .png()
     .toBuffer();
+  const watermarkBase64 = watermarkBuffer.toString('base64');
 
-  const watermarkBase64 = watermarkBuffer.toString("base64");
-
+  // Générer le SVG avec filigrane et texte
+  let svgLines = '';
   let currentY = marginTop;
-  let svgText = "";
-
-  function addTextBlock(text, fontSize, bold = false) {
-    const lines = wrapText(text, maxCharsPerLine);
-    lines.forEach(line => {
-      svgText += `<text x="${marginX}" y="${currentY}" font-size="${fontSize}" fill="#222" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
-      currentY += lineSpacing;
-    });
+  for (let i = 0; i < lines.length; i++) {
+    const { text, fontSizeRatio, bold } = lines[i];
+    const fontSize = Math.round(rectWidth * fontSizeRatio);
+    svgLines += `<text x="${marginX}" y="${currentY}" font-size="${fontSize}" fill="#333"${bold ? ' font-weight="bold"' : ''}>${text}</text>\n`;
+    currentY += lineSpacing;
   }
 
-  // Génération texte
-  addTextBlock(indicatif, 36, true);
-  currentY += 10;
-
-  svgText += `<line x1="${marginX}" y1="${currentY}" x2="${rectWidth - marginX}" y2="${currentY}" stroke="#ccc"/>`;
-  currentY += 40;
-
-  addTextBlock(`Date: ${date}`, 24);
-  addTextBlock(`UTC: ${time}`, 24);
-  addTextBlock(`Bande: ${band}`, 24);
-  addTextBlock(`Mode: ${mode}`, 24);
-  addTextBlock(`Report: ${report}`, 24);
-  addTextBlock(note || "", 20);
-
   const svg = `
-    <svg width="${rectWidth}" height="${rectHeight}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="white" fill-opacity="0.95" rx="25"/>
-
-      <!-- Filigrane -->
-      <image 
-        xlink:href="data:image/png;base64,${watermarkBase64}"
-        x="${rectWidth * 0.15}"
-        y="${rectHeight * 0.35}"
-        width="${rectWidth * 0.7}"
-        opacity="0.15"
-      />
-
-      ${svgText}
+    <svg width="${rectWidth}" height="${rectHeight}">
+      <rect x="0" y="0" width="${rectWidth}" height="${rectHeight}" fill="white" fill-opacity="0.95" rx="20"/>
+      <image href="data:image/png;base64,${watermarkBase64}" x="${rectWidth * 0.1}" y="${rectHeight * 0.3}" width="${rectWidth * 0.8}" height="${rectHeight * 0.4}" opacity="0.2"/>
+      ${svgLines}
     </svg>
   `;
 
+  // Composer l'image finale : image + cadre + filigrane
   return await sharp({
     create: {
       width: totalWidth,
-      height: imageHeight,
+      height: totalHeight,
       channels: 3,
       background: { r: 255, g: 255, b: 255 }
     }
   })
     .composite([
-      { input: base, left: 0, top: 0 },
-      { input: Buffer.from(svg), left: imageWidth, top: 0 }
+      { input: base, top: 0, left: 0 },
+      { input: Buffer.from(svg), top: 0, left: imageWidth }
     ])
     .jpeg({ quality: 92 })
     .toBuffer();
