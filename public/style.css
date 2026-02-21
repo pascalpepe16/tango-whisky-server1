@@ -327,3 +327,14 @@ footer {
     font-size:clamp(12px,2.5vw,16px); 
   }
 }
+#genPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+#genPreview .qsl-card {
+  transform: scale(0.4);
+  transform-origin: top center;
+}
