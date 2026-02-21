@@ -235,11 +235,41 @@ document.getElementById("genForm").addEventListener("submit",async e=>{
 // ===============================
 // DOWNLOAD SEARCH
 // ===============================
-document.getElementById("btnSearch").onclick=async()=>{
-  const call=document.getElementById("dlCall").value.trim().toUpperCase();
-  const box=document.getElementById("dlPreview");
-  if(!call){ alert("Entrer un indicatif"); return; }
-  box.innerHTML="Recherche…";
-  try{
-    const res=await fetch(API_URL+"/download/"+call);
-    const list=await
+document.getElementById("btnSearch").onclick = async () => {
+  const call = document.getElementById("dlCall").value.trim().toUpperCase();
+  const box = document.getElementById("dlPreview");
+
+  if (!call) {
+    alert("Entrer un indicatif");
+    return;
+  }
+
+  box.innerHTML = "Recherche…";
+
+  try {
+    const res = await fetch(API_URL + "/download/" + call);
+    const list = await res.json();
+
+    if (!Array.isArray(list) || list.length === 0) {
+      box.innerHTML = "Aucune QSL trouvée";
+      return;
+    }
+
+    box.innerHTML = "";
+
+    list.forEach(q => {
+      const wrap = document.createElement("div");
+      wrap.className = "dlWrap";
+
+      wrap.innerHTML = `
+        <img src="${q.thumb}" class="dlThumb">
+        <a href="${q.url}" target="_blank" class="btn-download">Télécharger</a>
+      `;
+
+      box.appendChild(wrap);
+    });
+
+  } catch (err) {
+    box.innerHTML = "Erreur réseau";
+  }
+};
