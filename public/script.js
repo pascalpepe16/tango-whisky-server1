@@ -106,25 +106,6 @@ async function loadGallery(){
 }
 
 // ===============================
-// IMAGE RESIZE / COMPRESSION UTILS
-// ===============================
-function resizeAndCompressImage(file, maxWidth = 1200) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-      const scale = Math.min(1, maxWidth / img.width);
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85);
-    };
-  });
-}
-
-// ===============================
 // IMPORT CSV / XLSX
 // ===============================
 function processFile(){
@@ -137,13 +118,13 @@ function processFile(){
   const imageURL=imageInput.files[0]?URL.createObjectURL(imageInput.files[0]):"";
   const ext=file.name.split(".").pop().toLowerCase();
   const normalizeRow=row=>({
-    Indicatif:(row.indicatif||row.Indicatif||"" ).trim(),
-    Date:(row.date||row.Date||"" ).trim(),
-    Heure:(row.heure||row.Heure||"" ).trim(),
-    Bande:(row.bande||row.Bande||"" ).trim(),
-    Report:(row.report||row.Report||"" ).trim(),
-    Mode:(row.mode||row.Mode||"" ).trim(),
-    Note:(row.note||row.Note||"" ).trim()
+    Indicatif:(row.indicatif||row.Indicatif||"").trim(),
+    Date:(row.date||row.Date||"").trim(),
+    Heure:(row.heure||row.Heure||"").trim(),
+    Bande:(row.bande||row.Bande||"").trim(),
+    Report:(row.report||row.Report||"").trim(),
+    Mode:(row.mode||row.Mode||"").trim(),
+    Note:(row.note||row.Note||"").trim()
   });
   const showPreview=()=>{
     previewArea.innerHTML="";
@@ -173,19 +154,16 @@ function processFile(){
 }
 
 // ===============================
-// BULK UPLOAD (RESIZE IMAGE)
+// BULK UPLOAD
 // ===============================
 document.getElementById("validateImportBtn").onclick=async function(){
   const imageInput=document.getElementById("bulkImage");
-  if(!imageInput.files[0]){ alert("Choisissez une image QSL"); return; }
-  const compressedImage = await resizeAndCompressImage(imageInput.files[0]);
   const status=document.getElementById("importStatus");
   const progress=document.getElementById("progressContainer");
   const bar=document.getElementById("progressBar");
   progress.style.display="block";
   bar.style.width="0%";
   let success=0;
-
   for(let i=0;i<importedLogs.length;i++){
     const row=importedLogs[i];
     const formData=new FormData();
@@ -196,8 +174,7 @@ document.getElementById("validateImportBtn").onclick=async function(){
     formData.append("report",row.Report);
     formData.append("mode",row.Mode);
     formData.append("note",row.Note);
-    formData.append("qsl",compressedImage, imageInput.files[0].name);
-
+    formData.append("qsl",imageInput.files[0]);
     try{
       const res=await fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"});
       const data=await res.json(); if(data.success) success++;
@@ -210,66 +187,50 @@ document.getElementById("validateImportBtn").onclick=async function(){
 };
 
 // ===============================
-// GENERATION QSL UNITAIRE (RESIZE IMAGE + PREVIEW GALERIE)
+// GENERATION QSL UNITAIRE
 // ===============================
-document.getElementById("genForm").addEventListener("submit",async e=>{
+document.getElementById("genForm").addEventListener("submit",e=>{
   e.preventDefault();
-  const form = e.target;
-  const formData = new FormData(form);
-  const imgFile = formData.get("qsl");
-  if (!imgFile) return;
-
-  const compressedImg = await resizeAndCompressImage(imgFile);
-  formData.set("qsl", compressedImg, imgFile.name);
-
-  // Génération preview
-  const preview = document.getElementById("genPreview");
-  preview.innerHTML = "";
-  const data = Object.fromEntries(formData.entries());
-  preview.innerHTML += generateQSLPreview(data, URL.createObjectURL(compressedImg));
-
-  // Envoi au serveur
-  fetch(API_URL + "/upload", { method: "POST", body: formData, credentials: "same-origin" }).catch(() => {});
+  const form=e.target;
+  const preview=document.getElementById("genPreview");
+  const formData=new FormData(form);
+  const imgFile=formData.get("qsl");
+  const data=Object.fromEntries(formData.entries());
+  const imgURL=URL.createObjectURL(imgFile);
+  preview.innerHTML=generateQSLPreview(data,imgURL);
+  fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"}).catch(()=>{});
 });
 
 // ===============================
 // DOWNLOAD SEARCH
 // ===============================
-document.getElementById("btnSearch").onclick = async () => {
-  const call = document.getElementById("dlCall").value.trim().toUpperCase();
-  const box = document.getElementById("dlPreview");
-
-  if (!call) {
-    alert("Entrer un indicatif");
-    return;
-  }
-
-  box.innerHTML = "Recherche…";
-
-  try {
-    const res = await fetch(API_URL + "/download/" + call);
-    const list = await res.json();
-
-    if (!Array.isArray(list) || list.length === 0) {
-      box.innerHTML = "Aucune QSL trouvée";
-      return;
-    }
-
-    box.innerHTML = "";
-
-    list.forEach(q => {
-      const wrap = document.createElement("div");
-      wrap.className = "dlWrap";
-
-      wrap.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb">
-        <a href="${q.url}" target="_blank" class="btn-download">Télécharger</a>
-      `;
-
-      box.appendChild(wrap);
+document.getElementById("btnSearch").onclick=async()=>{
+  const call=document.getElementById("dlCall").value.trim().toUpperCase();
+  const box=document.getElementById("dlPreview");
+  if(!call){ alert("Entrer un indicatif"); return; }
+  box.innerHTML="Recherche…";
+  try{
+    const res=await fetch(API_URL+"/download/"+call);
+    const list=await res.json();
+    if(!list.length){ box.innerHTML="Aucune QSL trouvée"; return; }
+    box.innerHTML="";
+    list.forEach(q=>{
+      const div=document.createElement("div");
+      div.className="dlWrap";
+      div.innerHTML=`<img src="${q.thumb}" class="dlThumb"><button onclick="downloadQSL('${q.public_id}')">Télécharger</button>`;
+      box.appendChild(div);
     });
-
-  } catch (err) {
-    box.innerHTML = "Erreur réseau";
-  }
+  }catch(err){ box.innerHTML="Erreur réseau"; console.error(err); }
 };
+
+function downloadQSL(pid){
+  const a=document.createElement("a");
+  a.href=API_URL+"/file?pid="+encodeURIComponent(pid);
+  a.click();
+}
+
+// ===============================
+// INIT
+// ===============================
+checkAuth();
+showTab("home");
