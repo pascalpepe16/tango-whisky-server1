@@ -131,7 +131,7 @@ async function generateQSLBuffer({
 
   // SVG avec zone texte élargie
   const svg = `
-    <svg width="1000" height="600">
+    <svg width="1526" height="1024">
       <rect x="650" y="0" width="350" height="600" fill="white"/>
       
       <text x="670" y="80" font-size="32" fill="#333" font-weight="bold">${indicatif}</text>
