@@ -332,18 +332,19 @@ PREVIEW MINIATURE SIMPLE (scale 0.4)
 =============================== */
 
 #genPreview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  display: block;
 }
 
 #genPreview .qsl-card {
-  transform: scale(0.4);
-  transform-origin: top center;
+  width: 300px !important;   /* taille réelle réduite */
+  margin: 10px auto;
 }
 
-/* évite que ça prenne toute la largeur */
-#genPreview .qsl-card {
-  max-width: 100%;
+#genPreview .qsl-image {
+  height: 150px;             /* réduit l’image */
+}
+
+#genPreview .qsl-text {
+  font-size: 12px;
+  padding: 10px;
 }
