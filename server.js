@@ -121,12 +121,12 @@ async function generateQSLBuffer({
   band,
   mode,
   report,
-  note,
-  watermarkPath // chemin vers l'image filigrane
+  note
 }) {
   const imageWidth = 1526;
   const imageHeight = 1024;
 
+  // Marges et espacement
   const marginX = 20;
   const marginTop = 80;
   const lineSpacing = 50;
@@ -148,20 +148,13 @@ async function generateQSLBuffer({
     { text: note || "", fontSizeRatio: 0.05 }
   ];
 
-  // Largeur du cadre adaptée
-  const rectWidth = Math.max(...lines.map(line => line.text.length)) * 15;
+  // Calculer largeur nécessaire du cadre en fonction du texte
+  const rectWidth = Math.max(...lines.map(line => line.text.length)) * 15; // approximation px/char
   const rectHeight = imageHeight;
   const totalWidth = imageWidth + rectWidth;
   const totalHeight = imageHeight;
 
-  // Préparer le filigrane en base64
-  const watermarkBuffer = await sharp(watermarkPath)
-    .resize({ width: Math.round(rectWidth * 0.8) }) // taille ajustée au cadre
-    .png()
-    .toBuffer();
-  const watermarkBase64 = watermarkBuffer.toString('base64');
-
-  // Générer le SVG avec filigrane et texte
+  // Générer le SVG avec texte adaptatif
   let svgLines = '';
   let currentY = marginTop;
   for (let i = 0; i < lines.length; i++) {
@@ -174,18 +167,17 @@ async function generateQSLBuffer({
   const svg = `
     <svg width="${rectWidth}" height="${rectHeight}">
       <rect x="0" y="0" width="${rectWidth}" height="${rectHeight}" fill="white" fill-opacity="0.95" rx="20"/>
-      <image href="data:image/png;base64,${watermarkBase64}" x="${rectWidth * 0.1}" y="${rectHeight * 0.3}" width="${rectWidth * 0.8}" height="${rectHeight * 0.4}" opacity="0.2"/>
       ${svgLines}
     </svg>
   `;
 
-  // Composer l'image finale : image + cadre + filigrane
+  // Composer l'image finale : image à gauche + cadre texte à droite
   return await sharp({
     create: {
       width: totalWidth,
       height: totalHeight,
       channels: 3,
-      background: { r: 255, g: 255, b: 255 }
+      background: { r: 255, g: 255, b: 255 } // arrière-plan pour le cadre
     }
   })
     .composite([
