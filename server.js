@@ -1,17 +1,19 @@
-const express = require("express");
-const cors = require("cors");
-const fileUpload = require("express-fileupload");
-const axios = require("axios");
-const { v2: cloudinary } = require("cloudinary");
-const path = require("path");
-const session = require("express-session");
-const fs = require("fs");
+ import express from "express";
+import cors from "cors";
+import fileUpload from "express-fileupload";
+import sharp from "sharp";
+import axios from "axios";
+import { v2 as cloudinary } from "cloudinary";
+import path from "path";
+import { fileURLToPath } from "url";
+import session from "express-session";
+import fs from "fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// ===============================
-// CONFIG
-// ===============================
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -28,16 +30,12 @@ app.use(
   })
 );
 
-// ===============================
 // USERS
-// ===============================
 const USERS = JSON.parse(
   fs.readFileSync(path.join(__dirname, "users.json"), "utf8")
 );
 
-// ===============================
 // AUTH
-// ===============================
 function requireAuth(req, res, next) {
   if (req.session?.authenticated) return next();
   res.status(401).json({ error: "Non autorisé" });
@@ -64,18 +62,14 @@ app.get("/check-auth", (req, res) => {
   });
 });
 
-// ===============================
 // CLOUDINARY
-// ===============================
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ===============================
-// GALLERY (AVEC DATA)
-// ===============================
+// GALLERY
 app.get("/qsl", requireAuth, async (req, res) => {
   try {
     const result = await cloudinary.search
@@ -84,30 +78,18 @@ app.get("/qsl", requireAuth, async (req, res) => {
       .max_results(200)
       .execute();
 
-    res.json(result.resources.map(r => {
-      const data = {};
-      (r.tags || []).forEach(tag => {
-        const [key, value] = tag.split("_");
-        data[key] = value;
-      });
-
-      return {
-        public_id: r.public_id,
-        url: r.secure_url,
-        thumb: r.secure_url.replace("/upload/", "/upload/w_300/"),
-        data
-      };
-    }));
-
+    res.json(result.resources.map(r => ({
+      public_id: r.public_id,
+      url: r.secure_url,
+      thumb: r.secure_url.replace("/upload/", "/upload/w_300/")
+    })));
   } catch (err) {
     console.error(err);
     res.status(500).json([]);
   }
 });
 
-// ===============================
 // DOWNLOAD LIST
-// ===============================
 app.get("/download/:call", async (req, res) => {
   try {
     const call = req.params.call.toUpperCase();
@@ -124,16 +106,67 @@ app.get("/download/:call", async (req, res) => {
     }));
 
     res.json(list);
-
   } catch (err) {
     console.error(err);
     res.status(500).json([]);
   }
 });
 
-// ===============================
-// UPLOAD (AVEC TAGS)
-// ===============================
+// GENERATE QSL
+async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
+
+  const base = await sharp(filePath)
+    .resize({ width: 800, height: 450, fit: "cover" })
+    .jpeg({ quality: 90 })
+    .toBuffer();
+
+  const svg = `
+  <svg width="800" height="450">
+    <!-- panneau blanc à droite -->
+    <rect x="520" y="0" width="280" height="450" fill="white"/>
+
+    <!-- indicatif -->
+    <text x="540" y="60" font-size="28" fill="#333" font-weight="bold">
+      ${indicatif}
+    </text>
+
+    <!-- ligne -->
+    <line x1="540" y1="80" x2="780" y2="80" stroke="#ccc"/>
+
+    <!-- infos QSO -->
+    <text x="540" y="120" font-size="20" fill="#333">
+      Date: ${date}
+    </text>
+
+    <text x="540" y="160" font-size="20" fill="#333">
+      UTC: ${time}
+    </text>
+
+    <text x="540" y="200" font-size="20" fill="#333">
+      Bande: ${band}
+    </text>
+
+    <text x="540" y="240" font-size="20" fill="#333">
+      Mode: ${mode}
+    </text>
+
+    <text x="540" y="280" font-size="20" fill="#333">
+      Report: ${report}
+    </text>
+
+    <text x="540" y="340" font-size="18" fill="#666">
+      ${note || ""}
+    </text>
+  </svg>`;
+
+  return await sharp(base)
+    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+    .jpeg({ quality: 92 })
+    .toBuffer();
+}
+
+
+// UPLOAD
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
@@ -142,21 +175,24 @@ app.post("/upload", requireAuth, async (req, res) => {
     const file = req.files.qsl;
     const indicatif = (req.body.indicatif || "").toUpperCase();
 
+    const buffer = await generateQSLBuffer({
+      filePath: file.tempFilePath,
+      indicatif,
+      date: req.body.date,
+      time: req.body.time,
+      band: req.body.band,
+      mode: req.body.mode,
+      report: req.body.report,
+      note: req.body.note
+    });
+
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
-        tags: [
-          `indicatif_${indicatif}`,
-          `date_${req.body.date || ""}`,
-          `time_${req.body.time || ""}`,
-          `band_${req.body.band || ""}`,
-          `mode_${req.body.mode || ""}`,
-          `report_${req.body.report || ""}`
-        ]
+        tags: [`indicatif_${indicatif}`]
       },
       (err, result) => {
         if (err) return res.status(500).json({ success: false });
-
         res.json({
           success: true,
           qsl: {
@@ -168,8 +204,7 @@ app.post("/upload", requireAuth, async (req, res) => {
       }
     );
 
-    // ⚠️ IMPORTANT : on envoie DIRECT le fichier (ou canvas)
-    stream.end(fs.readFileSync(file.tempFilePath));
+    stream.end(buffer);
 
   } catch (err) {
     console.error(err);
@@ -177,9 +212,7 @@ app.post("/upload", requireAuth, async (req, res) => {
   }
 });
 
-// ===============================
 // FILE DOWNLOAD
-// ===============================
 app.get("/file", async (req, res) => {
   try {
     const pid = req.query.pid;
@@ -198,13 +231,10 @@ app.get("/file", async (req, res) => {
   }
 });
 
-// ===============================
-// SPA
-// ===============================
+// SPA FALLBACK (TOUJOURS EN DERNIER)
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-// ===============================
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log("TW-eQSL server running on port", PORT));
