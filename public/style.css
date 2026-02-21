@@ -308,7 +308,7 @@ footer {
 #genPreview {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 5px;
   justify-content: center;
 }
 
