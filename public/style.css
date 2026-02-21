@@ -284,20 +284,3 @@ footer {
     font-size:clamp(12px,2.5vw,16px); 
   }
 }
-#genPreview {
-  display: block;
-}
-
-#genPreview .qsl-card {
-  width: 300px !important;   /* taille réelle réduite */
-  margin: 10px auto;
-}
-
-#genPreview .qsl-image {
-  height: 150px;             /* réduit l’image */
-}
-
-#genPreview .qsl-text {
-  font-size: 12px;
-  padding: 10px;
-}
