@@ -104,19 +104,26 @@ async function loadGallery(){
     });
   }catch(err){ box.innerHTML="Erreur réseau"; }
 }
-function resizeImage(file, maxWidth, callback) {
-  const img = new Image();
-  img.src = URL.createObjectURL(file);
-  img.onload = () => {
-    const scale = Math.min(1, maxWidth / img.width);
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width * scale;
-    canvas.height = img.height * scale;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(callback, 'image/jpeg', 0.85); // Compression 85%
-  };
+
+// ===============================
+// IMAGE RESIZE / COMPRESSION
+// ===============================
+function resizeAndCompressImage(file, maxWidth = 1200) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85);
+    };
+  });
 }
+
 // ===============================
 // IMPORT CSV / XLSX
 // ===============================
@@ -130,13 +137,13 @@ function processFile(){
   const imageURL=imageInput.files[0]?URL.createObjectURL(imageInput.files[0]):"";
   const ext=file.name.split(".").pop().toLowerCase();
   const normalizeRow=row=>({
-    Indicatif:(row.indicatif||row.Indicatif||"").trim(),
-    Date:(row.date||row.Date||"").trim(),
-    Heure:(row.heure||row.Heure||"").trim(),
-    Bande:(row.bande||row.Bande||"").trim(),
-    Report:(row.report||row.Report||"").trim(),
-    Mode:(row.mode||row.Mode||"").trim(),
-    Note:(row.note||row.Note||"").trim()
+    Indicatif:(row.indicatif||row.Indicatif||"" ).trim(),
+    Date:(row.date||row.Date||"" ).trim(),
+    Heure:(row.heure||row.Heure||"" ).trim(),
+    Bande:(row.bande||row.Bande||"" ).trim(),
+    Report:(row.report||row.Report||"" ).trim(),
+    Mode:(row.mode||row.Mode||"" ).trim(),
+    Note:(row.note||row.Note||"" ).trim()
   });
   const showPreview=()=>{
     previewArea.innerHTML="";
@@ -166,16 +173,19 @@ function processFile(){
 }
 
 // ===============================
-// BULK UPLOAD
+// BULK UPLOAD (RESIZE IMAGE)
 // ===============================
 document.getElementById("validateImportBtn").onclick=async function(){
   const imageInput=document.getElementById("bulkImage");
+  if(!imageInput.files[0]){ alert("Choisissez une image QSL"); return; }
+  const compressedImage = await resizeAndCompressImage(imageInput.files[0]);
   const status=document.getElementById("importStatus");
   const progress=document.getElementById("progressContainer");
   const bar=document.getElementById("progressBar");
   progress.style.display="block";
   bar.style.width="0%";
   let success=0;
+
   for(let i=0;i<importedLogs.length;i++){
     const row=importedLogs[i];
     const formData=new FormData();
@@ -186,7 +196,8 @@ document.getElementById("validateImportBtn").onclick=async function(){
     formData.append("report",row.Report);
     formData.append("mode",row.Mode);
     formData.append("note",row.Note);
-    formData.append("qsl",imageInput.files[0]);
+    formData.append("qsl",compressedImage, imageInput.files[0].name);
+
     try{
       const res=await fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"});
       const data=await res.json(); if(data.success) success++;
@@ -199,17 +210,19 @@ document.getElementById("validateImportBtn").onclick=async function(){
 };
 
 // ===============================
-// GENERATION QSL UNITAIRE
+// GENERATION QSL UNITAIRE (RESIZE IMAGE)
 // ===============================
-document.getElementById("genForm").addEventListener("submit",e=>{
+document.getElementById("genForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const form=e.target;
   const preview=document.getElementById("genPreview");
   const formData=new FormData(form);
   const imgFile=formData.get("qsl");
   const data=Object.fromEntries(formData.entries());
-  const imgURL=URL.createObjectURL(imgFile);
-  preview.innerHTML=generateQSLPreview(data,imgURL);
+  const compressedImg = await resizeAndCompressImage(imgFile);
+  const imgURL = URL.createObjectURL(compressedImg);
+  preview.innerHTML = generateQSLPreview(data,imgURL);
+  formData.set("qsl", compressedImg, imgFile.name);
   fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"}).catch(()=>{});
 });
 
