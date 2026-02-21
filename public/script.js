@@ -106,7 +106,7 @@ async function loadGallery(){
 }
 
 // ===============================
-// IMAGE RESIZE / COMPRESSION
+// IMAGE RESIZE / COMPRESSION UTILS
 // ===============================
 function resizeAndCompressImage(file, maxWidth = 1200) {
   return new Promise((resolve) => {
@@ -219,11 +219,17 @@ document.getElementById("genForm").addEventListener("submit",async e=>{
   const formData=new FormData(form);
   const imgFile=formData.get("qsl");
   const data=Object.fromEntries(formData.entries());
-  const compressedImg = await resizeAndCompressImage(imgFile);
+
+  // Redimensionner l'image pour le upload et preview
+  const compressedImg = await resizeAndCompressImage(imgFile, 600); // largeur max réduite pour miniatures
   const imgURL = URL.createObjectURL(compressedImg);
-  preview.innerHTML = generateQSLPreview(data,imgURL);
-  formData.set("qsl", compressedImg, imgFile.name);
-  fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"}).catch(()=>{});
+
+  // Ajouter dans preview
+  const cardHTML = generateQSLPreview(data,imgURL);
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = cardHTML;
+  tempDiv.classList.add("qsl-card-preview");
+  preview.appendChild(tempDiv.firstElementChild);
 });
 
 // ===============================
