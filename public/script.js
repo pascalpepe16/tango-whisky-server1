@@ -4,7 +4,13 @@
 const API_URL = location.origin;
 let importedLogs = [];
 window.isAuthenticated = false;
-
+/* Réduction des QSL dans l'aperçu global */
+#previewArea .qsl-card,
+#genPreview .qsl-card {
+transform: scale(0.7);
+transform-origin: top left;
+margin-bottom: 10px;
+}
 // ===============================
 // QSL PREVIEW GENERATOR
 // ===============================
@@ -164,13 +170,7 @@ function processFile(){
     reader.readAsArrayBuffer(file);
   }
 }
-/* Réduction des QSL dans l'aperçu global */
-#previewArea .qsl-card,
-#genPreview .qsl-card {
-transform: scale(0.7);
-transform-origin: top left;
-margin-bottom: 10px;
-}
+
 // ===============================
 // BULK UPLOAD
 // ===============================
