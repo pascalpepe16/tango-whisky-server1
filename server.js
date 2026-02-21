@@ -182,7 +182,14 @@ app.post("/upload", requireAuth, async (req, res) => {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: "TW-eQSL",
-        tags: [`indicatif_${indicatif}`]
+       tags: [
+  `indicatif_${indicatif}`,
+  `date_${req.body.date}`,
+  `time_${req.body.time}`,
+  `band_${req.body.band}`,
+  `mode_${req.body.mode}`,
+  `report_${req.body.report}`
+]
       },
       (err, result) => {
         if (err) {
@@ -190,17 +197,20 @@ app.post("/upload", requireAuth, async (req, res) => {
           return res.status(500).json({ success: false });
         }
 
-        res.json({
-          success: true,
-          qsl: {
-            public_id: result.public_id,
-            url: result.secure_url,
-            thumb: result.secure_url.replace("/upload/", "/upload/w_300/")
-          }
-        });
-      }
-    );
+       res.json(result.resources.map(r => {
+  const data = {};
+  (r.tags || []).forEach(tag => {
+    const [key, value] = tag.split("_");
+    data[key] = value;
+  });
 
+  return {
+    public_id: r.public_id,
+    url: r.secure_url,
+    thumb: r.secure_url.replace("/upload/", "/upload/w_300/"),
+    data
+  };
+}));
     stream.end(buffer);
   } catch (err) {
     console.error(err);
