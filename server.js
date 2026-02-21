@@ -113,59 +113,44 @@ app.get("/download/:call", async (req, res) => {
 });
 
 // GENERATE QSL
-async function generateQSLBuffer({ filePath, indicatif, date, time, band, mode, report, note }) {
-
+async function generateQSLBuffer({
+  filePath,
+  indicatif,
+  date,
+  time,
+  band,
+  mode,
+  report,
+  note
+}) {
+  // On agrandit l'image pour remplir complètement le cadre
   const base = await sharp(filePath)
-    .resize({ width: 800, height: 450, fit: "cover" })
+    .resize({ width: 1000, height: 600, fit: "cover" }) // taille plus grande pour éviter les coupes
     .jpeg({ quality: 90 })
     .toBuffer();
 
+  // SVG avec zone texte élargie
   const svg = `
-  <svg width="800" height="450">
-    <!-- panneau blanc à droite -->
-    <rect x="520" y="0" width="280" height="450" fill="white"/>
-
-    <!-- indicatif -->
-    <text x="540" y="60" font-size="28" fill="#333" font-weight="bold">
-      ${indicatif}
-    </text>
-
-    <!-- ligne -->
-    <line x1="540" y1="80" x2="780" y2="80" stroke="#ccc"/>
-
-    <!-- infos QSO -->
-    <text x="540" y="120" font-size="20" fill="#333">
-      Date: ${date}
-    </text>
-
-    <text x="540" y="160" font-size="20" fill="#333">
-      UTC: ${time}
-    </text>
-
-    <text x="540" y="200" font-size="20" fill="#333">
-      Bande: ${band}
-    </text>
-
-    <text x="540" y="240" font-size="20" fill="#333">
-      Mode: ${mode}
-    </text>
-
-    <text x="540" y="280" font-size="20" fill="#333">
-      Report: ${report}
-    </text>
-
-    <text x="540" y="340" font-size="18" fill="#666">
-      ${note || ""}
-    </text>
-  </svg>`;
+    <svg width="1000" height="600">
+      <rect x="650" y="0" width="350" height="600" fill="white"/>
+      
+      <text x="670" y="80" font-size="32" fill="#333" font-weight="bold">${indicatif}</text>
+      <line x1="670" y1="100" x2="980" y2="100" stroke="#ccc"/>
+      
+      <text x="670" y="150" font-size="24" fill="#333">Date: ${date}</text>
+      <text x="670" y="200" font-size="24" fill="#333">UTC: ${time}</text>
+      <text x="670" y="250" font-size="24" fill="#333">Bande: ${band}</text>
+      <text x="670" y="300" font-size="24" fill="#333">Mode: ${mode}</text>
+      <text x="670" y="350" font-size="24" fill="#333">Report: ${report}</text>
+      <text x="670" y="420" font-size="20" fill="#666">${note || ""}</text>
+    </svg>
+  `;
 
   return await sharp(base)
     .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
     .jpeg({ quality: 92 })
     .toBuffer();
 }
-
-
 // UPLOAD
 app.post("/upload", requireAuth, async (req, res) => {
   try {
