@@ -123,46 +123,59 @@ async function generateQSLBuffer({
   report,
   note
 }) {
-  // Dimensions finales de l'image
-  const width = 1526;
-  const height = 1024;
+  // Dimensions originales de l'image
+  const imageWidth = 1526;
+  const imageHeight = 1024;
 
-  // On agrandit l'image pour remplir complètement le cadre
-  const base = await sharp(filePath)
-    .resize({ width, height, fit: "cover" })
-    .jpeg({ quality: 90 })
-    .toBuffer();
+  // Largeur du cadre texte (25% de l'image originale)
+  const rectWidth = Math.round(imageWidth * 0.25);
+  const rectHeight = imageHeight;
 
-  // Paramètres du cadre texte
-  const rectWidth = Math.round(width * 0.25); // 25% largeur image
-  const rectHeight = height;
-  const rectX = width - rectWidth;
-  const rectY = 0;
+  // Largeur totale du canvas = image + cadre
+  const totalWidth = imageWidth + rectWidth;
+  const totalHeight = imageHeight;
 
   // Marges internes pour le texte
   const marginX = 20;
   const marginTop = 80;
-  const lineSpacing = 50; // espacement vertical entre lignes
+  const lineSpacing = 50;
 
-  // SVG avec texte dynamique
+  // Préparer l'image principale
+  const base = await sharp(filePath)
+    .resize({ width: imageWidth, height: imageHeight, fit: "cover" })
+    .jpeg({ quality: 90 })
+    .toBuffer();
+
+  // SVG du cadre texte
   const svg = `
-    <svg width="${width}" height="${height}">
-      <rect x="${rectX}" y="${rectY}" width="${rectWidth}" height="${rectHeight}" fill="white"/>
+    <svg width="${rectWidth}" height="${rectHeight}">
+      <rect x="0" y="0" width="${rectWidth}" height="${rectHeight}" fill="white"/>
       
-      <text x="${rectX + marginX}" y="${marginTop}" font-size="32" fill="#333" font-weight="bold">${indicatif}</text>
-      <line x1="${rectX + marginX}" y1="${marginTop + 20}" x2="${width - marginX}" y2="${marginTop + 20}" stroke="#ccc"/>
+      <text x="${marginX}" y="${marginTop}" font-size="32" fill="#333" font-weight="bold">${indicatif}</text>
+      <line x1="${marginX}" y1="${marginTop + 20}" x2="${rectWidth - marginX}" y2="${marginTop + 20}" stroke="#ccc"/>
       
-      <text x="${rectX + marginX}" y="${marginTop + lineSpacing}" font-size="24" fill="#333">Date: ${date}</text>
-      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 2}" font-size="24" fill="#333">UTC: ${time}</text>
-      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 3}" font-size="24" fill="#333">Bande: ${band}</text>
-      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 4}" font-size="24" fill="#333">Mode: ${mode}</text>
-      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 5}" font-size="24" fill="#333">Report: ${report}</text>
-      <text x="${rectX + marginX}" y="${marginTop + lineSpacing * 6 + 20}" font-size="20" fill="#666">${note || ""}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing}" font-size="24" fill="#333">Date: ${date}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 2}" font-size="24" fill="#333">UTC: ${time}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 3}" font-size="24" fill="#333">Bande: ${band}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 4}" font-size="24" fill="#333">Mode: ${mode}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 5}" font-size="24" fill="#333">Report: ${report}</text>
+      <text x="${marginX}" y="${marginTop + lineSpacing * 6 + 20}" font-size="20" fill="#666">${note || ""}</text>
     </svg>
   `;
 
-  return await sharp(base)
-    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+  // Composer l'image finale : image originale à gauche + cadre à droite
+  return await sharp({
+    create: {
+      width: totalWidth,
+      height: totalHeight,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 } // arrière-plan blanc pour le cadre
+    }
+  })
+    .composite([
+      { input: base, top: 0, left: 0 },
+      { input: Buffer.from(svg), top: 0, left: imageWidth } // cadre à droite
+    ])
     .jpeg({ quality: 92 })
     .toBuffer();
 }
