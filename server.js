@@ -123,27 +123,13 @@ async function generateQSLBuffer({
   report,
   note
 }) {
-  // Dimensions originales de l'image
   const imageWidth = 1526;
   const imageHeight = 1024;
 
-  // Largeur du cadre texte (25% de l'image)
-  const rectWidth = Math.round(imageWidth * 0.25);
-  const rectHeight = imageHeight;
-
-  // Largeur totale du canvas = image + cadre
-  const totalWidth = imageWidth + rectWidth;
-  const totalHeight = imageHeight;
-
-  // Marges internes pour le texte
+  // Marges et espacement
   const marginX = 20;
   const marginTop = 80;
   const lineSpacing = 50;
-
-  // Taille de police adaptative selon largeur du cadre
-  const titleFontSize = Math.round(rectWidth * 0.08); // environ 8% largeur
-  const normalFontSize = Math.round(rectWidth * 0.06);
-  const noteFontSize = Math.round(rectWidth * 0.05);
 
   // Préparer l'image principale
   const base = await sharp(filePath)
@@ -151,20 +137,37 @@ async function generateQSLBuffer({
     .jpeg({ quality: 90 })
     .toBuffer();
 
-  // SVG du cadre texte avec fond semi-transparent
+  // Texte à afficher
+  const lines = [
+    { text: indicatif, fontSizeRatio: 0.08, bold: true },
+    { text: `Date: ${date}`, fontSizeRatio: 0.06 },
+    { text: `UTC: ${time}`, fontSizeRatio: 0.06 },
+    { text: `Bande: ${band}`, fontSizeRatio: 0.06 },
+    { text: `Mode: ${mode}`, fontSizeRatio: 0.06 },
+    { text: `Report: ${report}`, fontSizeRatio: 0.06 },
+    { text: note || "", fontSizeRatio: 0.05 }
+  ];
+
+  // Calculer largeur nécessaire du cadre en fonction du texte
+  const rectWidth = Math.max(...lines.map(line => line.text.length)) * 15; // approximation px/char
+  const rectHeight = imageHeight;
+  const totalWidth = imageWidth + rectWidth;
+  const totalHeight = imageHeight;
+
+  // Générer le SVG avec texte adaptatif
+  let svgLines = '';
+  let currentY = marginTop;
+  for (let i = 0; i < lines.length; i++) {
+    const { text, fontSizeRatio, bold } = lines[i];
+    const fontSize = Math.round(rectWidth * fontSizeRatio);
+    svgLines += `<text x="${marginX}" y="${currentY}" font-size="${fontSize}" fill="#333"${bold ? ' font-weight="bold"' : ''}>${text}</text>\n`;
+    currentY += lineSpacing;
+  }
+
   const svg = `
     <svg width="${rectWidth}" height="${rectHeight}">
       <rect x="0" y="0" width="${rectWidth}" height="${rectHeight}" fill="white" fill-opacity="0.95" rx="20"/>
-      
-      <text x="${marginX}" y="${marginTop}" font-size="${titleFontSize}" fill="#333" font-weight="bold">${indicatif}</text>
-      <line x1="${marginX}" y1="${marginTop + 20}" x2="${rectWidth - marginX}" y2="${marginTop + 20}" stroke="#ccc" stroke-width="2"/>
-      
-      <text x="${marginX}" y="${marginTop + lineSpacing}" font-size="${normalFontSize}" fill="#333">Date: ${date}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 2}" font-size="${normalFontSize}" fill="#333">UTC: ${time}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 3}" font-size="${normalFontSize}" fill="#333">Bande: ${band}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 4}" font-size="${normalFontSize}" fill="#333">Mode: ${mode}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 5}" font-size="${normalFontSize}" fill="#333">Report: ${report}</text>
-      <text x="${marginX}" y="${marginTop + lineSpacing * 6 + 20}" font-size="${noteFontSize}" fill="#666">${note || ""}</text>
+      ${svgLines}
     </svg>
   `;
 
@@ -174,7 +177,7 @@ async function generateQSLBuffer({
       width: totalWidth,
       height: totalHeight,
       channels: 3,
-      background: { r: 255, g: 255, b: 255 } // arrière-plan blanc pour le cadre
+      background: { r: 255, g: 255, b: 255 } // arrière-plan pour le cadre
     }
   })
     .composite([
