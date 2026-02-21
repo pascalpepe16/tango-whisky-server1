@@ -310,25 +310,28 @@ footer {
 CSS pour miniatures style galerie dans aperçu Créer / Ajouter
 =============================== */
 
+/* Galerie miniature pour Créer / Ajouter */
+#previewArea, #genPreview {
+  display: flex;
+  flex-wrap: wrap;       /* permet plusieurs lignes automatiquement */
+  gap: 6px;              /* espace entre miniatures */
+}
+
 #previewArea .qsl-card,
 #genPreview .qsl-card {
-display: inline-block;
-width: 50%; /* 50% de la taille originale pour miniatures */
-vertical-align: top;
-margin: 3px;
-transform: scale(0.4); /* réduit moitié de la taille originale */
-transform-origin: top left;
+  flex: 0 0 50%;         /* chaque carte prend 50% de la largeur du conteneur */
+  box-sizing: border-box;
 }
 
 #previewArea .qsl-image img,
 #genPreview .qsl-image img {
-width: 100%;
-height: auto;
-object-fit: cover;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
 }
 
 #previewArea .qsl-text,
 #genPreview .qsl-text {
-font-size: 14px; /* texte lisible */
-line-height: 1.2;
+  font-size: 14px;       /* texte lisible */
+  line-height: 1.2;
 }
