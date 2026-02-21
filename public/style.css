@@ -306,10 +306,29 @@ footer {
   max-height: 100%;
   object-fit: cover;    /* Pour que l’image remplisse le cadre sans déformer */
 }
-/* Réduction des QSL dans l'aperçu global */
+/* ===============================
+CSS pour miniatures style galerie dans aperçu Créer / Ajouter
+=============================== */
+
 #previewArea .qsl-card,
 #genPreview .qsl-card {
-transform: scale(0.7);
+display: inline-block;
+width: 50%; /* 50% de la taille originale pour miniatures */
+vertical-align: top;
+margin: 3px;
+transform: scale(0.4); /* réduit moitié de la taille originale */
 transform-origin: top left;
-margin-bottom: 10px;
+}
+
+#previewArea .qsl-image img,
+#genPreview .qsl-image img {
+width: 100%;
+height: auto;
+object-fit: cover;
+}
+
+#previewArea .qsl-text,
+#genPreview .qsl-text {
+font-size: 14px; /* texte lisible */
+line-height: 1.2;
 }
