@@ -308,3 +308,33 @@ footer {
   transform-origin: top center;
   margin-bottom: -80px;
 }
+/* ==========================
+PREVIEW CREER / AJOUTER FIX
+========================== */
+
+#genPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+#genPreview .qsl-card {
+  width: 260px;              /* taille globale de la QSL */
+  flex: 0 0 auto;
+}
+
+#genPreview .qsl-image {
+  height: 130px;             /* réduit la hauteur image */
+}
+
+#genPreview .qsl-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;         /* image bien cadrée */
+}
+
+#genPreview .qsl-text {
+  font-size: 12px;           /* texte plus compact */
+  padding: 8px;
+}
