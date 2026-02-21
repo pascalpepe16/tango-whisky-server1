@@ -1,119 +1,119 @@
 /* ==========================
-   GENERAL
+GENERAL
 ========================== */
 
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: url('https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg') center/cover fixed no-repeat;
-  color: #fff;
+margin: 0;
+font-family: Arial, sans-serif;
+background: url('[https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg](https://res.cloudinary.com/dqpvrfjeu/image/upload/v1763731491/r45ocw9z3wnvu1fcqnus.jpg)') center/cover fixed no-repeat;
+color: #fff;
 }
 
 .hidden { display: none !important; }
 
 header {
-  text-align: center;
-  padding: 20px;
-  background: rgba(0,0,0,0.45);
+text-align: center;
+padding: 20px;
+background: rgba(0,0,0,0.45);
 }
 
 .logo { width: 140px; margin-bottom: 10px; }
 
 nav {
-  text-align: center;
-  padding: 12px;
-  background: rgba(0,0,0,0.6);
+text-align: center;
+padding: 12px;
+background: rgba(0,0,0,0.6);
 }
 
 nav button {
-  margin: 5px;
-  padding: 8px 14px;
-  cursor: pointer;
-  background: #1e90ff;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  transition: all 0.2s ease;
+margin: 5px;
+padding: 8px 14px;
+cursor: pointer;
+background: #1e90ff;
+color: #fff;
+border: none;
+border-radius: 6px;
+font-size: 15px;
+transition: all 0.2s ease;
 }
 
-nav button:hover { 
-  opacity: 0.9; 
-  transform: translateY(-1px);
+nav button:hover {
+opacity: 0.9;
+transform: translateY(-1px);
 }
 
 /* ==========================
-   SECTIONS
+SECTIONS
 ========================== */
 
 .section {
-  display: block;
-  padding: 18px;
-  max-width: 980px;
-  margin: 20px auto;
-  background: rgba(0,0,0,0.55);
-  border-radius: 8px;
+display: block;
+padding: 18px;
+max-width: 980px;
+margin: 20px auto;
+background: rgba(0,0,0,0.55);
+border-radius: 8px;
 }
 
 .wideForm { width: 95%; max-width: 1200px; margin: auto; }
 
-.twoColumns { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 25px; 
+.twoColumns {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 25px;
 }
 
-.twoColumns input, 
-.twoColumns select, 
+.twoColumns input,
+.twoColumns select,
 .twoColumns textarea {
-  width: 100%; 
-  font-size: 16px; 
-  margin-bottom: 12px; 
-  padding: 6px; 
-  border-radius: 6px; 
-  border: 1px solid #ccc;
+width: 100%;
+font-size: 16px;
+margin-bottom: 12px;
+padding: 6px;
+border-radius: 6px;
+border: 1px solid #ccc;
 }
 
 /* ==========================
-   BUTTONS
+BUTTONS
 ========================== */
 
-.primary { 
-  background: #1e90ff; 
-  color: #fff; 
-  padding: 10px 18px; 
-  border: none; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  font-size: 16px; 
-  transition: 0.2s;
+.primary {
+background: #1e90ff;
+color: #fff;
+padding: 10px 18px;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+font-size: 16px;
+transition: 0.2s;
 }
 
-.primary:hover { 
-  opacity: 0.9; 
-  transform: scale(1.03);
+.primary:hover {
+opacity: 0.9;
+transform: scale(1.03);
 }
 
 /* Bouton téléchargement */
 .btn-download {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 6px 12px;
-  background: #28a745;
-  color: white;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 13px;
-  transition: 0.2s;
+display: inline-block;
+margin-top: 8px;
+padding: 6px 12px;
+background: #28a745;
+color: white;
+border-radius: 6px;
+text-decoration: none;
+font-size: 13px;
+transition: 0.2s;
 }
 
 .btn-download:hover {
-  background: #218838;
-  transform: scale(1.05);
+background: #218838;
+transform: scale(1.05);
 }
 
 /* ==========================
-   IMPORT / PROGRESS
+IMPORT / PROGRESS
 ========================== */
 
 .importBox { border:1px solid #444; padding:10px; margin-bottom:20px; }
@@ -122,207 +122,206 @@ nav button:hover {
 
 .progressBarBg { background:#333; height:20px; border-radius:10px; }
 
-#progressBar { 
-  width:0%; 
-  height:100%; 
-  background:#28a745; 
-  border-radius:10px; 
-  transition: width 0.3s ease; 
+#progressBar {
+width:0%;
+height:100%;
+background:#28a745;
+border-radius:10px;
+transition: width 0.3s ease;
 }
 
 /* ==========================
-   PREVIEW MINIATURES
+PREVIEW MINIATURES
 ========================== */
 
-#previewArea { 
-  display:flex; 
-  flex-wrap:wrap; 
-  gap:15px; 
-  margin-top:15px; 
-  justify-content:center; 
-}
-
-.thumbWrap { 
-  width:200px; 
-  text-align:center; 
-  border-radius:10px; 
-  overflow:hidden; 
-  background: rgba(0,0,0,0.6);
-  padding:10px;
-  transition: 0.2s;
-}
-
-.thumbWrap:hover {
-  transform: translateY(-4px);
-}
-
-.thumbWrap img { 
-  width:100%; 
-  height:auto; 
-  object-fit:cover; 
-  border-radius:6px;
-  cursor:pointer;
-  transition: 0.3s;
-}
-
-.thumbWrap img:hover {
-  transform: scale(1.05);
-}
-
-/* ==========================
-   QSL CARD
-========================== */
-
-.qsl-card { 
-  display:flex; 
-  flex-direction:row; 
-  max-width:100%; 
-  border-radius:12px; 
-  overflow:hidden; 
-  background:#111; 
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-
-.qsl-image { 
-  flex:3; 
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#000;
-}
-
-.qsl-image img { 
-  width:100%; 
-  height:100%;
-  object-fit:contain;
-}
-
-.qsl-text { 
-  flex:2; 
-  padding:20px; 
-  background:#1c1c1c; 
-  color:#fff; 
-  display:flex; 
-  flex-direction:column; 
-  justify-content:center; 
-  font-size:clamp(12px,1.2vw,16px); 
-}
-
-.qsl-text p {
-  margin:4px 0;
-  border-bottom:1px solid rgba(255,255,255,0.15);
-  padding-bottom:3px;
-}
-
-/* ==========================
-   DOWNLOAD PREVIEW BLOCK
-========================== */
-
-.dlWrap { 
-  display:flex; 
-  flex-direction:column;
-  align-items:center; 
-  gap:8px; 
-  margin-bottom:15px; 
-}
-
-.dlThumb { 
-  width:200px; 
-  height:auto; 
-  object-fit:cover; 
-  border-radius:8px;
-  cursor:pointer;
-  transition:0.3s;
-}
-
-.dlThumb:hover {
-  transform: scale(1.05);
-}
-
-/* ==========================
-   FOOTER
-========================== */
-
-footer { 
-  text-align:center; 
-  padding:12px; 
-  margin-top:25px; 
-  background:rgba(0,0,0,0.4); 
-}
-
-#fbFooterLink { 
-  position:fixed; 
-  bottom:15px; 
-  left:50%; 
-  transform:translateX(-50%); 
-  width:45px; 
-  height:45px; 
-  z-index:1000; 
-}
-
-#fbFooterLink img { 
-  width:100%; 
-  height:100%; 
-  border-radius:50%; 
-}
-
-#fbFooterLink:hover { 
-  transform:translateX(-50%) scale(1.15); 
-}
-
-/* ==========================
-   RESPONSIVE
-========================== */
-
-@media (max-width:768px) {
-  .twoColumns { grid-template-columns:1fr; }
-
-  .qsl-card { flex-direction:column; }
-
-  .qsl-text { 
-    padding:12px; 
-    font-size:clamp(12px,2.5vw,16px); 
-  }
-}
-#galleryContent {
-  display: flex;
-  flex-wrap: wrap;      /* Permet plusieurs lignes */
-  gap: 10px;            /* Espace entre les miniatures */
-  justify-content: flex-start; /* Alignement horizontal */
+#previewArea {
+display:flex;
+flex-wrap:wrap;
+gap:15px;
+margin-top:15px;
+justify-content:center;
 }
 
 .thumbWrap {
-  width: 150px;         /* Largeur fixe pour chaque miniature */
-  height: 150px;        /* Hauteur fixe */
-  overflow: hidden;     /* Si l’image dépasse */
-  border: 1px solid #ccc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+width:200px;
+text-align:center;
+border-radius:10px;
+overflow:hidden;
+background: rgba(0,0,0,0.6);
+padding:10px;
+transition: 0.2s;
+}
+
+.thumbWrap:hover {
+transform: translateY(-4px);
 }
 
 .thumbWrap img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: cover;    /* Pour que l’image remplisse le cadre sans déformer */
+width:100%;
+height:auto;
+object-fit:cover;
+border-radius:6px;
+cursor:pointer;
+transition: 0.3s;
 }
 
+.thumbWrap img:hover {
+transform: scale(1.05);
+}
+
+/* ==========================
+QSL CARD
+========================== */
+
+.qsl-card {
+display:flex;
+flex-direction:row;
+max-width:100%;
+border-radius:12px;
+overflow:hidden;
+background:#111;
+box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.qsl-image {
+flex:3;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#000;
+}
+
+.qsl-image img {
+width:100%;
+height:100%;
+object-fit:contain;
+}
+
+.qsl-text {
+flex:2;
+padding:20px;
+background:#1c1c1c;
+color:#fff;
+display:flex;
+flex-direction:column;
+justify-content:center;
+font-size:clamp(12px,1.2vw,16px);
+}
+
+.qsl-text p {
+margin:4px 0;
+border-bottom:1px solid rgba(255,255,255,0.15);
+padding-bottom:3px;
+}
+
+/* ==========================
+DOWNLOAD PREVIEW BLOCK
+========================== */
+
+.dlWrap {
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:8px;
+margin-bottom:15px;
+}
+
+.dlThumb {
+width:200px;
+height:auto;
+object-fit:cover;
+border-radius:8px;
+cursor:pointer;
+transition:0.3s;
+}
+
+.dlThumb:hover {
+transform: scale(1.05);
+}
+
+/* ==========================
+FOOTER
+========================== */
+
+footer {
+text-align:center;
+padding:12px;
+margin-top:25px;
+background:rgba(0,0,0,0.4);
+}
+
+#fbFooterLink {
+position:fixed;
+bottom:15px;
+left:50%;
+transform:translateX(-50%);
+width:45px;
+height:45px;
+z-index:1000;
+}
+
+#fbFooterLink img {
+width:100%;
+height:100%;
+border-radius:50%;
+}
+
+#fbFooterLink:hover {
+transform:translateX(-50%) scale(1.15);
+}
+
+/* ==========================
+RESPONSIVE
+========================== */
+
+@media (max-width:768px) {
+.twoColumns { grid-template-columns:1fr; }
+
+.qsl-card { flex-direction:column; }
+
+.qsl-text {
+padding:12px;
+font-size:clamp(12px,2.5vw,16px);
+}
+}
+
+#galleryContent {
+display: flex;
+flex-wrap: wrap;
+gap: 10px;
+justify-content: flex-start;
+}
+
+.thumbWrap {
+width: 150px;
+height: 150px;
+overflow: hidden;
+border: 1px solid #ccc;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.thumbWrap img {
+max-width: 100%;
+max-height: 100%;
+object-fit: cover;
+}
 
 /* ===============================
-CSS pour miniatures style galerie dans aperçu Créer / Ajouter (sans bouton)
+CSS pour miniatures style galerie dans aperçu Créer / Ajouter
 =============================== */
 
 #genPreview {
 display: flex;
-flex-wrap: wrap;       /* permet plusieurs lignes automatiquement */
-gap: 6px;              /* espace entre miniatures */
+flex-wrap: wrap;
+gap: 10px;
+justify-content: flex-start;
 }
 
 #genPreview .qsl-card {
-flex: 0 0 45%;          /* chaque carte prend ~45% du conteneur */
+flex: 0 0 200px; /* largeur fixe pour miniatures */
 box-sizing: border-box;
-transform: scale(0.5);  /* réduit moitié de la taille originale */
-transform-origin: top left;
 }
 
 #genPreview .qsl-image img {
@@ -332,7 +331,6 @@ object-fit: cover;
 }
 
 #genPreview .qsl-text {
-font-size: 14px;        /* texte lisible malgré réduction */
+font-size: 12px;
 line-height: 1.2;
 }
-
