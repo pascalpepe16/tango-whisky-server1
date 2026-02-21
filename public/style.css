@@ -284,3 +284,27 @@ footer {
     font-size:clamp(12px,2.5vw,16px); 
   }
 }
+
+/* ==========================
+   AJOUTS (GALLERY + PREVIEW)
+========================== */
+
+/* GALLERY MULTI LIGNES */
+#galleryContent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+#galleryContent .qsl-card {
+  width: 300px;
+  flex: 0 0 auto;
+}
+
+/* PREVIEW REDUIT */
+#genPreview .qsl-card {
+  transform: scale(0.4);
+  transform-origin: top center;
+  margin-bottom: -80px;
+}
