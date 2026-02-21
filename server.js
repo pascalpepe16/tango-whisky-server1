@@ -194,7 +194,7 @@ async function generateQSLBuffer({
     ])
     .jpeg({ quality: 92 })
     .toBuffer();
-}
+} 
 // UPLOAD
 app.post("/upload", requireAuth, async (req, res) => {
   try {
