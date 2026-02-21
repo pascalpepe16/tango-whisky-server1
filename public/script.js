@@ -210,26 +210,26 @@ document.getElementById("validateImportBtn").onclick=async function(){
 };
 
 // ===============================
-// GENERATION QSL UNITAIRE (RESIZE IMAGE)
+// GENERATION QSL UNITAIRE (RESIZE IMAGE + PREVIEW GALERIE)
 // ===============================
 document.getElementById("genForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const form=e.target;
-  const preview=document.getElementById("genPreview");
-  const formData=new FormData(form);
-  const imgFile=formData.get("qsl");
-  const data=Object.fromEntries(formData.entries());
+  const form = e.target;
+  const formData = new FormData(form);
+  const imgFile = formData.get("qsl");
+  if (!imgFile) return;
 
-  // Redimensionner l'image pour le upload et preview
-  const compressedImg = await resizeAndCompressImage(imgFile, 600); // largeur max réduite pour miniatures
-  const imgURL = URL.createObjectURL(compressedImg);
+  const compressedImg = await resizeAndCompressImage(imgFile);
+  formData.set("qsl", compressedImg, imgFile.name);
 
-  // Ajouter dans preview
-  const cardHTML = generateQSLPreview(data,imgURL);
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = cardHTML;
-  tempDiv.classList.add("qsl-card-preview");
-  preview.appendChild(tempDiv.firstElementChild);
+  // Génération preview
+  const preview = document.getElementById("genPreview");
+  preview.innerHTML = "";
+  const data = Object.fromEntries(formData.entries());
+  preview.innerHTML += generateQSLPreview(data, URL.createObjectURL(compressedImg));
+
+  // Envoi au serveur
+  fetch(API_URL + "/upload", { method: "POST", body: formData, credentials: "same-origin" }).catch(() => {});
 });
 
 // ===============================
@@ -242,26 +242,4 @@ document.getElementById("btnSearch").onclick=async()=>{
   box.innerHTML="Recherche…";
   try{
     const res=await fetch(API_URL+"/download/"+call);
-    const list=await res.json();
-    if(!list.length){ box.innerHTML="Aucune QSL trouvée"; return; }
-    box.innerHTML="";
-    list.forEach(q=>{
-      const div=document.createElement("div");
-      div.className="dlWrap";
-      div.innerHTML=`<img src="${q.thumb}" class="dlThumb"><button onclick="downloadQSL('${q.public_id}')">Télécharger</button>`;
-      box.appendChild(div);
-    });
-  }catch(err){ box.innerHTML="Erreur réseau"; console.error(err); }
-};
-
-function downloadQSL(pid){
-  const a=document.createElement("a");
-  a.href=API_URL+"/file?pid="+encodeURIComponent(pid);
-  a.click();
-}
-
-// ===============================
-// INIT
-// ===============================
-checkAuth();
-showTab("home");
+    const list=await
