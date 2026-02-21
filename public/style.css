@@ -290,7 +290,7 @@ footer {
 ========================== */
 
 #galleryContent {
-  display:flex;
+  display: flex;
   flex-wrap: wrap;
   gap: 15px;
   justify-content: center;
@@ -302,12 +302,12 @@ footer {
 }
 
 /* ==========================
-   PREVIEW CREER / AJOUTER (REDUCTION SCALE)
+   PREVIEW CREER / AJOUTER
 ========================== */
 
 #genPreview {
   display: flex;
-  flex-wrap: wrap;        /* permet plusieurs lignes automatiquement */
+  flex-wrap: wrap;       
   gap: 10px;
   justify-content: center;
 }
@@ -315,13 +315,13 @@ footer {
 #genPreview .qsl-card {
   width: 260px;
   flex: 0 0 auto;
-  transform: scale(0.4);  /* réduction */
-  transform-origin: top center;
-  margin-bottom: 20px;
+  transform: scale(0.5);     /* réduit la taille globale */
+  transform-origin: top left;
+  margin: 10px;
 }
 
 #genPreview .qsl-image {
-  height: 130px;           /* hauteur réduite pour preview */
+  height: 130px;             /* hauteur réduite */
 }
 
 #genPreview .qsl-image img {
@@ -331,6 +331,6 @@ footer {
 }
 
 #genPreview .qsl-text {
-  font-size: 12px;         /* texte plus compact */
+  font-size: 12px;           /* texte lisible malgré réduction */
   padding: 8px;
 }
