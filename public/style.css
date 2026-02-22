@@ -94,6 +94,7 @@ nav button:hover {
   transform: scale(1.03);
 }
 
+/* Bouton téléchargement */
 .btn-download {
   display: inline-block;
   margin-top: 8px;
@@ -130,22 +131,42 @@ nav button:hover {
 }
 
 /* ==========================
-   PREVIEW MINIATURES (Créer / Ajouter)
+   PREVIEW MINIATURES
 ========================== */
 
-#previewArea,
-#genPreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px; /* réduit espace entre QSL */
-  justify-content: flex-start;
+#previewArea { 
+  display:flex; 
+  flex-wrap:wrap; 
+  gap:15px; 
+  margin-top:15px; 
+  justify-content:center; 
 }
 
-#previewArea .qsl-card,
-#genPreview .qsl-card {
-  transform: scale(0.4);
-  transform-origin: top left;
-  margin: 0; /* pas d’espace fantôme */
+.thumbWrap { 
+  width:200px; 
+  text-align:center; 
+  border-radius:10px; 
+  overflow:hidden; 
+  background: rgba(0,0,0,0.6);
+  padding:10px;
+  transition: 0.2s;
+}
+
+.thumbWrap:hover {
+  transform: translateY(-4px);
+}
+
+.thumbWrap img { 
+  width:100%; 
+  height:auto; 
+  object-fit:cover; 
+  border-radius:6px;
+  cursor:pointer;
+  transition: 0.3s;
+}
+
+.thumbWrap img:hover {
+  transform: scale(1.05);
 }
 
 /* ==========================
@@ -250,6 +271,21 @@ footer {
 }
 
 /* ==========================
+   RESPONSIVE
+========================== */
+
+@media (max-width:768px) {
+  .twoColumns { grid-template-columns:1fr; }
+
+  .qsl-card { flex-direction:column; }
+
+  .qsl-text { 
+    padding:12px; 
+    font-size:clamp(12px,2.5vw,16px); 
+  }
+}
+
+/* ==========================
    GALLERY MULTI LIGNES
 ========================== */
 
@@ -266,16 +302,34 @@ footer {
 }
 
 /* ==========================
-   RESPONSIVE
+   PREVIEW CREER / AJOUTER REDUIT
 ========================== */
 
-@media (max-width:768px) {
-  .twoColumns { grid-template-columns:1fr; }
+#genPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
 
-  .qsl-card { flex-direction:column; }
+#genPreview .qsl-card {
+  transform: scale(0.4);          /* réduit taille globale */
+  transform-origin: top center;
+  width: 260px;                    /* largeur de la carte avant scale */
+  flex: 0 0 auto;
+}
 
-  .qsl-text { 
-    padding:12px; 
-    font-size:clamp(12px,2.5vw,16px); 
-  }
+#genPreview .qsl-image {
+  height: 130px;                   /* réduit hauteur image */
+}
+
+#genPreview .qsl-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;               /* image bien cadrée */
+}
+
+#genPreview .qsl-text {
+  font-size: 12px;                 /* texte plus petit mais lisible */
+  padding: 8px;
 }
