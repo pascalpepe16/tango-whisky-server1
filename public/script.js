@@ -12,9 +12,11 @@ function generateQSLPreview(data, imageUrl) {
   return `
     <div class="previewItem">
       <div class="qsl-card">
+
         <div class="qsl-image">
           <img src="${imageUrl}">
         </div>
+
         <div class="qsl-text">
           <h3>${data.indicatif || data.Indicatif || ''}</h3>
           <p>Date: ${data.date || data.Date || ''}</p>
@@ -24,6 +26,7 @@ function generateQSLPreview(data, imageUrl) {
           <p>Report: ${data.report || data.Report || ''}</p>
           <p>${data.note || data.Note || ''}</p>
         </div>
+
       </div>
     </div>
   `;
@@ -146,9 +149,6 @@ function processFile() {
     });
   };
 
-  // =====================
-  // CSV
-  // =====================
   if (ext === "csv") {
     Papa.parse(file,{
       header:true,
@@ -162,9 +162,6 @@ function processFile() {
     });
   }
 
-  // =====================
-  // XLSX (FIX ICI)
-  // =====================
   else if (ext === "xlsx") {
     const reader = new FileReader();
 
@@ -186,11 +183,12 @@ function processFile() {
   }
 
   else {
-    status.innerHTML = "Format non supporté (csv ou xlsx)";
+    status.innerHTML = "Format non supporté";
   }
 }
+
 // ===============================
-// BULK UPLOAD (PROGRESS OK)
+// BULK UPLOAD
 // ===============================
 document.getElementById("validateImportBtn").onclick = async function() {
   const imageInput = document.getElementById("bulkImage");
@@ -245,81 +243,53 @@ document.getElementById("genForm").addEventListener("submit", e=>{
 
   fetch(API_URL+"/upload",{method:"POST",body:formData});
 });
-function processFile() {
-  const file = document.getElementById("importFile").files[0];
-  const previewArea = document.getElementById("previewArea");
-  const status = document.getElementById("importStatus");
 
-  if (!file) {
-    status.innerHTML = "Choisir un fichier";
+// ===============================
+// DOWNLOAD (FIX COMPLET)
+// ===============================
+document.getElementById("btnSearch").addEventListener("click", async () => {
+  const call = document.getElementById("dlCall").value.trim();
+  const box = document.getElementById("dlPreview");
+
+  if (!call) {
+    box.innerHTML = "Entrer un indicatif";
     return;
   }
 
-  const imageInput = document.getElementById("bulkImage");
-  const imageURL = imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : "";
+  box.innerHTML = "Chargement...";
 
-  const ext = file.name.split(".").pop().toLowerCase();
+  try {
+    const res = await fetch(API_URL + "/qsl/" + call);
+    const data = await res.json();
 
-  const normalizeRow = row => ({
-    Indicatif:(row.indicatif||row.Indicatif||"").trim(),
-    Date:(row.date||row.Date||"").trim(),
-    Heure:(row.heure||row.Heure||"").trim(),
-    Bande:(row.bande||row.Bande||"").trim(),
-    Report:(row.report||row.Report||"").trim(),
-    Mode:(row.mode||row.Mode||"").trim(),
-    Note:(row.note||row.Note||"").trim()
-  });
+    if (!data.length) {
+      box.innerHTML = "Aucune QSL trouvée";
+      return;
+    }
 
-  const showPreview = () => {
-    previewArea.innerHTML = "";
-    importedLogs.slice(0,10).forEach(row => {
-      previewArea.innerHTML += generateQSLPreview(row,imageURL);
+    box.innerHTML = "";
+
+    data.forEach(q => {
+      box.innerHTML += `
+        <div class="previewItem">
+          <img src="${q.image}" style="width:200px;cursor:pointer"
+          onclick="downloadImage('${q.image}')">
+        </div>
+      `;
     });
-  };
 
-  // =====================
-  // CSV
-  // =====================
-  if (ext === "csv") {
-    Papa.parse(file,{
-      header:true,
-      skipEmptyLines:true,
-      complete:res=>{
-        importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
-        status.innerHTML = `${importedLogs.length} lignes chargées`;
-        showPreview();
-        document.getElementById("validateImportBtn").style.display = "inline-block";
-      }
-    });
+  } catch {
+    box.innerHTML = "Erreur téléchargement";
   }
+});
 
-  // =====================
-  // XLSX (FIX ICI)
-  // =====================
-  else if (ext === "xlsx") {
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet);
-
-      importedLogs = json.map(normalizeRow).filter(r=>r.Indicatif);
-
-      status.innerHTML = `${importedLogs.length} lignes chargées`;
-      showPreview();
-      document.getElementById("validateImportBtn").style.display = "inline-block";
-    };
-
-    reader.readAsArrayBuffer(file);
-  }
-
-  else {
-    status.innerHTML = "Format non supporté (csv ou xlsx)";
-  }
+function downloadImage(url) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "qsl.png";
+  a.click();
 }
+
 // ===============================
 checkAuth();
 showTab("home");
