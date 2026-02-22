@@ -137,7 +137,7 @@ nav button:hover {
 #previewArea { 
   display:flex; 
   flex-wrap:wrap; 
-  gap:15px; 
+  gap:5px; 
   margin-top:15px; 
   justify-content:center; 
 }
