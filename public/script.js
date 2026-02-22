@@ -10,18 +10,20 @@ window.isAuthenticated = false;
 // ===============================
 function generateQSLPreview(data, imageUrl) {
   return `
-    <div class="qsl-card">
-      <div class="qsl-image">
-        <img src="${imageUrl}">
-      </div>
-      <div class="qsl-text">
-        <h3>${data.indicatif || data.Indicatif || ''}</h3>
-        <p>Date: ${data.date || data.Date || ''}</p>
-        <p>Heure: ${data.time || data.Heure || ''}</p>
-        <p>Bande: ${data.band || data.Bande || ''}</p>
-        <p>Mode: ${data.mode || data.Mode || ''}</p>
-        <p>Report: ${data.report || data.Report || ''}</p>
-        <p>${data.note || data.Note || ''}</p>
+    <div class="previewItem">
+      <div class="qsl-card">
+        <div class="qsl-image">
+          <img src="${imageUrl}">
+        </div>
+        <div class="qsl-text">
+          <h3>${data.indicatif || data.Indicatif || ''}</h3>
+          <p>Date: ${data.date || data.Date || ''}</p>
+          <p>Heure: ${data.time || data.Heure || ''}</p>
+          <p>Bande: ${data.band || data.Bande || ''}</p>
+          <p>Mode: ${data.mode || data.Mode || ''}</p>
+          <p>Report: ${data.report || data.Report || ''}</p>
+          <p>${data.note || data.Note || ''}</p>
+        </div>
       </div>
     </div>
   `;
@@ -110,11 +112,12 @@ async function loadGallery() {
 }
 
 // ===============================
-// IMPORT CSV
+// IMPORT CSV / XLSX
 // ===============================
 function processFile() {
   const file = document.getElementById("importFile").files[0];
   const previewArea = document.getElementById("previewArea");
+  const status = document.getElementById("importStatus");
 
   const imageInput = document.getElementById("bulkImage");
   const imageURL = imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : "";
@@ -133,17 +136,16 @@ function processFile() {
     previewArea.innerHTML = "";
 
     importedLogs.slice(0,10).forEach(row => {
-      const div = document.createElement("div");
-      div.className = "previewItem";
-      div.innerHTML = generateQSLPreview(row,imageURL);
-      previewArea.appendChild(div);
+      previewArea.innerHTML += generateQSLPreview(row,imageURL);
     });
   };
 
   Papa.parse(file,{
     header:true,
+    skipEmptyLines:true,
     complete:res=>{
       importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
+      status.innerHTML = `${importedLogs.length} lignes chargées`;
       showPreview();
       document.getElementById("validateImportBtn").style.display = "inline-block";
     }
@@ -151,7 +153,48 @@ function processFile() {
 }
 
 // ===============================
-// GENERATION SIMPLE
+// BULK UPLOAD (PROGRESS OK)
+// ===============================
+document.getElementById("validateImportBtn").onclick = async function() {
+  const imageInput = document.getElementById("bulkImage");
+  const status = document.getElementById("importStatus");
+  const progress = document.getElementById("progressContainer");
+  const bar = document.getElementById("progressBar");
+
+  progress.style.display = "block";
+  bar.style.width="0%";
+
+  let success = 0;
+
+  for(let i=0;i<importedLogs.length;i++){
+    const row = importedLogs[i];
+
+    const formData = new FormData();
+    formData.append("indicatif", row.Indicatif);
+    formData.append("date", row.Date);
+    formData.append("time", row.Heure);
+    formData.append("band", row.Bande);
+    formData.append("report", row.Report);
+    formData.append("mode", row.Mode);
+    formData.append("note", row.Note);
+    formData.append("qsl", imageInput.files[0]);
+
+    try{
+      const res = await fetch(API_URL+"/upload",{method:"POST",body:formData});
+      const data = await res.json();
+      if(data.success) success++;
+    } catch(err){}
+
+    const percent = Math.round(((i+1)/importedLogs.length)*100);
+    bar.style.width = percent+"%";
+    status.innerHTML = `Traitement ${i+1}/${importedLogs.length}`;
+  }
+
+  status.innerHTML = `✅ ${success} QSL enregistrées`;
+};
+
+// ===============================
+// CREATE
 // ===============================
 document.getElementById("genForm").addEventListener("submit", e=>{
   e.preventDefault();
@@ -161,13 +204,7 @@ document.getElementById("genForm").addEventListener("submit", e=>{
   const data = Object.fromEntries(formData.entries());
 
   const preview = document.getElementById("genPreview");
-  preview.innerHTML = "";
-
-  const div = document.createElement("div");
-  div.className = "previewItem";
-  div.innerHTML = generateQSLPreview(data,imgURL);
-
-  preview.appendChild(div);
+  preview.innerHTML = generateQSLPreview(data,imgURL);
 
   fetch(API_URL+"/upload",{method:"POST",body:formData});
 });
