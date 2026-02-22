@@ -302,35 +302,32 @@ footer {
 }
 
 /* ==========================
-   PREVIEW CREER / AJOUTER REDUIT
+   PREVIEW CREER / AJOUTER FIX
 ========================== */
-
-##genPreview {
+#genPreview {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;           /* réduit l'espace entre les QSL */
-  justify-content: flex-start;
+  gap: 4px;  /* Réduit l'espace entre les miniatures */
+  justify-content: center;
 }
 
 #genPreview .qsl-card {
-  width: 260px;        /* taille de la QSL */
+  width: 230px; /* Ajuste la largeur des cartes QSL pour avoir plus de place */
   flex: 0 0 auto;
-  margin-bottom: 10px; /* petit espace vertical */
-  transform: scale(0.4); 
-  transform-origin: top left;
+  margin-bottom: 8px;  /* Réduit la distance en bas des cartes */
 }
 
 #genPreview .qsl-image {
-  height: 130px;                   /* réduit hauteur image */
+  height: 120px; /* Réduit la hauteur de l'image */
 }
 
 #genPreview .qsl-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;               /* image bien cadrée */
+  object-fit: cover;
 }
 
 #genPreview .qsl-text {
-  font-size: 12px;                 /* texte plus petit mais lisible */
-  padding: 8px;
+  font-size: 12px;  /* Ajuste la taille du texte */
+  padding: 6px;  /* Ajuste le padding du texte pour moins d'espace */
 }
