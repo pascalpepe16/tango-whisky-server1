@@ -146,11 +146,8 @@ function processFile() {
   const showPreview = () => {
     previewArea.innerHTML = "";
     importedLogs.slice(0,10).forEach(row => {
-  preview.innerHTML += `
-  <div class="preview-item">
-    ${generateQSLPreview(data,imgURL)}
-
-`;
+      previewArea.innerHTML += generateQSLPreview(row,imageURL);
+    });
     // Appliquer scale pour aperçu réduit
     document.querySelectorAll("#previewArea .qsl-card").forEach(card => {
       card.style.transform = "scale(0.4)";
@@ -226,11 +223,7 @@ document.getElementById("genForm").addEventListener("submit", e=>{
   const imgFile = formData.get("qsl");
   const data = Object.fromEntries(formData.entries());
   const imgURL = URL.createObjectURL(imgFile);
-  preview.innerHTML += `
-  <div class="preview-item">
-    ${generateQSLPreview(data,imgURL)}
-  </div>
-`;
+  preview.innerHTML = generateQSLPreview(data,imgURL);
   // Appliquer scale pour aperçu réduit
   document.querySelectorAll("#genPreview .qsl-card").forEach(card => {
     card.style.transform = "scale(0.4)";
