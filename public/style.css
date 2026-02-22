@@ -313,7 +313,7 @@ PREVIEW MULTI QSL FIX FINAL
 }
 
 .preview-item {
-  width: 260px;
+  width: fit-content;
 }
 
 .preview-item .qsl-card {
