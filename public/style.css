@@ -292,7 +292,7 @@ footer {
 #galleryContent {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 5px;
   justify-content: center;
 }
 
