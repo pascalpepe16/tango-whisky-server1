@@ -343,3 +343,42 @@ footer {
 #genPreview .qsl-card {
   margin: 0;
 }
+/* ==========================
+   FIX PREVIEW PROPRE (SANS SCALE)
+========================== */
+
+.previewItem {
+  width: 260px;
+  flex: 0 0 auto;
+}
+
+/* empêche le bug de chevauchement */
+#previewArea, #genPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* carte compacte */
+.previewItem .qsl-card {
+  width: 100%;
+}
+
+/* image réduite */
+.previewItem .qsl-image {
+  height: 140px;
+}
+
+.previewItem .qsl-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* texte compact */
+.previewItem .qsl-text {
+  font-size: 12px;
+  padding: 8px;
+}
