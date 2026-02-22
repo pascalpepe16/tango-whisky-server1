@@ -223,7 +223,7 @@ document.getElementById("genForm").addEventListener("submit", e=>{
   const imgFile = formData.get("qsl");
   const data = Object.fromEntries(formData.entries());
   const imgURL = URL.createObjectURL(imgFile);
-  preview.innerHTML = generateQSLPreview(data,imgURL);
+  preview.innerHTML += generateQSLPreview(data,imgURL);
   // Appliquer scale pour aperçu réduit
   document.querySelectorAll("#genPreview .qsl-card").forEach(card => {
     card.style.transform = "scale(0.4)";
