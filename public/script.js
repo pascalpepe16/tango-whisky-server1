@@ -230,7 +230,7 @@ document.getElementById("genForm").addEventListener("submit", e=>{
   document.querySelectorAll("#genPreview .qsl-card").forEach(card => {
     card.style.transform = "scale(0.4)";
     card.style.transformOrigin = "top left";
-    card.style.marginBottom = "10px";
+   card.style.margin = "-60px -80px";
   });
   fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"}).catch(()=>{});
 });
