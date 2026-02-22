@@ -150,9 +150,12 @@ function processFile() {
     });
     // Appliquer scale pour aperçu réduit
     document.querySelectorAll("#previewArea .qsl-card").forEach(card => {
-      card.style.transform = "scale(0.4)";
-      card.style.transformOrigin = "top left";
-      card.style.marginBottom = "10px";
+     card.style.transform = "scale(0.4)";
+card.style.transformOrigin = "top left";
+
+/* AJOUT IMPORTANT */
+card.style.width = "250%";   // compense le scale
+card.style.margin = "0";
     });
   };
 
