@@ -307,18 +307,17 @@ footer {
 #genPreview {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;  /* Réduit l'espace entre les miniatures */
+  gap: 10px;
   justify-content: center;
 }
 
 #genPreview .qsl-card {
-  width: 230px; /* Ajuste la largeur des cartes QSL pour avoir plus de place */
+  width: 260px;      /* taille réelle réduite */
   flex: 0 0 auto;
-  margin-bottom: 8px;  /* Réduit la distance en bas des cartes */
 }
 
 #genPreview .qsl-image {
-  height: 120px; /* Réduit la hauteur de l'image */
+  height: 140px;
 }
 
 #genPreview .qsl-image img {
@@ -328,6 +327,6 @@ footer {
 }
 
 #genPreview .qsl-text {
-  font-size: 12px;  /* Ajuste la taille du texte */
-  padding: 6px;  /* Ajuste le padding du texte pour moins d'espace */
+  font-size: 12px;
+  padding: 8px;
 }
