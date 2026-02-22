@@ -94,7 +94,6 @@ nav button:hover {
   transform: scale(1.03);
 }
 
-/* Bouton téléchargement */
 .btn-download {
   display: inline-block;
   margin-top: 8px;
@@ -131,42 +130,22 @@ nav button:hover {
 }
 
 /* ==========================
-   PREVIEW MINIATURES
+   PREVIEW MINIATURES (Créer / Ajouter)
 ========================== */
 
-#previewArea { 
-  display:flex; 
-  flex-wrap:wrap; 
-  gap:15px; 
-  margin-top:15px; 
-  justify-content:center; 
+#previewArea,
+#genPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px; /* réduit espace entre QSL */
+  justify-content: flex-start;
 }
 
-.thumbWrap { 
-  width:200px; 
-  text-align:center; 
-  border-radius:10px; 
-  overflow:hidden; 
-  background: rgba(0,0,0,0.6);
-  padding:10px;
-  transition: 0.2s;
-}
-
-.thumbWrap:hover {
-  transform: translateY(-4px);
-}
-
-.thumbWrap img { 
-  width:100%; 
-  height:auto; 
-  object-fit:cover; 
-  border-radius:6px;
-  cursor:pointer;
-  transition: 0.3s;
-}
-
-.thumbWrap img:hover {
-  transform: scale(1.05);
+#previewArea .qsl-card,
+#genPreview .qsl-card {
+  transform: scale(0.4);
+  transform-origin: top left;
+  margin: 0; /* pas d’espace fantôme */
 }
 
 /* ==========================
@@ -271,6 +250,22 @@ footer {
 }
 
 /* ==========================
+   GALLERY MULTI LIGNES
+========================== */
+
+#galleryContent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+#galleryContent .thumbWrap {
+  width: 150px;
+  flex: 0 0 auto;
+}
+
+/* ==========================
    RESPONSIVE
 ========================== */
 
@@ -283,58 +278,4 @@ footer {
     padding:12px; 
     font-size:clamp(12px,2.5vw,16px); 
   }
-}
-
-/* ==========================
-   GALLERY MULTI LIGNES
-========================== */
-
-#galleryContent {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  justify-content: center;
-}
-
-#galleryContent .thumbWrap {
-  width: 150px;
-  flex: 0 0 auto;
-}
-
-/* ==========================
-   PREVIEW PROPRE FINAL
-========================== */
-
-/* Zone preview */
-#previewArea,
-#genPreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px; /* espace réduit */
-  justify-content: flex-start; /* IMPORTANT */
-}
-
-/* Chaque bloc */
-.preview-item {
-  width: auto; /* plus de largeur forcée */
-  margin: 0;
-  padding: 0;
-}
-
-/* Carte QSL réduite */
-.preview-item .qsl-card {
-  transform: scale(0.45); /* taille miniature */
-  transform-origin: top left;
-  margin: 0;
-}
-
-/* Supprime les espaces fantômes */
-.preview-item .qsl-card,
-.preview-item {
-  display: inline-block;
-}
-
-.preview-item .qsl-text {
-  font-size: 12px;
-  padding: 8px;
 }
