@@ -305,40 +305,6 @@ footer {
    PREVIEW CREER / AJOUTER REDUIT
 ========================== */
 
-#genPreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-}
-
-#genPreview .qsl-card {
-  transform: scale(0.4);          /* réduit taille globale */
-  transform-origin: top center;
-  width: 260px;                    /* largeur de la carte avant scale */
-  flex: 0 0 auto;
-}
-
-#genPreview .qsl-image {
-  height: 130px;                   /* réduit hauteur image */
-}
-
-#genPreview .qsl-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;               /* image bien cadrée */
-}
-
-#genPreview .qsl-text {
-  font-size: 12px;                 /* texte plus petit mais lisible */
-  padding: 8px;
-}
-#genPreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-start;
-}
 
 /* Taille réelle des cartes */
 #genPreview .qsl-card {
