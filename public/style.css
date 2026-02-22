@@ -34,17 +34,7 @@ nav button {
   border: none;
   border-radius: 6px;
   font-size: 15px;
-  transition: all 0.2s ease;
 }
-
-nav button:hover { 
-  opacity: 0.9; 
-  transform: translateY(-1px);
-}
-
-/* ==========================
-   SECTIONS
-========================== */
 
 .section {
   display: block;
@@ -55,61 +45,81 @@ nav button:hover {
   border-radius: 8px;
 }
 
-.wideForm { width: 95%; max-width: 1200px; margin: auto; }
+/* ==========================
+   PREVIEW GLOBAL (IMPORTANT)
+========================== */
 
-.twoColumns { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 25px; 
-}
-
-.twoColumns input, 
-.twoColumns select, 
-.twoColumns textarea {
-  width: 100%; 
-  font-size: 16px; 
-  margin-bottom: 12px; 
-  padding: 6px; 
-  border-radius: 6px; 
-  border: 1px solid #ccc;
+#previewArea, 
+#genPreview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px; /* ESPACE ENTRE QSL */
 }
 
 /* ==========================
-   BUTTONS
+   ITEM
 ========================== */
 
-.primary { 
-  background: #1e90ff; 
-  color: #fff; 
-  padding: 10px 18px; 
-  border: none; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  font-size: 16px; 
-  transition: 0.2s;
+.previewItem {
+  width: 260px;
+  flex: 0 0 auto;
 }
 
-.primary:hover { 
-  opacity: 0.9; 
-  transform: scale(1.03);
-}
+/* ==========================
+   QSL CARD (FIX PRINCIPAL)
+========================== */
 
-/* Bouton téléchargement */
-.btn-download {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 6px 12px;
-  background: #28a745;
-  color: white;
+.qsl-card {
+  display: flex;
+  width: 100%;
+  height: 140px; /* HAUTEUR UNIQUE (IMPORTANT) */
+  background: #fff;
+  overflow: hidden;
   border-radius: 6px;
-  text-decoration: none;
-  font-size: 13px;
-  transition: 0.2s;
 }
 
-.btn-download:hover {
-  background: #218838;
-  transform: scale(1.05);
+/* ==========================
+   IMAGE (PROPRE)
+========================== */
+
+.qsl-image {
+  width: 50%;
+  height: 100%;
+}
+
+.qsl-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================
+   TEXTE (FIX BUG PRINCIPAL)
+========================== */
+
+.qsl-text {
+  width: 50%;
+  background: #e6e6e6; /* GRIS */
+  padding: 6px;
+  font-size: 11px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.qsl-text h3 {
+  margin: 0;
+  font-size: 12px;
+}
+
+.qsl-text p {
+  margin: 0;
+  line-height: 1.2;
 }
 
 /* ==========================
@@ -127,103 +137,30 @@ nav button:hover {
   height:100%; 
   background:#28a745; 
   border-radius:10px; 
-  transition: width 0.3s ease; 
 }
 
 /* ==========================
-   PREVIEW MINIATURES
+   GALLERY
 ========================== */
 
-#previewArea { 
-  display:flex; 
-  flex-wrap:wrap; 
-  gap:5px; 
-  margin-top:15px; 
-  justify-content:center; 
-}
-
-.thumbWrap { 
-  width:200px; 
-  text-align:center; 
-  border-radius:10px; 
-  overflow:hidden; 
-  background: rgba(0,0,0,0.6);
-  padding:10px;
-  transition: 0.2s;
-}
-
-.thumbWrap:hover {
-  transform: translateY(-4px);
-}
-
-.thumbWrap img { 
-  width:100%; 
-  height:auto; 
-  object-fit:cover; 
-  border-radius:6px;
-  cursor:pointer;
-  transition: 0.3s;
-}
-
-.thumbWrap img:hover {
-  transform: scale(1.05);
-}
-
-/* ==========================
-   QSL CARD
-========================== */
-/* CONTENEUR GLOBAL */
-.previewItem {
-  display: inline-block;
-  margin: 5px; /* espace entre QSL */
-}
-
-/* CARTE QSL */
-.qsl-card {
+#galleryContent {
   display: flex;
-  align-items: stretch; /* IMPORTANT */
-  width: 300px;
-  height: 120px; /* hauteur fixe = propre */
-  border: 1px solid #ccc;
-  overflow: hidden;
-  background: #fff;
-}
-
-/* IMAGE */
-.qsl-image {
-  width: 50%;
-  height: 100%;
-}
-
-.qsl-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* évite les déformations */
-}
-
-/* TEXTE */
-.qsl-text {
-  width: 50%;
-  padding: 5px;
-  font-size: 11px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 15px;
   justify-content: center;
 }
 
-/* TEXTE COMPACT */
-.qsl-text h3 {
-  margin: 0;
-  font-size: 12px;
+.thumbWrap {
+  width: 150px;
 }
 
-.qsl-text p {
-  margin: 0;
-  line-height: 1.2;
+.thumbWrap img {
+  width: 100%;
+  border-radius: 6px;
 }
+
 /* ==========================
-   DOWNLOAD PREVIEW BLOCK
+   DOWNLOAD
 ========================== */
 
 .dlWrap { 
@@ -236,46 +173,7 @@ nav button:hover {
 
 .dlThumb { 
   width:200px; 
-  height:auto; 
-  object-fit:cover; 
   border-radius:8px;
-  cursor:pointer;
-  transition:0.3s;
-}
-
-.dlThumb:hover {
-  transform: scale(1.05);
-}
-
-/* ==========================
-   FOOTER
-========================== */
-
-footer { 
-  text-align:center; 
-  padding:12px; 
-  margin-top:25px; 
-  background:rgba(0,0,0,0.4); 
-}
-
-#fbFooterLink { 
-  position:fixed; 
-  bottom:15px; 
-  left:50%; 
-  transform:translateX(-50%); 
-  width:45px; 
-  height:45px; 
-  z-index:1000; 
-}
-
-#fbFooterLink img { 
-  width:100%; 
-  height:100%; 
-  border-radius:50%; 
-}
-
-#fbFooterLink:hover { 
-  transform:translateX(-50%) scale(1.15); 
 }
 
 /* ==========================
@@ -283,110 +181,17 @@ footer {
 ========================== */
 
 @media (max-width:768px) {
-  .twoColumns { grid-template-columns:1fr; }
-
-  .qsl-card { flex-direction:column; }
-
-  .qsl-text { 
-    padding:12px; 
-    font-size:clamp(12px,2.5vw,16px); 
+  .qsl-card {
+    flex-direction: column;
+    height: auto;
   }
-}
 
-/* ==========================
-   GALLERY MULTI LIGNES
-========================== */
+  .qsl-image {
+    width: 100%;
+    height: 150px;
+  }
 
-#galleryContent {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-}
-
-#galleryContent .thumbWrap {
-  width: 150px;
-  flex: 0 0 auto;
-}
-
-/* ==========================
-   PREVIEW CREER / AJOUTER REDUIT
-========================== */
-
-
-/* Taille réelle des cartes */
-#genPreview .qsl-card {
-  width: 240px;
-  flex: 0 0 auto;
-}
-
-/* Image réduite */
-#genPreview .qsl-image {
-  height: 130px;
-}
-
-#genPreview .qsl-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Texte compact mais lisible */
-#genPreview .qsl-text {
-  font-size: 12px;
-  padding: 8px;
-}
-/* ==========================
-   FIX ESPACE PREVIEW CREER / AJOUTER
-========================== */
-
-#genPreview {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 5px; /* <-- espace réduit (avant trop grand) */
-}
-
-/* supprime les marges parasites éventuelles */
-#genPreview .qsl-card {
-  margin: 0;
-}
-/* ==========================
-   FIX PREVIEW PROPRE (SANS SCALE)
-========================== */
-
-.previewItem {
-  width: 260px;
-  flex: 0 0 auto;
-}
-
-/* empêche le bug de chevauchement */
-#previewArea, #genPreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-/* carte compacte */
-.previewItem .qsl-card {
-  width: 100%;
-}
-
-/* image réduite */
-.previewItem .qsl-image {
-  height: 140px;
-}
-
-.previewItem .qsl-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* texte compact */
-.previewItem .qsl-text {
-  font-size: 12px;
-  padding: 8px;
+  .qsl-text {
+    width: 100%;
+  }
 }
