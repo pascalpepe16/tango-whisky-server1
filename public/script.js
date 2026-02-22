@@ -146,8 +146,11 @@ function processFile() {
   const showPreview = () => {
     previewArea.innerHTML = "";
     importedLogs.slice(0,10).forEach(row => {
-      previewArea.innerHTML += generateQSLPreview(row,imageURL);
-    });
+  preview.innerHTML += `
+  <div class="preview-item">
+    ${generateQSLPreview(data,imgURL)}
+  </div>
+`;
     // Appliquer scale pour aperçu réduit
     document.querySelectorAll("#previewArea .qsl-card").forEach(card => {
       card.style.transform = "scale(0.4)";
