@@ -87,7 +87,7 @@ function showTab(id) {
 }
 
 // ===============================
-// GALLERY (TOUCHÉ = NON)
+// GALLERY
 // ===============================
 async function loadGallery() {
   const box = document.getElementById("galleryContent");
@@ -141,20 +141,14 @@ function processFile() {
 
   const showPreview = () => {
     previewArea.innerHTML = "";
-
     importedLogs.slice(0,10).forEach(row => {
       previewArea.innerHTML += generateQSLPreview(row,imageURL);
     });
-
-    // 🔥 FIX SCALE PROPRE (corrige texte trop grand + espacement)
-    document.querySelectorAll("#previewArea .previewItem").forEach(item => {
-      item.style.transform = "scale(0.4)";
-      item.style.transformOrigin = "top left";
-      item.style.width = "250%";   // compense le scale
-      item.style.margin = "0";
-    });
   };
 
+  // =====================
+  // CSV
+  // =====================
   if (ext === "csv") {
     Papa.parse(file,{
       header:true,
@@ -168,11 +162,16 @@ function processFile() {
     });
   }
 
+  // =====================
+  // XLSX (FIX ICI)
+  // =====================
   else if (ext === "xlsx") {
     const reader = new FileReader();
+
     reader.onload = function(e) {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: "array" });
+
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(sheet);
 
@@ -182,16 +181,16 @@ function processFile() {
       showPreview();
       document.getElementById("validateImportBtn").style.display = "inline-block";
     };
+
     reader.readAsArrayBuffer(file);
   }
 
   else {
-    status.innerHTML = "Format non supporté";
+    status.innerHTML = "Format non supporté (csv ou xlsx)";
   }
 }
-
 // ===============================
-// BULK UPLOAD
+// BULK UPLOAD (PROGRESS OK)
 // ===============================
 document.getElementById("validateImportBtn").onclick = async function() {
   const imageInput = document.getElementById("bulkImage");
@@ -244,74 +243,83 @@ document.getElementById("genForm").addEventListener("submit", e=>{
   const preview = document.getElementById("genPreview");
   preview.innerHTML = generateQSLPreview(data,imgURL);
 
-  // 🔥 même fix que import
-  document.querySelectorAll("#genPreview .previewItem").forEach(item => {
-    item.style.transform = "scale(0.4)";
-    item.style.transformOrigin = "top left";
-    item.style.width = "250%";
-    item.style.margin = "0";
-  });
-
   fetch(API_URL+"/upload",{method:"POST",body:formData});
 });
+function processFile() {
+  const file = document.getElementById("importFile").files[0];
+  const previewArea = document.getElementById("previewArea");
+  const status = document.getElementById("importStatus");
 
-// ===============================
-// DOWNLOAD (RÉPARÉ)
-// ===============================
-document.getElementById("btnSearch").onclick = async () => {
-  const call = document.getElementById("dlCall").value.trim().toUpperCase();
-  const box = document.getElementById("dlPreview");
-
-  if (!call) {
-    alert("Entrer un indicatif");
+  if (!file) {
+    status.innerHTML = "Choisir un fichier";
     return;
   }
 
-  box.innerHTML = "Recherche...";
+  const imageInput = document.getElementById("bulkImage");
+  const imageURL = imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : "";
 
-  try {
-    const res = await fetch(API_URL + "/download/" + call);
+  const ext = file.name.split(".").pop().toLowerCase();
 
-    if (!res.ok) {
-      box.innerHTML = "Erreur serveur";
-      return;
-    }
+  const normalizeRow = row => ({
+    Indicatif:(row.indicatif||row.Indicatif||"").trim(),
+    Date:(row.date||row.Date||"").trim(),
+    Heure:(row.heure||row.Heure||"").trim(),
+    Bande:(row.bande||row.Bande||"").trim(),
+    Report:(row.report||row.Report||"").trim(),
+    Mode:(row.mode||row.Mode||"").trim(),
+    Note:(row.note||row.Note||"").trim()
+  });
 
-    const list = await res.json();
-
-    if (!Array.isArray(list) || list.length === 0) {
-      box.innerHTML = "Aucune QSL trouvée";
-      return;
-    }
-
-    box.innerHTML = "";
-
-    list.forEach(q => {
-      const div = document.createElement("div");
-      div.className = "dlWrap";
-
-      div.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb">
-        <button class="primary" onclick="downloadQSL('${q.public_id}')">
-          Télécharger
-        </button>
-      `;
-
-      box.appendChild(div);
+  const showPreview = () => {
+    previewArea.innerHTML = "";
+    importedLogs.slice(0,10).forEach(row => {
+      previewArea.innerHTML += generateQSLPreview(row,imageURL);
     });
+  };
 
-  } catch (err) {
-    console.error(err);
-    box.innerHTML = "Erreur réseau";
+  // =====================
+  // CSV
+  // =====================
+  if (ext === "csv") {
+    Papa.parse(file,{
+      header:true,
+      skipEmptyLines:true,
+      complete:res=>{
+        importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
+        status.innerHTML = `${importedLogs.length} lignes chargées`;
+        showPreview();
+        document.getElementById("validateImportBtn").style.display = "inline-block";
+      }
+    });
   }
-};
 
-function downloadQSL(pid){
-  const a = document.createElement("a");
-  a.href = API_URL+"/file?pid="+encodeURIComponent(pid);
-  a.click();
+  // =====================
+  // XLSX (FIX ICI)
+  // =====================
+  else if (ext === "xlsx") {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet);
+
+      importedLogs = json.map(normalizeRow).filter(r=>r.Indicatif);
+
+      status.innerHTML = `${importedLogs.length} lignes chargées`;
+      showPreview();
+      document.getElementById("validateImportBtn").style.display = "inline-block";
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  else {
+    status.innerHTML = "Format non supporté (csv ou xlsx)";
+  }
 }
-
 // ===============================
 checkAuth();
 showTab("home");
