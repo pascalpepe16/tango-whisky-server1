@@ -119,8 +119,15 @@ function processFile() {
   const previewArea = document.getElementById("previewArea");
   const status = document.getElementById("importStatus");
 
+  if (!file) {
+    status.innerHTML = "Choisir un fichier";
+    return;
+  }
+
   const imageInput = document.getElementById("bulkImage");
   const imageURL = imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : "";
+
+  const ext = file.name.split(".").pop().toLowerCase();
 
   const normalizeRow = row => ({
     Indicatif:(row.indicatif||row.Indicatif||"").trim(),
@@ -134,24 +141,54 @@ function processFile() {
 
   const showPreview = () => {
     previewArea.innerHTML = "";
-
     importedLogs.slice(0,10).forEach(row => {
       previewArea.innerHTML += generateQSLPreview(row,imageURL);
     });
   };
 
-  Papa.parse(file,{
-    header:true,
-    skipEmptyLines:true,
-    complete:res=>{
-      importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
+  // =====================
+  // CSV
+  // =====================
+  if (ext === "csv") {
+    Papa.parse(file,{
+      header:true,
+      skipEmptyLines:true,
+      complete:res=>{
+        importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
+        status.innerHTML = `${importedLogs.length} lignes chargées`;
+        showPreview();
+        document.getElementById("validateImportBtn").style.display = "inline-block";
+      }
+    });
+  }
+
+  // =====================
+  // XLSX (FIX ICI)
+  // =====================
+  else if (ext === "xlsx") {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet);
+
+      importedLogs = json.map(normalizeRow).filter(r=>r.Indicatif);
+
       status.innerHTML = `${importedLogs.length} lignes chargées`;
       showPreview();
       document.getElementById("validateImportBtn").style.display = "inline-block";
-    }
-  });
-}
+    };
 
+    reader.readAsArrayBuffer(file);
+  }
+
+  else {
+    status.innerHTML = "Format non supporté (csv ou xlsx)";
+  }
+}
 // ===============================
 // BULK UPLOAD (PROGRESS OK)
 // ===============================
