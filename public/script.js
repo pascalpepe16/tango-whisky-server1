@@ -152,7 +152,7 @@ function processFile() {
     document.querySelectorAll("#previewArea .qsl-card").forEach(card => {
    card.style.transform = "scale(0.4)";
 card.style.transformOrigin = "top left";
-card.style.margin = "-60px -80px"; // 👈 compense l’espace réel
+card.style.margin = "-60px -50px"; // 👈 compense l’espace réel
 
 
     });
