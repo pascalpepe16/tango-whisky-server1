@@ -149,7 +149,7 @@ function processFile() {
   preview.innerHTML += `
   <div class="preview-item">
     ${generateQSLPreview(data,imgURL)}
-  </div>
+
 `;
     // Appliquer scale pour aperçu réduit
     document.querySelectorAll("#previewArea .qsl-card").forEach(card => {
