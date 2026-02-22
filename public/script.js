@@ -152,7 +152,7 @@ function processFile() {
     document.querySelectorAll("#previewArea .qsl-card").forEach(card => {
    card.style.transform = "scale(0.4)";
 card.style.transformOrigin = "top left";
-card.style.margin = "-60px -120px"; // 👈 compense l’espace réel
+card.style.margin = "-60px -80px"; // 👈 compense l’espace réel
 
 
     });
@@ -230,7 +230,7 @@ document.getElementById("genForm").addEventListener("submit", e=>{
   document.querySelectorAll("#genPreview .qsl-card").forEach(card => {
     card.style.transform = "scale(0.4)";
     card.style.transformOrigin = "top left";
-   card.style.margin = "-60px -120px";
+   card.style.margin = "-60px -80px";
   });
   fetch(API_URL+"/upload",{method:"POST",body:formData,credentials:"same-origin"}).catch(()=>{});
 });
