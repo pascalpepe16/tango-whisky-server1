@@ -328,3 +328,18 @@ footer {
   font-size: 12px;
   padding: 8px;
 }
+/* ==========================
+   FIX ESPACE PREVIEW CREER / AJOUTER
+========================== */
+
+#genPreview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px; /* <-- espace réduit (avant trop grand) */
+}
+
+/* supprime les marges parasites éventuelles */
+#genPreview .qsl-card {
+  margin: 0;
+}
