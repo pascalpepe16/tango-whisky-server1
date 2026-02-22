@@ -302,32 +302,36 @@ footer {
 }
 
 /* ==========================
-PREVIEW MULTI QSL FIX FINAL
+   PREVIEW PROPRE FINAL
 ========================== */
 
+/* Zone preview */
+#previewArea,
 #genPreview {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  gap: 6px; /* espace réduit */
+  justify-content: flex-start; /* IMPORTANT */
 }
 
+/* Chaque bloc */
 .preview-item {
-  width: fit-content;
+  width: auto; /* plus de largeur forcée */
+  margin: 0;
+  padding: 0;
 }
 
+/* Carte QSL réduite */
 .preview-item .qsl-card {
-  width: 100%;
+  transform: scale(0.45); /* taille miniature */
+  transform-origin: top left;
+  margin: 0;
 }
 
-.preview-item .qsl-image {
-  height: 140px;
-}
-
-.preview-item .qsl-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Supprime les espaces fantômes */
+.preview-item .qsl-card,
+.preview-item {
+  display: inline-block;
 }
 
 .preview-item .qsl-text {
