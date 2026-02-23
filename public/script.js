@@ -43,29 +43,23 @@ async function checkAuth() {
     document.getElementById("btnGallery").style.display = window.isAuthenticated ? "inline-block" : "none";
     document.getElementById("btnCreate").style.display = window.isAuthenticated ? "inline-block" : "none";
 
-  } catch (err) { console.error(err); }
+  } catch (err) {}
 }
 
 async function login() {
   const indicatif = document.getElementById("loginIndicatif").value.trim();
   const password = document.getElementById("loginPassword").value;
 
-  try {
-    const res = await fetch(API_URL + "/login", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      credentials: "same-origin",
-      body: JSON.stringify({indicatif, password})
-    });
+  const res = await fetch(API_URL + "/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    credentials: "same-origin",
+    body: JSON.stringify({indicatif, password})
+  });
 
-    if (res.ok) {
-      await checkAuth();
-      showTab("home");
-    } else {
-      document.getElementById("loginError").innerText = "Erreur login";
-    }
-  } catch {
-    document.getElementById("loginError").innerText = "Erreur réseau";
+  if (res.ok) {
+    await checkAuth();
+    showTab("home");
   }
 }
 
@@ -89,7 +83,7 @@ function showTab(id) {
 }
 
 // ===============================
-// GALLERY (INTOUCHÉ)
+// GALLERY
 // ===============================
 async function loadGallery() {
   const box = document.getElementById("galleryContent");
@@ -104,7 +98,11 @@ async function loadGallery() {
     list.forEach(q => {
       const div = document.createElement("div");
       div.className = "thumbWrap";
-      div.innerHTML = `<img src="${q.thumb}">`;
+
+      div.innerHTML = `
+        <img src="${q.thumb}" onclick="openModal('${q.url || q.thumb}')">
+      `;
+
       box.appendChild(div);
     });
 
@@ -114,22 +112,17 @@ async function loadGallery() {
 }
 
 // ===============================
-// IMPORT CSV / XLSX (FIX COMPLET)
+// IMPORT CSV / XLSX
 // ===============================
 function processFile() {
   const file = document.getElementById("importFile").files[0];
   const previewArea = document.getElementById("previewArea");
   const status = document.getElementById("importStatus");
 
-  if (!file) {
-    status.innerHTML = "Choisir un fichier";
-    return;
-  }
+  if (!file) return;
 
   const imageInput = document.getElementById("bulkImage");
   const imageURL = imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : "";
-
-  const ext = file.name.split(".").pop().toLowerCase();
 
   const normalizeRow = row => ({
     Indicatif:(row.indicatif||row.Indicatif||"").trim(),
@@ -148,59 +141,26 @@ function processFile() {
     });
   };
 
-  // CSV
-  if (ext === "csv") {
-    Papa.parse(file,{
-      header:true,
-      skipEmptyLines:true,
-      complete:res=>{
-        importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
-        status.innerHTML = `${importedLogs.length} lignes chargées`;
-        showPreview();
-        document.getElementById("validateImportBtn").style.display = "inline-block";
-      }
-    });
-  }
-
-  // XLSX
-  else if (ext === "xlsx") {
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet);
-
-      importedLogs = json.map(normalizeRow).filter(r=>r.Indicatif);
-
-      status.innerHTML = `${importedLogs.length} lignes chargées`;
+  Papa.parse(file,{
+    header:true,
+    skipEmptyLines:true,
+    complete:res=>{
+      importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
       showPreview();
       document.getElementById("validateImportBtn").style.display = "inline-block";
-    };
-
-    reader.readAsArrayBuffer(file);
-  }
-
-  else {
-    status.innerHTML = "Format non supporté";
-  }
+    }
+  });
 }
 
 // ===============================
-// BULK UPLOAD (OK)
+// BULK UPLOAD
 // ===============================
 document.getElementById("validateImportBtn").onclick = async function() {
   const imageInput = document.getElementById("bulkImage");
-  const status = document.getElementById("importStatus");
 
-  let success = 0;
-
-  for(let i=0;i<importedLogs.length;i++){
-    const row = importedLogs[i];
-
+  for(let row of importedLogs){
     const formData = new FormData();
+
     formData.append("indicatif", row.Indicatif);
     formData.append("date", row.Date);
     formData.append("time", row.Heure);
@@ -210,18 +170,12 @@ document.getElementById("validateImportBtn").onclick = async function() {
     formData.append("note", row.Note);
     formData.append("qsl", imageInput.files[0]);
 
-    try{
-      const res = await fetch(API_URL+"/upload",{method:"POST",body:formData});
-      const data = await res.json();
-      if(data.success) success++;
-    } catch(err){}
+    await fetch(API_URL+"/upload",{method:"POST",body:formData});
   }
-
-  status.innerHTML = `✅ ${success} QSL enregistrées`;
 };
 
 // ===============================
-// CREATE / PREVIEW (FIX)
+// CREATE
 // ===============================
 document.getElementById("genForm").addEventListener("submit", e=>{
   e.preventDefault();
@@ -230,55 +184,31 @@ document.getElementById("genForm").addEventListener("submit", e=>{
   const imgURL = URL.createObjectURL(formData.get("qsl"));
   const data = Object.fromEntries(formData.entries());
 
-  const preview = document.getElementById("genPreview");
-  preview.innerHTML = generateQSLPreview(data,imgURL);
+  document.getElementById("genPreview").innerHTML = generateQSLPreview(data,imgURL);
 
   fetch(API_URL+"/upload",{method:"POST",body:formData});
 });
 
 // ===============================
-// DOWNLOAD (FIX IMPORTANT)
+// MODAL IMAGE
 // ===============================
-document.getElementById("btnSearch").onclick = async ()=>{
-  const call = document.getElementById("dlCall").value.trim().toUpperCase();
-  const box = document.getElementById("dlPreview");
+function openModal(src){
+  const modal = document.getElementById("imgModal");
+  const img = document.getElementById("modalImg");
 
-  if(!call){ alert("Entrer un indicatif"); return; }
+  img.src = src;
+  modal.classList.remove("hidden");
+}
 
-  box.innerHTML = "Recherche...";
-
-  try{
-    const res = await fetch(API_URL+"/download/"+call);
-    const list = await res.json();
-
-    if(!list.length){
-      box.innerHTML="Aucune QSL trouvée";
-      return;
-    }
-
-    box.innerHTML="";
-
-    list.forEach(q=>{
-      const div = document.createElement("div");
-      div.className = "dlWrap";
-
-      div.innerHTML = `
-        <img src="${q.thumb}" class="dlThumb">
-        <button class="btn-download" onclick="downloadQSL('${q.public_id}')">Télécharger</button>
-      `;
-
-      box.appendChild(div);
-    });
-
-  } catch(err){
-    box.innerHTML="Erreur réseau";
-    console.error(err);
-  }
+document.getElementById("closeModal").onclick = () => {
+  document.getElementById("imgModal").classList.add("hidden");
 };
 
-function downloadQSL(pid){
-  window.open(API_URL+"/file?pid="+encodeURIComponent(pid), "_blank");
-}
+document.getElementById("imgModal").onclick = (e) => {
+  if(e.target.id === "imgModal"){
+    e.currentTarget.classList.add("hidden");
+  }
+};
 
 // ===============================
 checkAuth();
