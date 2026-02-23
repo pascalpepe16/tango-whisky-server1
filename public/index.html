@@ -4,10 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TANGO WHISKY eQSL</title>
+
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -68,34 +70,59 @@
   <form id="genForm" enctype="multipart/form-data" class="wideForm">
     <div class="twoColumns">
       <div>
-        <label>Indicatif :</label><input type="text" name="indicatif" required>
-        <label>Date :</label><input type="date" name="date">
-        <label>Heure :</label><input type="time" name="time">
+        <label>Indicatif :</label>
+        <input type="text" name="indicatif" required>
+        <label>Date :</label>
+        <input type="date" name="date">
+        <label>Heure :</label>
+        <input type="time" name="time">
         <label>Bande :</label>
-        <input type="text" name="band" placeholder="ex: 27 MHz" list="bandList">
-        <datalist id="bandList">
-          <option value="26 MHz">26 MHz</option>
-          <option value="27 MHz">27 MHz</option>
-          <option value="28 MHz">28 MHz</option>
-        </datalist>
-        <label>Report :</label><input type="text" name="report">
+
+<div style="display:flex; gap:8px; align-items:center;">
+  
+  <!-- Sélecteur bande -->
+  <select name="band" id="bandSelect" required>
+    <option value="">Bande</option>
+    <option value="26">26</option>
+    <option value="27">27</option>
+    <option value="28">28</option>
+    <option value="50">50</option>
+    <option value="144">144</option>
+    <option value="430">430</option>
+  </select>
+
+  <!-- Complément fréquence -->
+  <input 
+    type="text" 
+    id="bandDetail" 
+    placeholder="ex: 555" 
+    style="width:80px;"
+  >
+
+  <span>MHz</span>
+
+</div>
+        <label>Report :</label>
+        <input type="text" name="report">
       </div>
       <div>
         <label>Mode :</label>
         <select name="mode" required>
           <option value="">Sélectionner...</option>
+          <option value="USB">USB</option>
           <option value="SSB">SSB</option>
-          <option value="CW">CW</option>
           <option value="FM">FM</option>
           <option value="AM">AM</option>
           <option value="RTTY">RTTY</option>
           <option value="PSK31">PSK31</option>
           <option value="FT8">FT8</option>
           <option value="SSTV">SSTV</option>
-          <option value="Autre">Autre</option>
+          <option value="CW">CW</option>
         </select>
-        <label>Note :</label><textarea name="note"></textarea>
-        <label>Image QSL :</label><input type="file" name="qsl" accept="image/*" required>
+        <label>Note :</label>
+        <textarea name="note"></textarea>
+        <label>Image QSL :</label>
+        <input type="file" name="qsl" accept="image/*" required>
       </div>
     </div>
     <button class="primary" type="submit">Générer QSL</button>
@@ -116,19 +143,20 @@
   <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png">
 </a>
 
-<!-- POPUP -->
-<div id="popup" class="popup hidden">
-  <div class="popup-content">
-    <span id="popup-message"></span>
+</main>
+
+<div id="qslPopup" class="popup hidden">
+  <div class="popupBox">
+    <p>📡 Nouvelle QSL disponible !</p>
     <button onclick="closePopup()">OK</button>
   </div>
 </div>
 
-</main>
 <footer>
   TANGO WHISKY © 2026
 </footer>
 
 <script src="script.js"></script>
+
 </body>
 </html>
