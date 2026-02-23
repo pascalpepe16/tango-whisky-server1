@@ -139,12 +139,18 @@ nav button:hover {
 }
 
 #galleryContent .thumbWrap {
-  width: 140px; /* réduit pour éviter chevauchement */
+  width: 140px;
   flex: 0 0 auto;
   text-align: center;
   background: rgba(255,255,255,0.1);
   border-radius: 6px;
   padding: 4px;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+#galleryContent .thumbWrap:hover {
+  transform: scale(1.2); /* mini-zoom au survol */
 }
 
 #galleryContent .thumbWrap img {
@@ -257,66 +263,29 @@ footer {
 }
 
 /* ==========================
+   POPUP
+========================== */
+.popup { 
+  position: fixed; top:0; left:0; width:100%; height:100%; 
+  background: rgba(0,0,0,0.6); 
+  display:flex; justify-content:center; align-items:center; 
+  z-index: 2000; 
+}
+
+.popupBox { 
+  background: #fff; 
+  color: #000; 
+  padding: 20px; 
+  border-radius: 8px; 
+  text-align:center; 
+}
+
+/* ==========================
    RESPONSIVE
 ========================== */
 @media (max-width:768px) {
   .twoColumns { grid-template-columns:1fr; }
   .qsl-card { flex-direction:column; height:auto; }
   .qsl-text { padding:12px; font-size:clamp(12px,2.5vw,16px); }
-}
-/* ==========================
-   ZOOM AU SURVOL (GALLERY)
-========================== */
-
-#galleryContent .thumbWrap img {
-  transition: transform 0.3s ease;
-}
-
-#galleryContent .thumbWrap:hover img {
-  transform: scale(1.25);
-  z-index: 2;
-}
-
-/* évite que ça déborde moche */
-#galleryContent .thumbWrap {
-  overflow: hidden;
-}
-/* ==========================
-   POPUP QSL
-========================== */
-
-.popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.popupBox {
-  background: #222;
-  padding: 25px;
-  border-radius: 10px;
-  text-align: center;
-  color: #fff;
-  font-size: 18px;
-}
-
-.popupBox button {
-  margin-top: 15px;
-  padding: 8px 16px;
-  border: none;
-  background: #1e90ff;
-  color: #fff;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.popupBox button:hover {
-  opacity: 0.9;
+  #galleryContent { justify-content: center; }
 }
