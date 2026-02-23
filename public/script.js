@@ -104,8 +104,14 @@ async function loadGallery() {
     list.forEach(q => {
       const div = document.createElement("div");
       div.className = "thumbWrap";
-      div.innerHTML = `<img src="${q.thumb}">`;
+      div.innerHTML = `<img src="${q.thumb}" class="galleryThumb">`;
       box.appendChild(div);
+    });
+
+    // ZOOM AU PASSAGE SUR IMAGE
+    document.querySelectorAll(".galleryThumb").forEach(img=>{
+      img.addEventListener("mouseenter", ()=> img.style.transform="scale(1.15)");
+      img.addEventListener("mouseleave", ()=> img.style.transform="scale(1)");
     });
 
   } catch {
@@ -148,7 +154,6 @@ function processFile() {
     });
   };
 
-  // CSV
   if (ext === "csv") {
     Papa.parse(file,{
       header:true,
@@ -160,30 +165,20 @@ function processFile() {
         document.getElementById("validateImportBtn").style.display = "inline-block";
       }
     });
-  }
-
-  // XLSX
-  else if (ext === "xlsx") {
+  } else if (ext === "xlsx") {
     const reader = new FileReader();
-
     reader.onload = function(e) {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: "array" });
-
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(sheet);
-
       importedLogs = json.map(normalizeRow).filter(r=>r.Indicatif);
-
       status.innerHTML = `${importedLogs.length} lignes chargées`;
       showPreview();
       document.getElementById("validateImportBtn").style.display = "inline-block";
     };
-
     reader.readAsArrayBuffer(file);
-  }
-
-  else {
+  } else {
     status.innerHTML = "Format non supporté";
   }
 }
@@ -194,11 +189,9 @@ function processFile() {
 document.getElementById("validateImportBtn").onclick = async function() {
   const imageInput = document.getElementById("bulkImage");
   const status = document.getElementById("importStatus");
-
   const progress = document.getElementById("progressContainer");
   const bar = document.getElementById("progressBar");
 
-  // ✅ ON RÉACTIVE LA BARRE
   progress.style.display = "block";
   bar.style.width = "0%";
 
@@ -218,75 +211,64 @@ document.getElementById("validateImportBtn").onclick = async function() {
     formData.append("qsl", imageInput.files[0]);
 
     try {
-      const res = await fetch(API_URL + "/upload", {
-        method: "POST",
-        body: formData
-      });
-
+      const res = await fetch(API_URL + "/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (data.success) success++;
-    } catch (err) {}
+    } catch(err){}
 
-    // ✅ UPDATE PROGRESS
     const percent = Math.round(((i + 1) / importedLogs.length) * 100);
     bar.style.width = percent + "%";
-
-    status.innerHTML = `Traitement ${i + 1}/${importedLogs.length}`;
+    status.innerHTML = `Traitement ${i+1}/${importedLogs.length}`;
   }
 
   status.innerHTML = `✅ ${success} QSL enregistrées`;
 };
+
 // ===============================
-// CREATE / PREVIEW (FIX)
+// CREATE / PREVIEW
 // ===============================
 document.getElementById("genForm").addEventListener("submit", e=>{
   e.preventDefault();
-
   const formData = new FormData(e.target);
   const imgURL = URL.createObjectURL(formData.get("qsl"));
   const data = Object.fromEntries(formData.entries());
-
   const preview = document.getElementById("genPreview");
   preview.innerHTML = generateQSLPreview(data,imgURL);
-
   fetch(API_URL+"/upload",{method:"POST",body:formData});
 });
 
 // ===============================
-// DOWNLOAD (FIX IMPORTANT)
+// DOWNLOAD QSL
 // ===============================
 document.getElementById("btnSearch").onclick = async ()=>{
   const call = document.getElementById("dlCall").value.trim().toUpperCase();
   const box = document.getElementById("dlPreview");
-
   if(!call){ alert("Entrer un indicatif"); return; }
 
   box.innerHTML = "Recherche...";
-
   try{
-    const res = await fetch(API_URL+"/download/"+call);
+    const res = await fetch(API_URL+"/qsl/"+call); // CORRIGÉ
+    if(!res.ok) throw new Error("Erreur serveur");
     const list = await res.json();
 
-    if(!list.length){
+    if(!Array.isArray(list) || !list.length){
       box.innerHTML="Aucune QSL trouvée";
       return;
     }
-// ✅ POPUP SI QSL TROUVÉE
-showPopup();
-    box.innerHTML="";
 
+    // popup si QSL trouvée
+    showPopup();
+
+    box.innerHTML="";
     list.forEach(q=>{
       const div = document.createElement("div");
       div.className = "dlWrap";
-
       div.innerHTML = `
         <img src="${q.thumb}" class="dlThumb">
         <button class="btn-download" onclick="downloadQSL('${q.public_id}')">Télécharger</button>
       `;
-
       box.appendChild(div);
     });
-
   } catch(err){
     box.innerHTML="Erreur réseau";
     console.error(err);
@@ -298,6 +280,11 @@ function downloadQSL(pid){
 }
 
 // ===============================
+// POPUP (EXEMPLE SIMPLE)
+function showPopup(){
+  alert("✅ Nouvelle QSL disponible !");
+}
+
+// ===============================
 checkAuth();
 showTab("home");
- 
