@@ -264,3 +264,20 @@ footer {
   .qsl-card { flex-direction:column; height:auto; }
   .qsl-text { padding:12px; font-size:clamp(12px,2.5vw,16px); }
 }
+/* ==========================
+   ZOOM AU SURVOL (GALLERY)
+========================== */
+
+#galleryContent .thumbWrap img {
+  transition: transform 0.3s ease;
+}
+
+#galleryContent .thumbWrap:hover img {
+  transform: scale(1.25);
+  z-index: 2;
+}
+
+/* évite que ça déborde moche */
+#galleryContent .thumbWrap {
+  overflow: hidden;
+}
