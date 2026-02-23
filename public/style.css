@@ -150,7 +150,7 @@ nav button:hover {
 }
 
 #galleryContent .thumbWrap:hover {
-  transform: scale(1.2); /* mini-zoom au survol */
+  transform: scale(2.0); /* mini-zoom au survol */
 }
 
 #galleryContent .thumbWrap img {
