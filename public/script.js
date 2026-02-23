@@ -60,6 +60,8 @@ async function login() {
   if (res.ok) {
     await checkAuth();
     showTab("home");
+  } else {
+    document.getElementById("loginError").innerText = "Erreur login";
   }
 }
 
@@ -100,7 +102,8 @@ async function loadGallery() {
       div.className = "thumbWrap";
 
       div.innerHTML = `
-        <img src="${q.thumb}" onclick="openModal('${q.url || q.thumb}')">
+        <img src="${q.thumb}" class="zoom-img">
+        <a href="${API_URL}/download/${q.filename}" class="btn-download">Télécharger</a>
       `;
 
       box.appendChild(div);
@@ -119,10 +122,15 @@ function processFile() {
   const previewArea = document.getElementById("previewArea");
   const status = document.getElementById("importStatus");
 
-  if (!file) return;
+  if (!file) {
+    status.innerHTML = "Choisir un fichier";
+    return;
+  }
 
   const imageInput = document.getElementById("bulkImage");
   const imageURL = imageInput.files[0] ? URL.createObjectURL(imageInput.files[0]) : "";
+
+  const ext = file.name.split(".").pop().toLowerCase();
 
   const normalizeRow = row => ({
     Indicatif:(row.indicatif||row.Indicatif||"").trim(),
@@ -141,19 +149,46 @@ function processFile() {
     });
   };
 
-  Papa.parse(file,{
-    header:true,
-    skipEmptyLines:true,
-    complete:res=>{
-      importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
+  if (ext === "csv") {
+    Papa.parse(file,{
+      header:true,
+      skipEmptyLines:true,
+      complete:res=>{
+        importedLogs = res.data.map(normalizeRow).filter(r=>r.Indicatif);
+        status.innerHTML = `${importedLogs.length} lignes chargées`;
+        showPreview();
+        document.getElementById("validateImportBtn").style.display = "inline-block";
+      }
+    });
+  }
+
+  else if (ext === "xlsx") {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet);
+
+      importedLogs = json.map(normalizeRow).filter(r=>r.Indicatif);
+
+      status.innerHTML = `${importedLogs.length} lignes chargées`;
       showPreview();
       document.getElementById("validateImportBtn").style.display = "inline-block";
-    }
-  });
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  else {
+    status.innerHTML = "Format non supporté";
+  }
 }
 
 // ===============================
-// BULK UPLOAD
+// UPLOAD
 // ===============================
 document.getElementById("validateImportBtn").onclick = async function() {
   const imageInput = document.getElementById("bulkImage");
@@ -171,42 +206,6 @@ document.getElementById("validateImportBtn").onclick = async function() {
     formData.append("qsl", imageInput.files[0]);
 
     await fetch(API_URL+"/upload",{method:"POST",body:formData});
-  }
-};
-
-// ===============================
-// CREATE
-// ===============================
-document.getElementById("genForm").addEventListener("submit", e=>{
-  e.preventDefault();
-
-  const formData = new FormData(e.target);
-  const imgURL = URL.createObjectURL(formData.get("qsl"));
-  const data = Object.fromEntries(formData.entries());
-
-  document.getElementById("genPreview").innerHTML = generateQSLPreview(data,imgURL);
-
-  fetch(API_URL+"/upload",{method:"POST",body:formData});
-});
-
-// ===============================
-// MODAL IMAGE
-// ===============================
-function openModal(src){
-  const modal = document.getElementById("imgModal");
-  const img = document.getElementById("modalImg");
-
-  img.src = src;
-  modal.classList.remove("hidden");
-}
-
-document.getElementById("closeModal").onclick = () => {
-  document.getElementById("imgModal").classList.add("hidden");
-};
-
-document.getElementById("imgModal").onclick = (e) => {
-  if(e.target.id === "imgModal"){
-    e.currentTarget.classList.add("hidden");
   }
 };
 
