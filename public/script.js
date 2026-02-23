@@ -271,7 +271,8 @@ document.getElementById("btnSearch").onclick = async ()=>{
       box.innerHTML="Aucune QSL trouvée";
       return;
     }
-
+// ✅ POPUP SI QSL TROUVÉE
+showPopup();
     box.innerHTML="";
 
     list.forEach(q=>{
