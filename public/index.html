@@ -6,10 +6,10 @@
   <title>TANGO WHISKY eQSL</title>
 
   <link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <!-- Librairies pour import Excel/CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -70,16 +70,44 @@
   <form id="genForm" enctype="multipart/form-data" class="wideForm">
     <div class="twoColumns">
       <div>
-        <label>Indicatif :</label><input type="text" name="indicatif" required>
-        <label>Date :</label><input type="date" name="date">
-        <label>Heure :</label><input type="time" name="time">
-        <label>Bande :</label><input type="text" name="band">
-        <label>Report :</label><input type="text" name="report">
+        <label>Indicatif :</label>
+        <input type="text" name="indicatif" required>
+        <label>Date :</label>
+        <input type="date" name="date">
+        <label>Heure :</label>
+        <input type="time" name="time">
+        <label>Bande :</label>
+        <select name="band" required>
+          <option value="">Sélectionner...</option>
+          <option value="26 MHz">26 MHz</option>
+          <option value="27 MHz">27 MHz</option>
+          <option value="28 MHz">28 MHz</option>
+          <option value="50 MHz">50 MHz</option>
+          <option value="144 MHz">144 MHz</option>
+          <option value="430 MHz">430 MHz</option>
+          <option value="Autre">Autre</option>
+        </select>
+        <label>Report :</label>
+        <input type="text" name="report">
       </div>
       <div>
-        <label>Mode :</label><input type="text" name="mode">
-        <label>Note :</label><textarea name="note"></textarea>
-        <label>Image QSL :</label><input type="file" name="qsl" accept="image/*" required>
+        <label>Mode :</label>
+        <select name="mode" required>
+          <option value="">Sélectionner...</option>
+          <option value="SSB">SSB</option>
+          <option value="CW">CW</option>
+          <option value="FM">FM</option>
+          <option value="AM">AM</option>
+          <option value="RTTY">RTTY</option>
+          <option value="PSK31">PSK31</option>
+          <option value="FT8">FT8</option>
+          <option value="SSTV">SSTV</option>
+          <option value="Autre">Autre</option>
+        </select>
+        <label>Note :</label>
+        <textarea name="note"></textarea>
+        <label>Image QSL :</label>
+        <input type="file" name="qsl" accept="image/*" required>
       </div>
     </div>
     <button class="primary" type="submit">Générer QSL</button>
@@ -101,18 +129,19 @@
 </a>
 
 </main>
+
 <div id="qslPopup" class="popup hidden">
   <div class="popupBox">
     <p>📡 Nouvelle QSL disponible !</p>
     <button onclick="closePopup()">OK</button>
   </div>
 </div>
+
 <footer>
   TANGO WHISKY © 2026
 </footer>
 
 <script src="script.js"></script>
- 
+
 </body>
 </html>
- 
