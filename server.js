@@ -13,9 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-// ================= CONFIG =================
-const MAX_DOWNLOADS = 2; // ⬅️ téléchargements max
-const MAX_DAYS = 30;      // ⬅️ durée de vie en jours
+
 
 app.use(cors());
 app.use(express.json());
@@ -37,22 +35,7 @@ app.use(
 const USERS = JSON.parse(
   fs.readFileSync(path.join(__dirname, "users.json"), "utf8")
 );
-// ================= DOWNLOAD TRACKING =================
-const DOWNLOADS_PATH = path.join(__dirname, "downloads.json");
 
-function readDownloads() {
-  if (!fs.existsSync(DOWNLOADS_PATH)) return {};
-  return JSON.parse(fs.readFileSync(DOWNLOADS_PATH, "utf8"));
-}
-
-function saveDownloads(data) {
-  fs.writeFileSync(DOWNLOADS_PATH, JSON.stringify(data, null, 2));
-}
-
-function isExpired(entry) {
-  const ageMs = Date.now() - entry.createdAt;
-  return ageMs >= MAX_DAYS * 24 * 60 * 60 * 1000;
-}
 // AUTH
 function requireAuth(req, res, next) {
   if (req.session?.authenticated) return next();
