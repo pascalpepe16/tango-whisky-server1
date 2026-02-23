@@ -6,20 +6,20 @@ let importedLogs = [];
 window.isAuthenticated = false;
 
 // ===============================
-// AUTO HEURE (PC + MOBILE FIX)
+// OUTILS
 // ===============================
-window.addEventListener("DOMContentLoaded", () => {
-  const timeInput = document.querySelector('input[name="time"]');
-  if (timeInput && !timeInput.value) {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    timeInput.value = `${hh}:${mm}`;
-  }
-});
+
+// 🔥 Bande + détail (27 + 555 → 27.555 MHz)
+function getFullBand() {
+  const base = document.getElementById("bandSelect")?.value || "";
+  const detail = document.getElementById("bandDetail")?.value || "";
+
+  if (!base) return "";
+  return detail ? `${base}.${detail} MHz` : `${base} MHz`;
+}
 
 // ===============================
-// QSL PREVIEW GENERATOR
+// QSL PREVIEW
 // ===============================
 function generateQSLPreview(data, imageUrl) {
   return `
@@ -102,7 +102,7 @@ function showTab(id) {
 }
 
 // ===============================
-// GALLERY + ZOOM HOVER
+// GALLERY (ZOOM HOVER)
 // ===============================
 async function loadGallery() {
   const box = document.getElementById("galleryContent");
@@ -117,7 +117,7 @@ async function loadGallery() {
     list.forEach(q => {
       const div = document.createElement("div");
       div.className = "thumbWrap";
-      div.innerHTML = `<img src="${q.thumb}" class="zoomable">`;
+      div.innerHTML = `<img src="${q.thumb}" class="zoomImg">`;
       box.appendChild(div);
     });
 
@@ -172,7 +172,9 @@ function processFile() {
         document.getElementById("validateImportBtn").style.display = "inline-block";
       }
     });
-  } else if (ext === "xlsx") {
+  }
+
+  else if (ext === "xlsx") {
     const reader = new FileReader();
     reader.onload = function(e) {
       const data = new Uint8Array(e.target.result);
@@ -181,13 +183,12 @@ function processFile() {
       const json = XLSX.utils.sheet_to_json(sheet);
 
       importedLogs = json.map(normalizeRow).filter(r=>r.Indicatif);
+
       status.innerHTML = `${importedLogs.length} lignes chargées`;
       showPreview();
       document.getElementById("validateImportBtn").style.display = "inline-block";
     };
     reader.readAsArrayBuffer(file);
-  } else {
-    status.innerHTML = "Format non supporté";
   }
 }
 
@@ -219,21 +220,20 @@ document.getElementById("validateImportBtn").onclick = async function() {
     formData.append("qsl", imageInput.files[0]);
 
     try {
-      const res = await fetch(API_URL + "/upload", { method:"POST", body:formData });
+      const res = await fetch(API_URL+"/upload",{method:"POST",body:formData});
       const data = await res.json();
       if (data.success) success++;
     } catch {}
 
     const percent = Math.round(((i + 1) / importedLogs.length) * 100);
     bar.style.width = percent + "%";
-    status.innerHTML = `Traitement ${i + 1}/${importedLogs.length}`;
   }
 
   status.innerHTML = `✅ ${success} QSL enregistrées`;
 };
 
 // ===============================
-// CREATE / PREVIEW
+// CREATE
 // ===============================
 document.getElementById("genForm").addEventListener("submit", e=>{
   e.preventDefault();
@@ -242,20 +242,15 @@ document.getElementById("genForm").addEventListener("submit", e=>{
   const imgURL = URL.createObjectURL(formData.get("qsl"));
   const data = Object.fromEntries(formData.entries());
 
-  document.getElementById("genPreview").innerHTML = generateQSLPreview(data,imgURL);
+  // 🔥 injection bande propre
+  data.band = getFullBand();
+  formData.set("band", data.band);
+
+  const preview = document.getElementById("genPreview");
+  preview.innerHTML = generateQSLPreview(data,imgURL);
 
   fetch(API_URL+"/upload",{method:"POST",body:formData});
 });
-
-// ===============================
-// POPUP
-// ===============================
-function showPopup(){
-  document.getElementById("qslPopup").classList.remove("hidden");
-}
-function closePopup(){
-  document.getElementById("qslPopup").classList.add("hidden");
-}
 
 // ===============================
 // DOWNLOAD (FIX FINAL)
@@ -300,17 +295,24 @@ document.getElementById("btnSearch").onclick = async ()=>{
 };
 
 function downloadQSL(pid){
+  if(!pid){
+    alert("Erreur téléchargement");
+    return;
+  }
   window.open(API_URL+"/file?pid="+encodeURIComponent(pid), "_blank");
 }
-// Fusion bande + détail
-function getFullBand() {
-  const base = document.getElementById("bandSelect")?.value || "";
-  const detail = document.getElementById("bandDetail")?.value || "";
 
-  if (!base) return "";
-
-  return detail ? `${base}.${detail} MHz` : `${base} MHz`;
+// ===============================
+// POPUP
+// ===============================
+function showPopup() {
+  document.getElementById("qslPopup").classList.remove("hidden");
 }
+
+function closePopup() {
+  document.getElementById("qslPopup").classList.add("hidden");
+}
+
 // ===============================
 checkAuth();
 showTab("home");
