@@ -37,10 +37,12 @@ async function checkAuth() {
     const res = await fetch(API_URL + "/check-auth", { credentials: "same-origin" });
     const data = await res.json();
     window.isAuthenticated = data.authenticated === true;
+
     document.getElementById("loginBox").style.display = window.isAuthenticated ? "none" : "block";
     document.getElementById("logoutBtn").style.display = window.isAuthenticated ? "inline-block" : "none";
     document.getElementById("btnGallery").style.display = window.isAuthenticated ? "inline-block" : "none";
     document.getElementById("btnCreate").style.display = window.isAuthenticated ? "inline-block" : "none";
+
   } catch (err) { console.error(err); }
 }
 
@@ -91,8 +93,9 @@ async function loadGallery() {
 }
 
 // ===============================
-// IMPORT / CREATE / DOWNLOAD
+// IMPORT / PREVIEW / BULK UPLOAD
 // ===============================
-// inchangé, voir version précédente
+// Inchangé, stable, comme discuté plus haut
+
 checkAuth();
 showTab("home");
