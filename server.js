@@ -1,4 +1,4 @@
-  import express from "express";
+import express from "express";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import sharp from "sharp";
@@ -14,7 +14,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// ================= CONFIG =================
+const META_FILE = path.join(__dirname, "meta.json");
+const MAX_DOWNLOADS = 2;
+const MAX_DAYS = 30;
 
+// ================= MIDDLEWARE =================
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -31,12 +36,22 @@ app.use(
   })
 );
 
-// USERS
+// ================= META =================
+function loadMeta() {
+  if (!fs.existsSync(META_FILE)) return {};
+  return JSON.parse(fs.readFileSync(META_FILE, "utf8"));
+}
+
+function saveMeta(meta) {
+  fs.writeFileSync(META_FILE, JSON.stringify(meta, null, 2));
+}
+
+// ================= USERS =================
 const USERS = JSON.parse(
   fs.readFileSync(path.join(__dirname, "users.json"), "utf8")
 );
 
-// AUTH
+// ================= AUTH =================
 function requireAuth(req, res, next) {
   if (req.session?.authenticated) return next();
   res.status(401).json({ error: "Non autorisé" });
@@ -63,14 +78,14 @@ app.get("/check-auth", (req, res) => {
   });
 });
 
-// CLOUDINARY
+// ================= CLOUDINARY =================
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// GALLERY
+// ================= GALLERY =================
 app.get("/qsl", requireAuth, async (req, res) => {
   try {
     const result = await cloudinary.search
@@ -90,7 +105,7 @@ app.get("/qsl", requireAuth, async (req, res) => {
   }
 });
 
-// DOWNLOAD LIST
+// ================= DOWNLOAD LIST =================
 app.get("/download/:call", async (req, res) => {
   try {
     const call = req.params.call.toUpperCase();
@@ -113,7 +128,7 @@ app.get("/download/:call", async (req, res) => {
   }
 });
 
-// GENERATE QSL
+// ================= GENERATE QSL =================
 async function generateQSLBuffer({
   filePath,
   indicatif,
@@ -129,19 +144,16 @@ async function generateQSLBuffer({
 
   const rectWidth = Math.round(imageWidth * 0.28);
   const rectHeight = imageHeight;
-
   const totalWidth = imageWidth + rectWidth;
 
   const marginX = 30;
   const marginTop = 100;
   const lineSpacing = 42;
 
-  // Taille de police adaptative
   const titleSize = Math.round(rectWidth * 0.09);
   const textSize = Math.round(rectWidth * 0.065);
   const noteSize = Math.round(rectWidth * 0.055);
 
-  // Retour à la ligne
   function wrapText(text, maxChars) {
     if (!text) return [];
     const words = text.split(" ");
@@ -161,7 +173,7 @@ async function generateQSLBuffer({
     return lines;
   }
 
-  const maxChars = Math.floor(rectWidth / 14); // ajuste automatiquement
+  const maxChars = Math.floor(rectWidth / 14);
 
   const base = await sharp(filePath)
     .resize({ width: imageWidth, height: imageHeight, fit: "cover" })
@@ -179,7 +191,6 @@ async function generateQSLBuffer({
     });
   }
 
-  // Texte
   addBlock(indicatif, titleSize, true);
 
   currentY += 10;
@@ -217,7 +228,8 @@ async function generateQSLBuffer({
     .jpeg({ quality: 92 })
     .toBuffer();
 }
-// UPLOAD
+
+// ================= UPLOAD =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.qsl)
@@ -263,18 +275,46 @@ app.post("/upload", requireAuth, async (req, res) => {
   }
 });
 
-// FILE DOWNLOAD
+// ================= DOWNLOAD + LIMIT =================
 app.get("/file", async (req, res) => {
   try {
     const pid = req.query.pid;
     if (!pid) return res.status(400).send("missing pid");
 
+    let meta = loadMeta();
+
+    if (!meta[pid]) {
+      meta[pid] = {
+        downloads: 0,
+        createdAt: Date.now()
+      };
+    }
+
+    if (meta[pid].downloads >= MAX_DOWNLOADS) {
+      return res.status(403).send("Limite atteinte");
+    }
+
     const info = await cloudinary.api.resource(pid);
-    const file = await axios.get(info.secure_url, { responseType: "arraybuffer" });
+    const file = await axios.get(info.secure_url, {
+      responseType: "arraybuffer"
+    });
 
     res.setHeader("Content-Type", `image/${info.format}`);
-    res.setHeader("Content-Disposition", `attachment; filename="QSL.${info.format}"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="QSL.${info.format}"`
+    );
+
     res.send(Buffer.from(file.data));
+
+    meta[pid].downloads++;
+    saveMeta(meta);
+
+    if (meta[pid].downloads >= MAX_DOWNLOADS) {
+      await cloudinary.uploader.destroy(pid);
+      delete meta[pid];
+      saveMeta(meta);
+    }
 
   } catch (err) {
     console.error(err);
@@ -282,10 +322,31 @@ app.get("/file", async (req, res) => {
   }
 });
 
-// SPA FALLBACK (TOUJOURS EN DERNIER)
+// ================= AUTO CLEAN 30 JOURS =================
+setInterval(async () => {
+  try {
+    let meta = loadMeta();
+
+    for (const pid in meta) {
+      const age = Date.now() - meta[pid].createdAt;
+      if (age > MAX_DAYS * 86400000) {
+        await cloudinary.uploader.destroy(pid);
+        delete meta[pid];
+      }
+    }
+
+    saveMeta(meta);
+  } catch (err) {
+    console.error("Erreur nettoyage:", err);
+  }
+}, 12 * 60 * 60 * 1000);
+
+// ================= SPA =================
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log("TW-eQSL server running on port", PORT));
+app.listen(PORT, () =>
+  console.log("TW-eQSL server running on port", PORT)
+);
