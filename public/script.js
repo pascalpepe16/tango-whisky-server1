@@ -195,9 +195,16 @@ document.getElementById("validateImportBtn").onclick = async function() {
   const imageInput = document.getElementById("bulkImage");
   const status = document.getElementById("importStatus");
 
+  const progress = document.getElementById("progressContainer");
+  const bar = document.getElementById("progressBar");
+
+  // ✅ ON RÉACTIVE LA BARRE
+  progress.style.display = "block";
+  bar.style.width = "0%";
+
   let success = 0;
 
-  for(let i=0;i<importedLogs.length;i++){
+  for (let i = 0; i < importedLogs.length; i++) {
     const row = importedLogs[i];
 
     const formData = new FormData();
@@ -210,16 +217,25 @@ document.getElementById("validateImportBtn").onclick = async function() {
     formData.append("note", row.Note);
     formData.append("qsl", imageInput.files[0]);
 
-    try{
-      const res = await fetch(API_URL+"/upload",{method:"POST",body:formData});
+    try {
+      const res = await fetch(API_URL + "/upload", {
+        method: "POST",
+        body: formData
+      });
+
       const data = await res.json();
-      if(data.success) success++;
-    } catch(err){}
+      if (data.success) success++;
+    } catch (err) {}
+
+    // ✅ UPDATE PROGRESS
+    const percent = Math.round(((i + 1) / importedLogs.length) * 100);
+    bar.style.width = percent + "%";
+
+    status.innerHTML = `Traitement ${i + 1}/${importedLogs.length}`;
   }
 
   status.innerHTML = `✅ ${success} QSL enregistrées`;
 };
-
 // ===============================
 // CREATE / PREVIEW (FIX)
 // ===============================
