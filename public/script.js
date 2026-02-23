@@ -312,7 +312,45 @@ function showPopup() {
 function closePopup() {
   document.getElementById("qslPopup").classList.add("hidden");
 }
+function showPopup(message) {
+  document.getElementById("popup-message").innerText = message;
+  document.getElementById("popup").classList.remove("hidden");
+}
 
+function closePopup() {
+  document.getElementById("popup").classList.add("hidden");
+}
+
+async function downloadQSL(pid) {
+  try {
+    const res = await fetch(`/file?pid=${pid}`);
+    const data = await res.json();
+
+    if (!data.success) {
+      showPopup("❌ Téléchargement impossible");
+      return;
+    }
+
+    // 📥 téléchargement direct
+    const link = document.createElement("a");
+    link.href = `data:${data.type};base64,${data.file}`;
+    link.download = data.filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // ⚠️ dernier téléchargement
+    if (data.last) {
+      showPopup("⚠️ Dernier téléchargement !");
+    } else {
+      showPopup("✅ Téléchargement réussi");
+    }
+
+  } catch (err) {
+    console.error(err);
+    showPopup("❌ Erreur réseau");
+  }
+}
 // ===============================
 checkAuth();
 showTab("home");
