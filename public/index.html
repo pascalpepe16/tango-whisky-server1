@@ -77,16 +77,31 @@
         <label>Heure :</label>
         <input type="time" name="time">
         <label>Bande :</label>
-        <select name="band" required>
-          <option value="">Sélectionner...</option>
-          <option value="26 MHz">26 MHz</option>
-          <option value="27 MHz">27 MHz</option>
-          <option value="28 MHz">28 MHz</option>
-          <option value="50 MHz">50 MHz</option>
-          <option value="144 MHz">144 MHz</option>
-          <option value="430 MHz">430 MHz</option>
-          <option value="Autre">Autre</option>
-        </select>
+
+<div style="display:flex; gap:8px; align-items:center;">
+  
+  <!-- Sélecteur bande -->
+  <select name="band" id="bandSelect" required>
+    <option value="">Bande</option>
+    <option value="26">26</option>
+    <option value="27">27</option>
+    <option value="28">28</option>
+    <option value="50">50</option>
+    <option value="144">144</option>
+    <option value="430">430</option>
+  </select>
+
+  <!-- Complément fréquence -->
+  <input 
+    type="text" 
+    id="bandDetail" 
+    placeholder="ex: 555" 
+    style="width:80px;"
+  >
+
+  <span>MHz</span>
+
+</div>
         <label>Report :</label>
         <input type="text" name="report">
       </div>
