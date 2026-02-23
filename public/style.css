@@ -281,3 +281,42 @@ footer {
 #galleryContent .thumbWrap {
   overflow: hidden;
 }
+/* ==========================
+   POPUP QSL
+========================== */
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.popupBox {
+  background: #222;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  color: #fff;
+  font-size: 18px;
+}
+
+.popupBox button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  border: none;
+  background: #1e90ff;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.popupBox button:hover {
+  opacity: 0.9;
+}
