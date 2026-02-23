@@ -69,3 +69,20 @@ body {
   font-size:12px;
   padding:6px;
 }
+/* ==========================
+   ZOOM AU SURVOL (GALLERY)
+========================== */
+
+#galleryContent .thumbWrap img {
+  transition: transform 0.3s ease;
+}
+
+#galleryContent .thumbWrap:hover img {
+  transform: scale(1.25);
+  z-index: 2;
+}
+
+/* évite que ça déborde moche */
+#galleryContent .thumbWrap {
+  overflow: hidden;
+}
