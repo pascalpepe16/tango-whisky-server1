@@ -302,7 +302,15 @@ document.getElementById("btnSearch").onclick = async ()=>{
 function downloadQSL(pid){
   window.open(API_URL+"/file?pid="+encodeURIComponent(pid), "_blank");
 }
+// Fusion bande + détail
+function getFullBand() {
+  const base = document.getElementById("bandSelect")?.value || "";
+  const detail = document.getElementById("bandDetail")?.value || "";
 
+  if (!base) return "";
+
+  return detail ? `${base}.${detail} MHz` : `${base} MHz`;
+}
 // ===============================
 checkAuth();
 showTab("home");
