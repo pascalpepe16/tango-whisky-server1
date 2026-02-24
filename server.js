@@ -276,10 +276,37 @@ app.post("/upload", requireAuth, async (req, res) => {
 });
 
 // ================= DOWNLOAD + LIMIT =================
+// ================= FILE INFO =================
+app.get("/file-info", async (req, res) => {
+  try {
+    const pid = req.query.pid;
+    if (!pid) return res.status(400).json({ error: "missing pid" });
+
+    let meta = loadMeta();
+
+    if (!meta[pid]) {
+      meta[pid] = {
+        downloads: 0,
+        createdAt: Date.now()
+      };
+    }
+
+    const remaining = Math.max(0, MAX_DOWNLOADS - meta[pid].downloads);
+
+    res.json({
+      remaining,
+      max: MAX_DOWNLOADS
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: true });
+  }
+});
 app.get("/file", async (req, res) => {
   try {
     const pid = req.query.pid;
-    if (!pid) return res.status(400).send("missing pid");
+    if (!pid) return res.status(400).json({ error: "missing pid" });
 
     let meta = loadMeta();
 
@@ -291,37 +318,45 @@ app.get("/file", async (req, res) => {
     }
 
     if (meta[pid].downloads >= MAX_DOWNLOADS) {
-      return res.status(403).send("Limite atteinte");
+      return res.status(403).json({
+        error: "limit",
+        remaining: 0
+      });
     }
 
     const info = await cloudinary.api.resource(pid);
-    const file = await axios.get(info.secure_url, {
-      responseType: "arraybuffer"
+
+    const response = await axios.get(info.secure_url, {
+      responseType: "stream"
     });
+
+    const remaining = MAX_DOWNLOADS - meta[pid].downloads;
 
     res.setHeader("Content-Type", `image/${info.format}`);
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="QSL.${info.format}"`
     );
+    res.setHeader("X-Remaining-Downloads", remaining);
 
-    res.send(Buffer.from(file.data));
+    response.data.pipe(res);
 
-    meta[pid].downloads++;
-    saveMeta(meta);
-
-    if (meta[pid].downloads >= MAX_DOWNLOADS) {
-      await cloudinary.uploader.destroy(pid);
-      delete meta[pid];
+    response.data.on("end", async () => {
+      meta[pid].downloads++;
       saveMeta(meta);
-    }
+
+      if (meta[pid].downloads >= MAX_DOWNLOADS) {
+        await cloudinary.uploader.destroy(pid);
+        delete meta[pid];
+        saveMeta(meta);
+      }
+    });
 
   } catch (err) {
     console.error(err);
-    res.status(500).send("Erreur téléchargement");
+    res.status(500).json({ error: true });
   }
 });
-
 // ================= AUTO CLEAN 30 JOURS =================
 setInterval(async () => {
   try {
