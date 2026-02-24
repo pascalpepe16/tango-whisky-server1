@@ -127,8 +127,7 @@ app.get("/download/:call", async (req, res) => {
     res.status(500).json([]);
   }
 });
-
-// ================= GENERATE QSL =================
+// ================= GENERATE QSL PREMIUM =================
 async function generateQSLBuffer({
   filePath,
   indicatif,
@@ -147,65 +146,100 @@ async function generateQSLBuffer({
   const totalWidth = imageWidth + rectWidth;
 
   const marginX = 30;
-  const marginTop = 100;
-  const lineSpacing = 42;
+  const marginTop = 80;
 
-  const titleSize = Math.round(rectWidth * 0.09);
-  const textSize = Math.round(rectWidth * 0.065);
-  const noteSize = Math.round(rectWidth * 0.055);
+  const titleSizeMax = Math.round(rectWidth * 0.09);
+  const textSizeMax = Math.round(rectWidth * 0.065);
+  const noteSizeMax = Math.round(rectWidth * 0.055);
 
-  function wrapText(text, maxChars) {
-    if (!text) return [];
+  // Fonction pour wrapper et adapter texte à la largeur
+  function addBlockPro(svgText, text, size, x, y, rectWidth, bold = false, icon = "") {
+    if (!text) return { svgText, y };
     const words = text.split(" ");
     let lines = [];
     let currentLine = "";
 
+    const approxChars = Math.floor(rectWidth / (size * 0.6));
+
     words.forEach(word => {
-      if ((currentLine + word).length > maxChars) {
+      if ((currentLine + word).length > approxChars) {
         lines.push(currentLine.trim());
         currentLine = word + " ";
       } else {
         currentLine += word + " ";
       }
     });
-
     if (currentLine) lines.push(currentLine.trim());
-    return lines;
+
+    lines.forEach((line, i) => {
+      const displayText = i === 0 && icon ? icon + " " + line : line;
+      svgText += `<text x="${x}" y="${y}" font-size="${size}" fill="#222" ${bold ? 'font-weight="bold"' : ""}>${displayText}</text>`;
+      y += size * 1.3;
+    });
+
+    return { svgText, y };
   }
 
-  const maxChars = Math.floor(rectWidth / 14);
-
+  // Charger image de base
   const base = await sharp(filePath)
     .resize({ width: imageWidth, height: imageHeight, fit: "cover" })
     .jpeg({ quality: 90 })
     .toBuffer();
 
-  let currentY = marginTop;
   let svgText = "";
+  let currentY = marginTop;
 
-  function addBlock(text, size, bold = false) {
-    const lines = wrapText(text, maxChars);
-    lines.forEach(line => {
-      svgText += `<text x="${marginX}" y="${currentY}" font-size="${size}" fill="#222" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
-      currentY += lineSpacing;
-    });
-  }
+  // 🔹 Indicatif principal
+  let result = addBlockPro(svgText, indicatif, titleSizeMax, marginX, currentY, rectWidth, true);
+  svgText = result.svgText;
+  currentY = result.y + 10;
 
-  addBlock(indicatif, titleSize, true);
-
-  currentY += 10;
-  svgText += `<line x1="${marginX}" y1="${currentY}" x2="${rectWidth - marginX}" y2="${currentY}" stroke="#ccc"/>`;
+  // 🔹 Ligne séparatrice stylée
+  svgText += `<line x1="${marginX}" y1="${currentY}" x2="${rectWidth - marginX}" y2="${currentY}" stroke="#aaa" stroke-width="2" stroke-dasharray="5,3"/>`;
   currentY += 30;
 
-  addBlock(`Date: ${date}`, textSize);
-  addBlock(`UTC: ${time}`, textSize);
-  addBlock(`Bande: ${band}`, textSize);
-  addBlock(`Mode: ${mode}`, textSize);
-  addBlock(`Report: ${report}`, textSize);
+  // 🔹 Colonnes pour infos principales
+  const colX1 = marginX;
+  const colX2 = rectWidth / 2 + marginX / 2;
+  let colY1 = currentY;
+  let colY2 = currentY;
 
-  currentY += 10;
-  addBlock(note || "", noteSize);
+  // Colonne 1
+  result = addBlockPro(svgText, `Date: ${date}`, textSizeMax, colX1, colY1, rectWidth / 2, false, "📅");
+  svgText = result.svgText;
+  colY1 = result.y;
 
+  result = addBlockPro(svgText, `UTC: ${time}`, textSizeMax, colX1, colY1, rectWidth / 2, false, "⏱️");
+  svgText = result.svgText;
+  colY1 = result.y;
+
+  result = addBlockPro(svgText, `Report: ${report}`, textSizeMax, colX1, colY1, rectWidth / 2, false, "📈");
+  svgText = result.svgText;
+  colY1 = result.y + 10;
+
+  // Colonne 2
+  result = addBlockPro(svgText, `Bande: ${band}`, textSizeMax, colX2, colY2, rectWidth / 2, false, "📡");
+  svgText = result.svgText;
+  colY2 = result.y;
+
+  result = addBlockPro(svgText, `Mode: ${mode}`, textSizeMax, colX2, colY2, rectWidth / 2, false, "🔊");
+  svgText = result.svgText;
+  colY2 = result.y + 10;
+
+  // 🔹 Notes longue (2 colonnes si texte long)
+  const noteLines = note ? note.split("\n") : [];
+  const noteColX1 = marginX;
+  const noteColX2 = rectWidth / 2 + marginX / 2;
+  let noteY = Math.max(colY1, colY2) + 20;
+
+  noteLines.forEach((line, i) => {
+    const colX = i % 2 === 0 ? noteColX1 : noteColX2;
+    const lineY = noteY + Math.floor(i / 2) * noteSizeMax * 1.5;
+    result = addBlockPro(svgText, line, noteSizeMax, colX, lineY, rectWidth / 2);
+    svgText = result.svgText;
+  });
+
+  // 🔹 Créer SVG final
   const svg = `
     <svg width="${rectWidth}" height="${rectHeight}" xmlns="http://www.w3.org/2000/svg">
       <rect width="100%" height="100%" fill="white" fill-opacity="0.95" rx="25"/>
@@ -213,6 +247,7 @@ async function generateQSLBuffer({
     </svg>
   `;
 
+  // 🔹 Composer image finale
   return await sharp({
     create: {
       width: totalWidth,
