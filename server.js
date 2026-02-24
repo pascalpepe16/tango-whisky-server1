@@ -127,7 +127,7 @@ app.get("/download/:call", async (req, res) => {
     res.status(500).json([]);
   }
 });
-// ================= GENERATE QSL DESIGN ULTIME =================
+// ================= GENERATE QSL DESIGN ULTIME + SIGNATURE ALIGNÉE =================
 async function generateQSLBuffer({
   filePath,
   indicatif,
@@ -148,9 +148,10 @@ async function generateQSLBuffer({
   const marginX = 30;
   const marginTop = 80;
 
-  const titleSize = Math.round(rectWidth * 0.12); // encore plus pro
+  const titleSize = Math.round(rectWidth * 0.12);
   const textSize = Math.round(rectWidth * 0.085);
   const noteSize = Math.round(rectWidth * 0.065);
+  const signatureSize = Math.round(rectWidth * 0.055);
 
   // Fonction pour écrire texte avec retour à la ligne
   function addBlock(svgText, text, size, x, y, maxWidth, bold = false, lineSpacing = 1.5) {
@@ -171,10 +172,9 @@ async function generateQSLBuffer({
     if (currentLine) lines.push(currentLine.trim());
 
     lines.forEach(line => {
-      // Texte avec légère ombre
       svgText += `<text x="${x+2}" y="${y+2}" font-size="${size}" fill="rgba(0,0,0,0.15)" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
       svgText += `<text x="${x}" y="${y}" font-size="${size}" fill="#222" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
-      y += size * lineSpacing; // espacement paramétrable
+      y += size * lineSpacing;
     });
 
     return { svgText, y };
@@ -189,7 +189,7 @@ async function generateQSLBuffer({
   let svgText = "";
   let currentY = marginTop;
 
-  // 🔹 Dégradé coloré subtil + ombre douce derrière rectangle
+  // Dégradé + ombre douce
   const svgBackground = `
     <defs>
       <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
@@ -203,16 +203,16 @@ async function generateQSLBuffer({
     <rect width="100%" height="100%" fill="url(#grad)" rx="25" filter="url(#shadow)" stroke="#ccc" stroke-width="2"/>
   `;
 
-  // 🔹 Indicatif en haut
+  // Indicatif en haut
   let result = addBlock(svgText, indicatif, titleSize, marginX, currentY, rectWidth, true, 1.6);
   svgText = result.svgText;
   currentY = result.y + 30;
 
-  // 🔹 Ligne séparatrice stylée
+  // Ligne séparatrice
   svgText += `<line x1="${marginX}" y1="${currentY}" x2="${rectWidth - marginX}" y2="${currentY}" stroke="#bbb" stroke-width="2" stroke-dasharray="5,3"/>`;
   currentY += 30;
 
-  // 🔹 Infos principales (Date → UTC → Bande → Mode → Report)
+  // Infos principales
   const infoX = marginX;
   const infoMaxWidth = rectWidth - 2 * marginX;
   const infoList = [
@@ -224,17 +224,25 @@ async function generateQSLBuffer({
   ];
 
   infoList.forEach(line => {
-    result = addBlock(svgText, line, textSize, infoX, currentY, infoMaxWidth, false, 1.7); // espacement plus généreux
+    result = addBlock(svgText, line, textSize, infoX, currentY, infoMaxWidth, false, 1.7);
     svgText = result.svgText;
     currentY = result.y + 10;
   });
 
-  // 🔹 Notes sur plusieurs lignes, largeur complète
+  // Notes sur plusieurs lignes
   const noteX = marginX;
   result = addBlock(svgText, note || "", noteSize, noteX, currentY, infoMaxWidth, false, 1.5);
   svgText = result.svgText;
+  currentY = result.y + 30;
 
-  // 🔹 Créer SVG final
+  // Signature parfaitement alignée à droite
+  const signatureText = "Groupe Tango Whisky";
+  const signatureY = rectHeight - 40; // au-dessus du bas
+  const signatureX = rectWidth - marginX - signatureSize * signatureText.length * 0.6; // alignement à droite approximatif
+
+  svgText += `<text x="${signatureX}" y="${signatureY}" font-size="${signatureSize}" fill="#555" font-style="italic">${signatureText}</text>`;
+
+  // Créer SVG final
   const svg = `
     <svg width="${rectWidth}" height="${rectHeight}" xmlns="http://www.w3.org/2000/svg">
       ${svgBackground}
@@ -242,7 +250,7 @@ async function generateQSLBuffer({
     </svg>
   `;
 
-  // 🔹 Composer image finale
+  // Composer image finale
   return await sharp({
     create: {
       width: totalWidth,
