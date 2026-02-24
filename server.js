@@ -127,7 +127,7 @@ app.get("/download/:call", async (req, res) => {
     res.status(500).json([]);
   }
 });
-// ================= GENERATE QSL ULTRA-PRO =================
+// ================= GENERATE QSL DESIGN ULTIME =================
 async function generateQSLBuffer({
   filePath,
   indicatif,
@@ -148,12 +148,12 @@ async function generateQSLBuffer({
   const marginX = 30;
   const marginTop = 80;
 
-  const titleSize = Math.round(rectWidth * 0.11); // plus grand
-  const textSize = Math.round(rectWidth * 0.08);
+  const titleSize = Math.round(rectWidth * 0.12); // encore plus pro
+  const textSize = Math.round(rectWidth * 0.085);
   const noteSize = Math.round(rectWidth * 0.065);
 
   // Fonction pour écrire texte avec retour à la ligne
-  function addBlock(svgText, text, size, x, y, maxWidth, bold = false) {
+  function addBlock(svgText, text, size, x, y, maxWidth, bold = false, lineSpacing = 1.5) {
     if (!text) return { svgText, y };
     const words = text.split(" ");
     let lines = [];
@@ -172,9 +172,9 @@ async function generateQSLBuffer({
 
     lines.forEach(line => {
       // Texte avec légère ombre
-      svgText += `<text x="${x+2}" y="${y+2}" font-size="${size}" fill="rgba(0,0,0,0.2)" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
+      svgText += `<text x="${x+2}" y="${y+2}" font-size="${size}" fill="rgba(0,0,0,0.15)" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
       svgText += `<text x="${x}" y="${y}" font-size="${size}" fill="#222" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
-      y += size * 1.4;
+      y += size * lineSpacing; // espacement paramétrable
     });
 
     return { svgText, y };
@@ -189,30 +189,32 @@ async function generateQSLBuffer({
   let svgText = "";
   let currentY = marginTop;
 
-  // 🔹 Cadre avec dégradé léger derrière le texte
+  // 🔹 Dégradé coloré subtil + ombre douce derrière rectangle
   const svgBackground = `
     <defs>
       <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="white" stop-opacity="0.95"/>
-        <stop offset="100%" stop-color="#f0f0f0" stop-opacity="0.95"/>
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="#f9f9f9" stop-opacity="0.95"/>
       </linearGradient>
+      <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+        <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.15"/>
+      </filter>
     </defs>
-    <rect width="100%" height="100%" fill="url(#grad)" rx="25" stroke="#aaa" stroke-width="2"/>
+    <rect width="100%" height="100%" fill="url(#grad)" rx="25" filter="url(#shadow)" stroke="#ccc" stroke-width="2"/>
   `;
 
   // 🔹 Indicatif en haut
-  let result = addBlock(svgText, indicatif, titleSize, marginX, currentY, rectWidth, true);
+  let result = addBlock(svgText, indicatif, titleSize, marginX, currentY, rectWidth, true, 1.6);
   svgText = result.svgText;
-  currentY = result.y + 20;
+  currentY = result.y + 30;
 
-  // 🔹 Ligne séparatrice
-  svgText += `<line x1="${marginX}" y1="${currentY}" x2="${rectWidth - marginX}" y2="${currentY}" stroke="#aaa" stroke-width="2" stroke-dasharray="5,3"/>`;
+  // 🔹 Ligne séparatrice stylée
+  svgText += `<line x1="${marginX}" y1="${currentY}" x2="${rectWidth - marginX}" y2="${currentY}" stroke="#bbb" stroke-width="2" stroke-dasharray="5,3"/>`;
   currentY += 30;
 
-  // 🔹 Infos principales en une colonne
+  // 🔹 Infos principales (Date → UTC → Bande → Mode → Report)
   const infoX = marginX;
-  const infoMaxWidth = rectWidth - 2*marginX;
-
+  const infoMaxWidth = rectWidth - 2 * marginX;
   const infoList = [
     `Date: ${date}`,
     `UTC: ${time}`,
@@ -222,14 +224,14 @@ async function generateQSLBuffer({
   ];
 
   infoList.forEach(line => {
-    result = addBlock(svgText, line, textSize, infoX, currentY, infoMaxWidth);
+    result = addBlock(svgText, line, textSize, infoX, currentY, infoMaxWidth, false, 1.7); // espacement plus généreux
     svgText = result.svgText;
     currentY = result.y + 10;
   });
 
   // 🔹 Notes sur plusieurs lignes, largeur complète
   const noteX = marginX;
-  result = addBlock(svgText, note || "", noteSize, noteX, currentY, infoMaxWidth);
+  result = addBlock(svgText, note || "", noteSize, noteX, currentY, infoMaxWidth, false, 1.5);
   svgText = result.svgText;
 
   // 🔹 Créer SVG final
