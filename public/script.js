@@ -253,8 +253,19 @@ document.getElementById("genForm").addEventListener("submit", e=>{
 });
 
 // ===============================
-// DOWNLOAD (FIX FINAL)
+// DOWNLOAD + LIMIT + LIVE UPDATE
 // ===============================
+
+async function getRemainingDownloads(pid){
+  try {
+    const res = await fetch(API_URL + "/file-info?pid=" + encodeURIComponent(pid));
+    const data = await res.json();
+    return data.remaining;
+  } catch {
+    return null;
+  }
+}
+
 document.getElementById("btnSearch").onclick = async ()=>{
   const call = document.getElementById("dlCall").value.trim().toUpperCase();
   const box = document.getElementById("dlPreview");
@@ -273,7 +284,6 @@ document.getElementById("btnSearch").onclick = async ()=>{
     }
 
     showPopup();
-
     box.innerHTML="";
 
     list.forEach(q=>{
@@ -282,8 +292,28 @@ document.getElementById("btnSearch").onclick = async ()=>{
 
       div.innerHTML = `
         <img src="${q.thumb}" class="dlThumb">
-        <button class="btn-download" onclick="downloadQSL('${q.public_id}')">Télécharger</button>
+        <button class="btn-download">Télécharger</button>
+        <div class="dl-info">Chargement...</div>
       `;
+
+      const btn = div.querySelector(".btn-download");
+      const infoDiv = div.querySelector(".dl-info");
+
+      // 🔥 afficher nombre restant
+      getRemainingDownloads(q.public_id).then(remain => {
+        if (remain !== null) {
+          infoDiv.innerText = `📥 ${remain} téléchargement(s) restant(s)`;
+
+          if (remain === 0) {
+            btn.disabled = true;
+            btn.innerText = "Limite atteinte";
+          }
+        } else {
+          infoDiv.innerText = "";
+        }
+      });
+
+      btn.onclick = () => downloadQSL(q.public_id, btn, infoDiv);
 
       box.appendChild(div);
     });
@@ -294,12 +324,54 @@ document.getElementById("btnSearch").onclick = async ()=>{
   }
 };
 
-function downloadQSL(pid){
+function downloadQSL(pid, btn, infoDiv){
   if(!pid){
     alert("Erreur téléchargement");
     return;
   }
-  window.open(API_URL+"/file?pid="+encodeURIComponent(pid), "_blank");
+
+  fetch(API_URL + "/file?pid=" + encodeURIComponent(pid))
+    .then(async res => {
+
+      if (res.status === 403) {
+        alert("❌ Limite atteinte");
+        btn.disabled = true;
+        btn.innerText = "Limite atteinte";
+        if (infoDiv) infoDiv.innerText = "📥 0 téléchargement restant";
+        return;
+      }
+
+      if (!res.ok) throw new Error();
+
+      const remaining = res.headers.get("X-Remaining-Downloads");
+
+      const blob = await res.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "QSL.jpg";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+
+      // 🔥 update UI
+      if (remaining !== null && infoDiv) {
+        const newRemain = Math.max(0, remaining - 1);
+        infoDiv.innerText = `📥 ${newRemain} téléchargement(s) restant(s)`;
+
+        if (newRemain === 0) {
+          btn.disabled = true;
+          btn.innerText = "Limite atteinte";
+        }
+      }
+
+    })
+    .catch(() => {
+      alert("Erreur téléchargement");
+    });
 }
 
 // ===============================
