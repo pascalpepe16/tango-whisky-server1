@@ -127,7 +127,7 @@ app.get("/download/:call", async (req, res) => {
     res.status(500).json([]);
   }
 });
-// ================= GENERATE QSL PREMIUM =================
+// ================= GENERATE QSL ULTRA-PRO =================
 async function generateQSLBuffer({
   filePath,
   indicatif,
@@ -148,19 +148,18 @@ async function generateQSLBuffer({
   const marginX = 30;
   const marginTop = 80;
 
-  const titleSizeMax = Math.round(rectWidth * 0.09);
-  const textSizeMax = Math.round(rectWidth * 0.065);
-  const noteSizeMax = Math.round(rectWidth * 0.055);
+  const titleSize = Math.round(rectWidth * 0.11); // plus grand
+  const textSize = Math.round(rectWidth * 0.08);
+  const noteSize = Math.round(rectWidth * 0.065);
 
-  // Fonction pour wrapper et adapter texte à la largeur
-  function addBlockPro(svgText, text, size, x, y, rectWidth, bold = false, icon = "") {
+  // Fonction pour écrire texte avec retour à la ligne
+  function addBlock(svgText, text, size, x, y, maxWidth, bold = false) {
     if (!text) return { svgText, y };
     const words = text.split(" ");
     let lines = [];
     let currentLine = "";
 
-    const approxChars = Math.floor(rectWidth / (size * 0.6));
-
+    const approxChars = Math.floor(maxWidth / (size * 0.6));
     words.forEach(word => {
       if ((currentLine + word).length > approxChars) {
         lines.push(currentLine.trim());
@@ -171,10 +170,11 @@ async function generateQSLBuffer({
     });
     if (currentLine) lines.push(currentLine.trim());
 
-    lines.forEach((line, i) => {
-      const displayText = i === 0 && icon ? icon + " " + line : line;
-      svgText += `<text x="${x}" y="${y}" font-size="${size}" fill="#222" ${bold ? 'font-weight="bold"' : ""}>${displayText}</text>`;
-      y += size * 1.3;
+    lines.forEach(line => {
+      // Texte avec légère ombre
+      svgText += `<text x="${x+2}" y="${y+2}" font-size="${size}" fill="rgba(0,0,0,0.2)" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
+      svgText += `<text x="${x}" y="${y}" font-size="${size}" fill="#222" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
+      y += size * 1.4;
     });
 
     return { svgText, y };
@@ -189,60 +189,53 @@ async function generateQSLBuffer({
   let svgText = "";
   let currentY = marginTop;
 
-  // 🔹 Indicatif principal
-  let result = addBlockPro(svgText, indicatif, titleSizeMax, marginX, currentY, rectWidth, true);
-  svgText = result.svgText;
-  currentY = result.y + 10;
+  // 🔹 Cadre avec dégradé léger derrière le texte
+  const svgBackground = `
+    <defs>
+      <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="white" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="#f0f0f0" stop-opacity="0.95"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#grad)" rx="25" stroke="#aaa" stroke-width="2"/>
+  `;
 
-  // 🔹 Ligne séparatrice stylée
+  // 🔹 Indicatif en haut
+  let result = addBlock(svgText, indicatif, titleSize, marginX, currentY, rectWidth, true);
+  svgText = result.svgText;
+  currentY = result.y + 20;
+
+  // 🔹 Ligne séparatrice
   svgText += `<line x1="${marginX}" y1="${currentY}" x2="${rectWidth - marginX}" y2="${currentY}" stroke="#aaa" stroke-width="2" stroke-dasharray="5,3"/>`;
   currentY += 30;
 
-  // 🔹 Colonnes pour infos principales
-  const colX1 = marginX;
-  const colX2 = rectWidth / 2 + marginX / 2;
-  let colY1 = currentY;
-  let colY2 = currentY;
+  // 🔹 Infos principales en une colonne
+  const infoX = marginX;
+  const infoMaxWidth = rectWidth - 2*marginX;
 
-  // Colonne 1
-  result = addBlockPro(svgText, `Date: ${date}`, textSizeMax, colX1, colY1, rectWidth / 2, false, "📅");
-  svgText = result.svgText;
-  colY1 = result.y;
+  const infoList = [
+    `Date: ${date}`,
+    `UTC: ${time}`,
+    `Bande: ${band}`,
+    `Mode: ${mode}`,
+    `Report: ${report}`
+  ];
 
-  result = addBlockPro(svgText, `UTC: ${time}`, textSizeMax, colX1, colY1, rectWidth / 2, false, "⏱️");
-  svgText = result.svgText;
-  colY1 = result.y;
-
-  result = addBlockPro(svgText, `Report: ${report}`, textSizeMax, colX1, colY1, rectWidth / 2, false, "📈");
-  svgText = result.svgText;
-  colY1 = result.y + 10;
-
-  // Colonne 2
-  result = addBlockPro(svgText, `Bande: ${band}`, textSizeMax, colX2, colY2, rectWidth / 2, false, "📡");
-  svgText = result.svgText;
-  colY2 = result.y;
-
-  result = addBlockPro(svgText, `Mode: ${mode}`, textSizeMax, colX2, colY2, rectWidth / 2, false, "🔊");
-  svgText = result.svgText;
-  colY2 = result.y + 10;
-
-  // 🔹 Notes longue (2 colonnes si texte long)
-  const noteLines = note ? note.split("\n") : [];
-  const noteColX1 = marginX;
-  const noteColX2 = rectWidth / 2 + marginX / 2;
-  let noteY = Math.max(colY1, colY2) + 20;
-
-  noteLines.forEach((line, i) => {
-    const colX = i % 2 === 0 ? noteColX1 : noteColX2;
-    const lineY = noteY + Math.floor(i / 2) * noteSizeMax * 1.5;
-    result = addBlockPro(svgText, line, noteSizeMax, colX, lineY, rectWidth / 2);
+  infoList.forEach(line => {
+    result = addBlock(svgText, line, textSize, infoX, currentY, infoMaxWidth);
     svgText = result.svgText;
+    currentY = result.y + 10;
   });
+
+  // 🔹 Notes sur plusieurs lignes, largeur complète
+  const noteX = marginX;
+  result = addBlock(svgText, note || "", noteSize, noteX, currentY, infoMaxWidth);
+  svgText = result.svgText;
 
   // 🔹 Créer SVG final
   const svg = `
     <svg width="${rectWidth}" height="${rectHeight}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="white" fill-opacity="0.95" rx="25"/>
+      ${svgBackground}
       ${svgText}
     </svg>
   `;
@@ -263,7 +256,6 @@ async function generateQSLBuffer({
     .jpeg({ quality: 92 })
     .toBuffer();
 }
-
 // ================= UPLOAD =================
 app.post("/upload", requireAuth, async (req, res) => {
   try {
