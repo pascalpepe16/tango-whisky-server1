@@ -240,7 +240,7 @@ async function generateQSLBuffer({
   const signatureY = rectHeight - 40; // au-dessus du bas
   const signatureX = rectWidth - marginX - signatureSize * signatureText.length * 0.6; // alignement à droite approximatif
 
-  svgText += `<text x="${signatureX}" y="${signatureY}" font-size="${signatureSize}" fill="#f2db0c" font-style="italic">${signatureText}</text>`;
+  svgText += `<text x="${signatureX}" y="${signatureY}" font-size="${signatureSize}" fill="#faa507" font-style="Arial Black">${signatureText}</text>`;
 
   // Créer SVG final
   const svg = `
