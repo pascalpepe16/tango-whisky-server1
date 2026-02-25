@@ -148,9 +148,9 @@ async function generateQSLBuffer({
   const marginX = 30;
   const marginTop = 80;
 
-  const titleSize = Math.round(rectWidth * 0.12);
-  const textSize = Math.round(rectWidth * 0.085);
-  const noteSize = Math.round(rectWidth * 0.065);
+  const titleSize = Math.round(rectWidth * 0.14);
+  const textSize = Math.round(rectWidth * 0.095);
+  const noteSize = Math.round(rectWidth * 0.075);
   const signatureSize = Math.round(rectWidth * 0.055);
 
   // Fonction pour écrire texte avec retour à la ligne
@@ -240,7 +240,7 @@ async function generateQSLBuffer({
   const signatureY = rectHeight - 40; // au-dessus du bas
   const signatureX = rectWidth - marginX - signatureSize * signatureText.length * 0.6; // alignement à droite approximatif
 
-  svgText += `<text x="${signatureX}" y="${signatureY}" font-size="${signatureSize}" fill="#faa507" font-style="Arial Black">${signatureText}</text>`;
+  svgText += `<text x="${signatureX}" y="${signatureY}" font-size="${signatureSize}" fill="#fa0707" font-style="Arial Black">${signatureText}</text>`;
 
   // Créer SVG final
   const svg = `
