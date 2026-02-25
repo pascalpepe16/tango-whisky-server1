@@ -127,7 +127,7 @@ app.get("/download/:call", async (req, res) => {
     res.status(500).json([]);
   }
 });
-// ================= GENERATE QSL DESIGN ULTIME + SIGNATURE ALIGNÉE =================
+// ================= QSL STYLE CARTE RADIO PRO =================
 async function generateQSLBuffer({
   filePath,
   indicatif,
@@ -138,119 +138,127 @@ async function generateQSLBuffer({
   report,
   note
 }) {
+
   const imageWidth = 1526;
   const imageHeight = 1024;
 
-  const rectWidth = Math.round(imageWidth * 0.28);
+  const rectWidth = Math.round(imageWidth * 0.30);
   const rectHeight = imageHeight;
   const totalWidth = imageWidth + rectWidth;
 
-  const marginX = 30;
-  const marginTop = 80;
+  const margin = 40;
 
-  const titleSize = Math.round(rectWidth * 0.14);
-  const textSize = Math.round(rectWidth * 0.095);
-  const noteSize = Math.round(rectWidth * 0.075);
-  const signatureSize = Math.round(rectWidth * 0.055);
+  const titleSize = 60;
+  const textSize = 36;
+  const noteSize = 28;
+  const signatureSize = 24;
 
-  // Fonction pour écrire texte avec retour à la ligne
-  function addBlock(svgText, text, size, x, y, maxWidth, bold = false, lineSpacing = 1.5) {
-    if (!text) return { svgText, y };
-    const words = text.split(" ");
-    let lines = [];
-    let currentLine = "";
-
-    const approxChars = Math.floor(maxWidth / (size * 0.6));
-    words.forEach(word => {
-      if ((currentLine + word).length > approxChars) {
-        lines.push(currentLine.trim());
-        currentLine = word + " ";
-      } else {
-        currentLine += word + " ";
-      }
-    });
-    if (currentLine) lines.push(currentLine.trim());
-
-    lines.forEach(line => {
-      svgText += `<text x="${x+2}" y="${y+2}" font-size="${size}" fill="rgba(0,0,0,0.15)" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
-      svgText += `<text x="${x}" y="${y}" font-size="${size}" fill="#222" ${bold ? 'font-weight="bold"' : ""}>${line}</text>`;
-      y += size * lineSpacing;
-    });
-
-    return { svgText, y };
+  function addLine(svg, text, x, y, size, bold = false) {
+    return svg + `
+      <text x="${x}" y="${y}" 
+        font-size="${size}" 
+        font-family="Verdana"
+        fill="#1a1a1a"
+        ${bold ? 'font-weight="bold"' : ""}>
+        ${text}
+      </text>
+    `;
   }
 
-  // Charger image de base
   const base = await sharp(filePath)
     .resize({ width: imageWidth, height: imageHeight, fit: "cover" })
-    .jpeg({ quality: 90 })
     .toBuffer();
 
-  let svgText = "";
-  let currentY = marginTop;
+  let svg = "";
 
-  // Dégradé + ombre douce
-  const svgBackground = `
-    <defs>
-      <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-        <stop offset="100%" stop-color="#f9f9f9" stop-opacity="0.95"/>
-      </linearGradient>
-      <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-        <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.15"/>
-      </filter>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#grad)" rx="25" filter="url(#shadow)" stroke="#ccc" stroke-width="2"/>
+  // 🎨 FOND + CADRE
+  svg += `
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdfdfd"/>
+      <stop offset="100%" stop-color="#f1f1f1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bg)" rx="20"/>
+
+  <!-- cadre intérieur -->
+  <rect x="10" y="10" width="${rectWidth-20}" height="${rectHeight-20}" 
+        fill="none" stroke="#bbb" stroke-width="2" rx="15"/>
   `;
 
-  // Indicatif en haut
-  let result = addBlock(svgText, indicatif, titleSize, marginX, currentY, rectWidth, true, 1.6);
-  svgText = result.svgText;
-  currentY = result.y + 30;
+  // 🔴 BANDEAU TITRE
+  svg += `
+    <rect x="0" y="0" width="${rectWidth}" height="120" fill="#2c3e50"/>
+  `;
 
-  // Ligne séparatrice
-  svgText += `<line x1="${marginX}" y1="${currentY}" x2="${rectWidth - marginX}" y2="${currentY}" stroke="#bbb" stroke-width="2" stroke-dasharray="5,3"/>`;
-  currentY += 30;
+  svg += `
+    <text x="${rectWidth/2}" y="75"
+      text-anchor="middle"
+      font-size="${titleSize}"
+      font-family="Verdana"
+      fill="white"
+      font-weight="bold">
+      ${indicatif}
+    </text>
+  `;
 
-  // Infos principales
-  const infoX = marginX;
-  const infoMaxWidth = rectWidth - 2 * marginX;
-  const infoList = [
-    `Date: ${date}`,
-    `UTC: ${time}`,
-    `Bande: ${band}`,
-    `Mode: ${mode}`,
-    `Report: ${report}`
+  let y = 180;
+
+  // 📡 INFOS
+  const labelX = margin;
+  const valueX = rectWidth * 0.45;
+
+  const spacing = 70;
+
+  const data = [
+    ["DATE", date],
+    ["UTC", time],
+    ["BANDE", band],
+    ["MODE", mode],
+    ["REPORT", report]
   ];
 
-  infoList.forEach(line => {
-    result = addBlock(svgText, line, textSize, infoX, currentY, infoMaxWidth, false, 1.7);
-    svgText = result.svgText;
-    currentY = result.y + 10;
+  data.forEach(([label, value]) => {
+    svg += addLine(svg, label, labelX, y, textSize, true);
+    svg += addLine(svg, value, valueX, y, textSize);
+    y += spacing;
   });
 
-  // Notes sur plusieurs lignes
-  const noteX = marginX;
-  result = addBlock(svgText, note || "", noteSize, noteX, currentY, infoMaxWidth, false, 1.5);
-  svgText = result.svgText;
-  currentY = result.y + 30;
+  // 📝 NOTE (bloc)
+  y += 20;
 
-  // Signature parfaitement alignée à droite
-  const signatureText = "Groupe Tango Whisky";
-  const signatureY = rectHeight - 40; // au-dessus du bas
-  const signatureX = rectWidth - marginX - signatureSize * signatureText.length * 0.6; // alignement à droite approximatif
+  svg += `
+    <line x1="${margin}" y1="${y}" x2="${rectWidth-margin}" y2="${y}" stroke="#ccc"/>
+  `;
 
-  svgText += `<text x="${signatureX}" y="${signatureY}" font-size="${signatureSize}" fill="#fa0707" font-style="Arial Black">${signatureText}</text>`;
+  y += 40;
 
-  // Créer SVG final
-  const svg = `
+  const noteLines = (note || "").match(/.{1,35}/g) || [];
+
+  noteLines.forEach(line => {
+    svg += addLine(svg, line, margin, y, noteSize);
+    y += 40;
+  });
+
+  // ✍️ SIGNATURE
+  svg += `
+    <text x="${rectWidth - margin}" y="${rectHeight - 40}"
+      text-anchor="end"
+      font-size="${signatureSize}"
+      font-family="Verdana"
+      fill="#555"
+      font-style="italic">
+      Groupe Tango Whisky
+    </text>
+  `;
+
+  const finalSvg = `
     <svg width="${rectWidth}" height="${rectHeight}" xmlns="http://www.w3.org/2000/svg">
-      ${svgBackground}
-      ${svgText}
+      ${svg}
     </svg>
   `;
 
-  // Composer image finale
   return await sharp({
     create: {
       width: totalWidth,
@@ -261,9 +269,9 @@ async function generateQSLBuffer({
   })
     .composite([
       { input: base, left: 0, top: 0 },
-      { input: Buffer.from(svg), left: imageWidth, top: 0 }
+      { input: Buffer.from(finalSvg), left: imageWidth, top: 0 }
     ])
-    .jpeg({ quality: 92 })
+    .jpeg({ quality: 95 })
     .toBuffer();
 }
 // ================= UPLOAD =================
